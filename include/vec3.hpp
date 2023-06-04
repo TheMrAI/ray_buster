@@ -5,6 +5,7 @@
 #include <array>
 #include <cmath>
 #include <iostream>
+#include "util.hpp"
 
 class vec3 {
 private:
@@ -66,6 +67,14 @@ public:
     }
 
     friend auto operator<<(std::ostream& out, const vec3& v) -> std::ostream&;
+    
+    static auto random() {
+        return vec3{random_double(), random_double(), random_double()};
+    }
+
+    static auto random(double min, double max) {
+        return vec3{random_double(min, max), random_double(min, max), random_double(min, max)};
+    }
 };
 
 auto operator<<(std::ostream& out, const vec3& v) -> std::ostream& {
@@ -119,14 +128,28 @@ auto write_color(std::ostream& out, vec3 color, unsigned samples_per_pixel) {
     auto g = color.y();
     auto b = color.z();
 
-    // Divide the color by the number of samples
-    r /= samples_per_pixel;
-    g /= samples_per_pixel;
-    b /= samples_per_pixel;
+    // Divide the color by the number of samples and gamma-correct for gamma=2.0
+    r = sqrt(r / samples_per_pixel);
+    g = sqrt(g / samples_per_pixel);
+    b = sqrt(b / samples_per_pixel);
 
     out << static_cast<int>(256 * std::clamp(r, 0.0, 0.999)) << ' '
         << static_cast<int>(256 * std::clamp(g, 0.0, 0.999)) << ' '
         << static_cast<int>(256 * std::clamp(b, 0.0, 0.999)) << std::endl;
+}
+
+auto random_in_unit_sphere() {
+    while(true) {
+        auto p = vec3::random(-1, 1);
+        if(p.length()*p.length() >= 1) {
+            continue;
+        }
+        return p;
+    }
+}
+
+auto random_unit_vector() {
+    return unit_vector(random_in_unit_sphere());
 }
 
 #endif

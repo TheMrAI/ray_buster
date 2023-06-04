@@ -39,11 +39,18 @@ auto hit_sphere(const vec3& center, double radius, const ray& r) -> double {
     }
 }
 
-vec3 ray_color(ray const& r, const hittable& world) {
-    hit_record rec;
-    if(world.hit(r, 0, std::numeric_limits<double>::infinity(), rec)) {
-        return 0.5 * (rec.normal + vec3{1,1,1});
+vec3 ray_color(ray const& r, const hittable& world, int depth) {
+    // At limit return blackness
+    if(depth <= 0) {
+        return vec3(0, 0, 0);
     }
+
+    hit_record rec;
+    if(world.hit(r, 0.001, std::numeric_limits<double>::infinity(), rec)) {
+        auto target = rec.p + rec.normal + random_unit_vector();
+        return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth-1);
+    }
+
     vec3 unit_direction = unit_vector(r.direction());
     auto t = 0.5 * (unit_direction.y() + 1.0);
     return (1.0-t)*vec3(1.0, 1.0, 1.0) + t*vec3(0.5, 0.7, 1.0);
@@ -52,9 +59,10 @@ vec3 ray_color(ray const& r, const hittable& world) {
 auto main() -> int {
     // Image
     constexpr auto aspect_ratio = 16.0 / 9.0;
-    constexpr auto image_width = 800;
+    constexpr auto image_width = 400;
     constexpr auto image_height = static_cast<int>(image_width / aspect_ratio);
     constexpr auto samples_per_pixel = 100;
+    constexpr auto max_depth = 50;
 
     // Camera
     auto cam = camera{};
@@ -75,7 +83,7 @@ auto main() -> int {
                 auto u = (i + random_double()) / (image_width-1);
                 auto v = (j + random_double()) / (image_height-1);
                 auto r = cam.get_ray(u, v);
-                pixel_color += ray_color(r, world);
+                pixel_color += ray_color(r, world, max_depth);
             }
             write_color(std::cout, pixel_color, samples_per_pixel);
         }

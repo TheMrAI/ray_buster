@@ -5,8 +5,17 @@ Huge inspiration and shootout to the motivating source: https://raytracing.githu
 
 ## Build
 
+Make the make files using Cmake:
+
 ```shell
 cmake -S . -B ./build/
+```
+
+Then build by:
+
+```shell
+cd ./build
+make
 ```
 
 Cmake template: https://github.com/cpp-best-practices/cmake_template

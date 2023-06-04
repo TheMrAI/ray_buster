@@ -9,4 +9,8 @@ auto random_double() -> double {
     return distribution(generator);
 }
 
+auto random_double(double min, double max) -> double {
+    return min + (max-min)*random_double();
+}
+
 #endif
