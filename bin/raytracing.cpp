@@ -71,7 +71,12 @@ auto main() -> int {
     constexpr auto max_depth = 50;
 
     // Camera
-    auto cam = camera{vec3{-2.0,2.0,1.0}, vec3{0.0,0.0,-1.0}, vec3{0.0, 1.0, 0.0}, 20.0, aspect_ratio};
+    auto look_from = vec3{3.0, 3.0, 2.0};
+    auto look_at = vec3{0.0, 0.0, -1.0};
+    auto view_up = vec3{0.0, 1.0, 0.0};
+    auto dist_to_focus = (look_from-look_at).length();
+    auto aperture = 2.0;
+    auto cam = camera{look_from, look_at, view_up, 20, aspect_ratio, aperture, dist_to_focus};
 
     // World
     hittable_list world;

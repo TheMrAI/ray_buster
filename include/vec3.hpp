@@ -100,12 +100,12 @@ auto operator*(vec3 const& lhs, vec3 const& rhs) -> vec3 {
     return vec3{lhs.x() * rhs.x(), lhs.y() * rhs.y(), lhs.z() * rhs.z()};
 }
 
-auto operator*(vec3 const& v, double t) -> vec3 {
-    return v * t;
-}
-
 auto operator*(double t, vec3 const& v) -> vec3 {
     return vec3{v.x() * t, v.y() * t, v.z() * t};
+}
+
+auto operator*(vec3 const& v, double t) -> vec3 {
+    return t * v;
 }
 
 auto operator/(vec3 v, double t) -> vec3 {
@@ -148,6 +148,16 @@ auto random_in_unit_sphere() {
     while(true) {
         auto p = vec3::random(-1, 1);
         if(p.length()*p.length() >= 1) {
+            continue;
+        }
+        return p;
+    }
+}
+
+auto random_in_unit_disk() {
+    while(true) {
+        auto p = vec3{random_double(-1.0, 1.0), random_double(-1.0, 1.0), 0.0};
+        if(p.length()*p.length() >= 1.0) {
             continue;
         }
         return p;
