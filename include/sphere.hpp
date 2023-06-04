@@ -3,15 +3,16 @@
 
 #include "hittable.hpp"
 #include "vec3.hpp"
+#include <memory>
 
 class sphere : public hittable {
 public:
     vec3 center_;
     double radius_;
-
+    std::shared_ptr<material> material_ptr_;
 public:
     sphere() {}
-    sphere(vec3 center, double radius) : center_{center}, radius_{radius} {};
+    sphere(vec3 center, double radius, std::shared_ptr<material> material) : center_{center}, radius_{radius}, material_ptr_{material} {};
 
     virtual bool hit(ray const& r, double t_min, double t_max, hit_record& rec) const override;
 };
@@ -43,6 +44,7 @@ bool sphere::hit(ray const& r, double t_min, double t_max, hit_record& rec) cons
     rec.p = r.at(rec.t);
     auto outward_normal = (rec.p - center_) / radius_;
     rec.set_face_normal(r, outward_normal);
+    rec.material_ptr = material_ptr_;
 
     return true;
 }

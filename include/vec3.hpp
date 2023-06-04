@@ -75,6 +75,12 @@ public:
     static auto random(double min, double max) {
         return vec3{random_double(min, max), random_double(min, max), random_double(min, max)};
     }
+
+    bool near_zero() const {
+        // Return true if the vector is close to zero in all dimensions.
+        constexpr auto s = 1e-8;
+        return (fabs(data_[0]) < s) && (fabs(data_[1]) < s) && (fabs(data_[2] < s));
+    }
 };
 
 auto operator<<(std::ostream& out, const vec3& v) -> std::ostream& {
@@ -148,8 +154,12 @@ auto random_in_unit_sphere() {
     }
 }
 
-auto random_unit_vector() {
+auto random_unit_vector() -> vec3 {
     return unit_vector(random_in_unit_sphere());
+}
+
+auto reflect(vec3 const& v, vec3 const& n) -> vec3 {
+    return v - 2*dot(v, n)*n;
 }
 
 #endif
