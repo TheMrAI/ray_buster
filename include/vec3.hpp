@@ -162,4 +162,11 @@ auto reflect(vec3 const& v, vec3 const& n) -> vec3 {
     return v - 2*dot(v, n)*n;
 }
 
+auto refract(vec3 const& uv, vec3 const& n, double etai_over_etat) {
+    auto cos_theta = fmin(dot(-uv, n), 1.0);
+    auto r_out_perp = etai_over_etat * (uv + cos_theta*n);
+    auto r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length()*r_out_perp.length())) * n;
+    return r_out_perp + r_out_parallel;
+}
+
 #endif

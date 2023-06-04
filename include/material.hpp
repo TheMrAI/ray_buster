@@ -46,4 +46,39 @@ public:
     }
 };
 
+class dielectric : public material {
+private:
+    double index_of_refraction_;
+public:
+    dielectric(double index_of_refraction) : index_of_refraction_{index_of_refraction} {}
+
+    virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const override {
+        attenuation = vec3{1.0, 1.0, 1.0};
+        auto refraction_ratio = rec.front_face ? (1.0/index_of_refraction_) : index_of_refraction_;
+
+        auto unit_direction = unit_vector(ray_in.direction());
+        auto cos_theta = std::fmin(dot(-unit_direction, rec.normal), 1.0);
+        auto sin_theta = std::sqrt(1.0 - cos_theta*cos_theta);
+        
+        bool cannot_refract = refraction_ratio * sin_theta > 1.0;
+        auto direction = vec3{};
+
+        if(cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double()) {
+            direction = reflect(unit_direction, rec.normal);
+        } else {
+            direction = refract(unit_direction, rec.normal, refraction_ratio);
+        }
+
+        scattered = ray{rec.p, direction};
+        return true;
+    }
+private:
+    static double reflectance(double cosine, double ref_index) {
+        // Use Schlick's approximation for reflecatnce.
+        auto r0 = (1.0 - ref_index) / (1.0 + ref_index);
+        r0 = r0 * r0;
+        return r0 + (1.0 - r0)*pow(1.0 - cosine, 5);
+    }
+};
+
 #endif
