@@ -128,8 +128,7 @@ auto unit_vector(vec3 v) -> vec3 {
     return v / v.length();
 }
 
-// nasty, but ok for now
-auto write_color(std::ostream& out, vec3 color, unsigned samples_per_pixel) {
+auto prepare_color(vec3 const& color, unsigned samples_per_pixel) -> vec3 {
     auto r = color.x();
     auto g = color.y();
     auto b = color.z();
@@ -139,9 +138,19 @@ auto write_color(std::ostream& out, vec3 color, unsigned samples_per_pixel) {
     g = sqrt(g / samples_per_pixel);
     b = sqrt(b / samples_per_pixel);
 
-    out << static_cast<int>(256 * std::clamp(r, 0.0, 0.999)) << ' '
-        << static_cast<int>(256 * std::clamp(g, 0.0, 0.999)) << ' '
-        << static_cast<int>(256 * std::clamp(b, 0.0, 0.999)) << std::endl;
+    return vec3{256 * std::clamp(r, 0.0, 0.999), 256 * std::clamp(g, 0.0, 0.999), 256 * std::clamp(b, 0.0, 0.999)};
+}
+
+auto write_color(std::ostream& out, vec3 prepared_color) {
+    out << static_cast<int>(prepared_color.x()) << ' '
+        << static_cast<int>(prepared_color.y()) << ' '
+        << static_cast<int>(prepared_color.z()) << std::endl;
+}
+
+// nasty, but ok for now
+auto write_color(std::ostream& out, vec3 color, unsigned samples_per_pixel) {
+    auto prepared_color = prepare_color(color, samples_per_pixel);
+    write_color(out, prepared_color);
 }
 
 auto random_in_unit_sphere() {
