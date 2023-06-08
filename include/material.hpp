@@ -6,79 +6,89 @@
 
 struct hit_record;
 
-class material {
+class material
+{
 public:
-    virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const = 0;
+  virtual bool scatter(ray const &ray_in, hit_record const &rec, vec3 &attenuation, ray &scattered) const = 0;
 };
 
-class lambertian : public material {
+class lambertian : public material
+{
 private:
-    vec3 albedo_;
+  vec3 albedo_;
+
 public:
-    lambertian(vec3 const& albedo) : albedo_{albedo} {}
+  lambertian(vec3 const &albedo) : albedo_{ albedo } {}
 
-    virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const override {
-        auto scatter_direction = rec.normal + random_unit_vector();
-        
-        // Catch degenerate scatter direction
-        if(scatter_direction.near_zero()) {
-            scatter_direction = rec.normal;
-        }
+  virtual bool scatter(ray const &ray_in, hit_record const &rec, vec3 &attenuation, ray &scattered) const override
+  {
+    auto scatter_direction = rec.normal + random_unit_vector();
 
-        scattered = ray{rec.p, scatter_direction, ray_in.time()};
-        attenuation = albedo_;
-        return true;
-    }
+    // Catch degenerate scatter direction
+    if (scatter_direction.near_zero()) { scatter_direction = rec.normal; }
+
+    scattered = ray{ rec.p, scatter_direction, ray_in.time() };
+    attenuation = albedo_;
+    return true;
+  }
 };
 
-class metal : public material {
+class metal : public material
+{
 private:
-    vec3 albedo_;
-    double fuzz_;
-public:
-    metal(vec3 const& albedo, double fuzz) : albedo_{albedo}, fuzz_(fuzz < 1.0 ? fuzz : 1.0) {}
+  vec3 albedo_;
+  double fuzz_;
 
-    virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const override {
-        auto reflected = reflect(unit_vector(ray_in.direction()), rec.normal);
-        scattered = ray{rec.p, reflected + fuzz_*random_in_unit_sphere(), ray_in.time()};
-        attenuation = albedo_;
-        return (dot(scattered.direction(), rec.normal) > 0);
-    }
+public:
+  metal(vec3 const &albedo, double fuzz) : albedo_{ albedo }, fuzz_(fuzz < 1.0 ? fuzz : 1.0) {}
+
+  virtual bool scatter(ray const &ray_in, hit_record const &rec, vec3 &attenuation, ray &scattered) const override
+  {
+    auto reflected = reflect(unit_vector(ray_in.direction()), rec.normal);
+    scattered = ray{ rec.p, reflected + fuzz_ * random_in_unit_sphere(), ray_in.time() };
+    attenuation = albedo_;
+    return (dot(scattered.direction(), rec.normal) > 0);
+  }
 };
 
-class dielectric : public material {
+class dielectric : public material
+{
 private:
-    double index_of_refraction_;
+  double index_of_refraction_;
+
 public:
-    dielectric(double index_of_refraction) : index_of_refraction_{index_of_refraction} {}
+  dielectric(double index_of_refraction) : index_of_refraction_{ index_of_refraction } {}
 
-    virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const override {
-        attenuation = vec3{1.0, 1.0, 1.0};
-        auto refraction_ratio = rec.front_face ? (1.0/index_of_refraction_) : index_of_refraction_;
+  virtual bool scatter(ray const &ray_in, hit_record const &rec, vec3 &attenuation, ray &scattered) const override
+  {
+    attenuation = vec3{ 1.0, 1.0, 1.0 };
+    auto refraction_ratio = rec.front_face ? (1.0 / index_of_refraction_) : index_of_refraction_;
 
-        auto unit_direction = unit_vector(ray_in.direction());
-        auto cos_theta = std::fmin(dot(-unit_direction, rec.normal), 1.0);
-        auto sin_theta = std::sqrt(1.0 - cos_theta*cos_theta);
-        
-        bool cannot_refract = refraction_ratio * sin_theta > 1.0;
-        auto direction = vec3{};
+    auto unit_direction = unit_vector(ray_in.direction());
+    auto cos_theta = std::fmin(dot(-unit_direction, rec.normal), 1.0);
+    auto sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
 
-        if(cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double()) {
-            direction = reflect(unit_direction, rec.normal);
-        } else {
-            direction = refract(unit_direction, rec.normal, refraction_ratio);
-        }
+    bool cannot_refract = refraction_ratio * sin_theta > 1.0;
+    auto direction = vec3{};
 
-        scattered = ray{rec.p, direction, ray_in.time()};
-        return true;
+    if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double()) {
+      direction = reflect(unit_direction, rec.normal);
+    } else {
+      direction = refract(unit_direction, rec.normal, refraction_ratio);
     }
+
+    scattered = ray{ rec.p, direction, ray_in.time() };
+    return true;
+  }
+
 private:
-    static double reflectance(double cosine, double ref_index) {
-        // Use Schlick's approximation for reflecatnce.
-        auto r0 = (1.0 - ref_index) / (1.0 + ref_index);
-        r0 = r0 * r0;
-        return r0 + (1.0 - r0)*pow(1.0 - cosine, 5);
-    }
+  static double reflectance(double cosine, double ref_index)
+  {
+    // Use Schlick's approximation for reflecatnce.
+    auto r0 = (1.0 - ref_index) / (1.0 + ref_index);
+    r0 = r0 * r0;
+    return r0 + (1.0 - r0) * pow(1.0 - cosine, 5);
+  }
 };
 
 #endif
