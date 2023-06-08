@@ -15,6 +15,8 @@ private:
     vec3 v_;
     vec3 w_;
     double lens_radius_;
+    double begin_time_;
+    double end_time_;
 public:
     camera(vec3 look_from,
         vec3 look_at,
@@ -22,7 +24,9 @@ public:
         double vertical_fow, 
         double aspect_ratio,
         double aperture,
-        double focus_distance) {
+        double focus_distance,
+        double begin_time,
+        double end_time) {
         
         auto theta = degrees_to_radians(vertical_fow);
         auto h = tan(theta/2.0);
@@ -39,6 +43,9 @@ public:
         lower_left_corner_ = origin_ - horizontal_/2.0 - vertical_/2.0 - focus_distance*w_;
 
         lens_radius_ = aperture / 2.0;
+
+        begin_time_ = begin_time;
+        end_time_ = end_time;
     }
 
     auto get_ray(double s, double t) const {
@@ -46,7 +53,8 @@ public:
         auto offset = u_*rd.x() + v_*rd.y();
 
         return ray{origin_ + offset,
-            lower_left_corner_ + s*horizontal_ + t*vertical_ - origin_ - offset};
+            lower_left_corner_ + s*horizontal_ + t*vertical_ - origin_ - offset,
+            random_double(begin_time_, end_time_)};
     }
 };
 

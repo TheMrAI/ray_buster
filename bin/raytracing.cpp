@@ -5,6 +5,7 @@
 #include "sphere.hpp"
 #include "util.hpp"
 #include "material.hpp"
+#include "moving_sphere.hpp"
 
 #include <memory>
 #include <numbers>
@@ -83,7 +84,8 @@ hittable_list random_scene() {
                     // diffuse
                     auto albedo = vec3::random() * vec3::random();
                     sphere_material = std::make_shared<lambertian>(albedo);
-                    world.add(std::make_shared<sphere>(center, 0.2, sphere_material));
+                    auto end_center = center + vec3(0.0, random_double(0, 0.5), 0.0);
+                    world.add(std::make_shared<moving_sphere>(center, end_center, 0.0, 1.0, 0.2, sphere_material));
                 } else if (choose_mat < 0.95) {
                     // metal
                     auto albedo = vec3::random(0.5, 1);
@@ -116,7 +118,7 @@ auto main() -> int {
     constexpr auto aspect_ratio = 16.0 / 9.0;
     constexpr auto image_width = 400;
     constexpr auto image_height = static_cast<int>(image_width / aspect_ratio);
-    constexpr auto samples_per_pixel = 200;
+    constexpr auto samples_per_pixel = 100;
     constexpr auto max_depth = 50;
 
     // Camera
@@ -125,7 +127,7 @@ auto main() -> int {
     auto view_up = vec3{0.0, 1.0, 0.0};
     auto dist_to_focus = 10.0;
     auto aperture = 0.1;
-    auto cam = camera{look_from, look_at, view_up, 20, aspect_ratio, aperture, dist_to_focus};
+    auto cam = camera{look_from, look_at, view_up, 20, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0};
 
     // World
     hittable_list world = random_scene();
