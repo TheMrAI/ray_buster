@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>
 #include <iostream>
+#include <numbers>
 
 class vec3
 {
@@ -151,20 +152,30 @@ auto write_color(std::ostream &out, vec3 color, unsigned samples_per_pixel)
 
 auto random_in_unit_sphere()
 {
-  while (true) {
-    auto p = vec3::random(-1, 1);
-    if (p.length() * p.length() >= 1) { continue; }
-    return p;
-  }
+  // source: https://karthikkaranth.me/blog/generating-random-points-in-a-sphere/
+  // source2: https://mathworld.wolfram.com/SpherePointPicking.html
+  auto u = random_double(0.0, 1.0);
+  auto v = random_double(0.0, 1.0);
+  auto theta = u * 2.0 * std::numbers::pi;
+  auto phi = std::acos(2.0 * v - 1.0);
+  auto r = std::cbrt(random_double(0.0, 1.0));
+  auto sin_theta = std::sin(theta);
+  auto cos_theta = std::cos(theta);
+  auto sin_phi = std::sin(phi);
+  auto cos_phi = std::cos(phi);
+  auto x = r * sin_phi * cos_theta;
+  auto y = r * sin_phi * sin_theta;
+  auto z = r * cos_phi;
+  return vec3{x, y, z};
 }
 
 auto random_in_unit_disk()
 {
-  while (true) {
-    auto p = vec3{ random_double(-1.0, 1.0), random_double(-1.0, 1.0), 0.0 };
-    if (p.length() * p.length() >= 1.0) { continue; }
-    return p;
-  }
+  // source: https://mathworld.wolfram.com/DiskPointPicking.html
+  auto r = random_double(0.0, 1.0);
+  auto theta = random_double(0.0, 2.0 * std::numbers::pi);
+  auto sqrt_r = std::sqrt(r);
+  return vec3{sqrt_r * std::cos(theta), sqrt_r * std::sin(theta), 0.0};
 }
 
 auto random_unit_vector() -> vec3 { return unit_vector(random_in_unit_sphere()); }
