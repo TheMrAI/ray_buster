@@ -11,7 +11,10 @@ auto random_double() -> double
   return distribution(generator);
 }
 
+
 auto random_double(double min, double max) -> double { return min + (max - min) * random_double(); }
+
+auto random_int(int min, int max) -> int { return static_cast<int>(random_double(min, max)); }
 
 auto degrees_to_radians(double degrees) -> double { return degrees * std::numbers::pi / 180.0; }
 
