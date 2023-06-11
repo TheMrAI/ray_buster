@@ -18,6 +18,7 @@ public:
     : center_{ center }, radius_{ radius }, material_ptr_{ material } {};
 
   virtual bool hit(ray const &r, double t_min, double t_max, hit_record &rec) const override;
+  virtual bool bounding_box(double time_0, double time_1, aabb &bounding_box) const override;
 };
 
 bool sphere::hit(ray const &r, double t_min, double t_max, hit_record &rec) const
@@ -46,6 +47,12 @@ bool sphere::hit(ray const &r, double t_min, double t_max, hit_record &rec) cons
   rec.set_face_normal(r, outward_normal);
   rec.material_ptr = material_ptr_;
 
+  return true;
+}
+
+bool sphere::bounding_box(double /*time_0*/, double /*time_1*/, aabb &bounding_box) const
+{
+  bounding_box = aabb{ center_ - vec3{ radius_, radius_, radius_ }, center_ + vec3{ radius_, radius_, radius_ } };
   return true;
 }
 

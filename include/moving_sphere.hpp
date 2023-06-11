@@ -1,6 +1,7 @@
 #ifndef MOVING_SPHERE_HPP
 #define MOVING_SPHERE_HPP
 
+#include "aabb.hpp"
 #include "hittable.hpp"
 #include "util.hpp"
 #include "vec3.hpp"
@@ -29,6 +30,7 @@ public:
       begin_time_{ begin_time }, end_time_{ end_time }, radius_{ radius }, material_ptr_{ material_ptr } {};
 
   virtual bool hit(ray const &ray, double t_min, double t_max, hit_record &rec) const override;
+  virtual bool bounding_box(double time_0, double time_1, aabb &bounding_box) const override;
 
   vec3 center_at_time(double time) const
   {
@@ -60,6 +62,16 @@ auto moving_sphere::hit(ray const &ray, double t_min, double t_max, hit_record &
   rec.set_face_normal(ray, outward_normal);
   rec.material_ptr = material_ptr_;
 
+  return true;
+}
+
+auto moving_sphere::bounding_box(double time_0, double time_1, aabb &bounding_box) const -> bool
+{
+  aabb box_0{ center_at_time(time_0) - vec3{ radius_, radius_, radius_ },
+    center_at_time(time_0) + vec3{ radius_, radius_, radius_ } };
+  aabb box_1{ center_at_time(time_1) - vec3{ radius_, radius_, radius_ },
+    center_at_time(time_1) + vec3{ radius_, radius_, radius_ } };
+  bounding_box = surrounding_box(box_0, box_1);
   return true;
 }
 

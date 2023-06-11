@@ -61,6 +61,8 @@ public:
 
   auto operator/=(double const t) -> vec3 & { return *this *= 1 / t; }
 
+  auto operator[](size_t index) const -> double { return data_[index]; }
+
   auto dot(vec3 const &rhs) const -> double
   {
     return data_[0] * rhs.data_[0] + data_[1] * rhs.data_[1] + data_[2] * rhs.data_[2];
@@ -166,7 +168,7 @@ auto random_in_unit_sphere()
   auto x = r * sin_phi * cos_theta;
   auto y = r * sin_phi * sin_theta;
   auto z = r * cos_phi;
-  return vec3{x, y, z};
+  return vec3{ x, y, z };
 }
 
 auto random_in_unit_disk()
@@ -175,7 +177,7 @@ auto random_in_unit_disk()
   auto r = random_double(0.0, 1.0);
   auto theta = random_double(0.0, 2.0 * std::numbers::pi);
   auto sqrt_r = std::sqrt(r);
-  return vec3{sqrt_r * std::cos(theta), sqrt_r * std::sin(theta), 0.0};
+  return vec3{ sqrt_r * std::cos(theta), sqrt_r * std::sin(theta), 0.0 };
 }
 
 auto random_unit_vector() -> vec3 { return unit_vector(random_in_unit_sphere()); }
