@@ -17,10 +17,12 @@ public:
   sphere(vec3 center, double radius, std::shared_ptr<material> material)
     : center_{ center }, radius_{ radius }, material_ptr_{ material } {};
 
-  virtual bool hit(ray const &r, double t_min, double t_max, hit_record &rec) const override;
-  virtual bool bounding_box(double time_0, double time_1, aabb &bounding_box) const override;
+  virtual bool hit(ray const& r, double t_min, double t_max, hit_record& rec) const override;
+  virtual bool bounding_box(double time_0, double time_1, aabb& bounding_box) const override;
+
 private:
-  auto get_sphere_uv(vec3 const& point, double& u, double& v) const -> void {
+  auto get_sphere_uv(vec3 const& point, double& u, double& v) const -> void
+  {
     // point: a given point on the sphere of radius one, centered at the origin.
     // u: returned value [0,1] of angle around the Y axis from X=-1.
     // v: returned value [0,1] of angle from Y=-1 to Y=+1.
@@ -36,7 +38,7 @@ private:
   }
 };
 
-bool sphere::hit(ray const &r, double t_min, double t_max, hit_record &rec) const
+bool sphere::hit(ray const& r, double t_min, double t_max, hit_record& rec) const
 {
   vec3 oc = r.origin() - center_;
   auto r_direction_length = r.direction().length();
@@ -66,7 +68,7 @@ bool sphere::hit(ray const &r, double t_min, double t_max, hit_record &rec) cons
   return true;
 }
 
-bool sphere::bounding_box(double /*time_0*/, double /*time_1*/, aabb &bounding_box) const
+bool sphere::bounding_box(double /*time_0*/, double /*time_1*/, aabb& bounding_box) const
 {
   bounding_box = aabb{ center_ - vec3{ radius_, radius_, radius_ }, center_ + vec3{ radius_, radius_, radius_ } };
   return true;

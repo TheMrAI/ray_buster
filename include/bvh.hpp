@@ -20,17 +20,17 @@ private:
 public:
   bvh_node();
 
-  bvh_node(std::vector<std::shared_ptr<hittable>> const &list, double time_0, double time_1)
+  bvh_node(std::vector<std::shared_ptr<hittable>> const& list, double time_0, double time_1)
     : bvh_node(list.objects, 0, list.objects.size(), time_0, time_1)
   {}
 
-  bvh_node(std::vector<std::shared_ptr<hittable>> &src_objects, size_t start, size_t end, double time_0, double time_1);
+  bvh_node(std::vector<std::shared_ptr<hittable>>& src_objects, size_t start, size_t end, double time_0, double time_1);
 
-  virtual bool hit(ray const &ray, double t_min, double t_max, hit_record &rec) const override;
-  virtual bool bounding_box(double time_0, double time_1, aabb &bounding_box) const override;
+  virtual bool hit(ray const& ray, double t_min, double t_max, hit_record& rec) const override;
+  virtual bool bounding_box(double time_0, double time_1, aabb& bounding_box) const override;
 };
 
-bvh_node::bvh_node(std::vector<std::shared_ptr<hittable>> &src_objects,
+bvh_node::bvh_node(std::vector<std::shared_ptr<hittable>>& src_objects,
   size_t start,
   size_t end,
   double time_0,
@@ -75,7 +75,7 @@ bvh_node::bvh_node(std::vector<std::shared_ptr<hittable>> &src_objects,
   bounding_box_ = surrounding_box(left_bounding_box, right_bounding_box);
 }
 
-auto bvh_node::hit(ray const &ray, double t_min, double t_max, hit_record &rec) const -> bool
+auto bvh_node::hit(ray const& ray, double t_min, double t_max, hit_record& rec) const -> bool
 {
   if (!box.hit(r, t_min, t_max)) { return false; }
 
@@ -85,7 +85,7 @@ auto bvh_node::hit(ray const &ray, double t_min, double t_max, hit_record &rec) 
   return hit_left || hit_right;
 }
 
-auto bvh_node::bounding_box(double /*time_0*/, double /*time_1*/, aabb &bounding_box) const -> bool
+auto bvh_node::bounding_box(double /*time_0*/, double /*time_1*/, aabb& bounding_box) const -> bool
 {
   bounding_box = bounding_box_;
   return true;

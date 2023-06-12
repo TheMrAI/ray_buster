@@ -29,8 +29,8 @@ public:
     : begin_center_{ begin_center }, end_center_{ end_center },
       begin_time_{ begin_time }, end_time_{ end_time }, radius_{ radius }, material_ptr_{ material_ptr } {};
 
-  virtual bool hit(ray const &ray, double t_min, double t_max, hit_record &rec) const override;
-  virtual bool bounding_box(double time_0, double time_1, aabb &bounding_box) const override;
+  virtual bool hit(ray const& ray, double t_min, double t_max, hit_record& rec) const override;
+  virtual bool bounding_box(double time_0, double time_1, aabb& bounding_box) const override;
 
   vec3 center_at_time(double time) const
   {
@@ -38,7 +38,7 @@ public:
   }
 };
 
-auto moving_sphere::hit(ray const &ray, double t_min, double t_max, hit_record &rec) const -> bool
+auto moving_sphere::hit(ray const& ray, double t_min, double t_max, hit_record& rec) const -> bool
 {
   vec3 oc = ray.origin() - center_at_time(ray.time());
   auto a = ray.direction().length() * ray.direction().length();
@@ -65,7 +65,7 @@ auto moving_sphere::hit(ray const &ray, double t_min, double t_max, hit_record &
   return true;
 }
 
-auto moving_sphere::bounding_box(double time_0, double time_1, aabb &bounding_box) const -> bool
+auto moving_sphere::bounding_box(double time_0, double time_1, aabb& bounding_box) const -> bool
 {
   aabb box_0{ center_at_time(time_0) - vec3{ radius_, radius_, radius_ },
     center_at_time(time_0) + vec3{ radius_, radius_, radius_ } };

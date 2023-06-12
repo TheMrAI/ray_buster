@@ -2,15 +2,15 @@
 #define MATERIAL_HPP
 
 #include "ray.hpp"
-#include "vec3.hpp"
 #include "texture.hpp"
+#include "vec3.hpp"
 
 struct hit_record;
 
 class material
 {
 public:
-  virtual bool scatter(ray const &ray_in, hit_record const &rec, vec3 &attenuation, ray &scattered) const = 0;
+  virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const = 0;
 };
 
 class lambertian : public material
@@ -19,10 +19,10 @@ private:
   std::shared_ptr<texture> albedo_;
 
 public:
-  lambertian(vec3 const &albedo) : albedo_{ std::make_shared<solid_color>(albedo) } {}
-  lambertian(std::shared_ptr<texture> albedo) : albedo_{albedo} {}
+  lambertian(vec3 const& albedo) : albedo_{ std::make_shared<solid_color>(albedo) } {}
+  lambertian(std::shared_ptr<texture> albedo) : albedo_{ albedo } {}
 
-  virtual bool scatter(ray const &ray_in, hit_record const &rec, vec3 &attenuation, ray &scattered) const override
+  virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const override
   {
     auto scatter_direction = rec.normal + random_unit_vector();
 
@@ -42,9 +42,9 @@ private:
   double fuzz_;
 
 public:
-  metal(vec3 const &albedo, double fuzz) : albedo_{ albedo }, fuzz_(fuzz < 1.0 ? fuzz : 1.0) {}
+  metal(vec3 const& albedo, double fuzz) : albedo_{ albedo }, fuzz_(fuzz < 1.0 ? fuzz : 1.0) {}
 
-  virtual bool scatter(ray const &ray_in, hit_record const &rec, vec3 &attenuation, ray &scattered) const override
+  virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const override
   {
     auto reflected = reflect(unit_vector(ray_in.direction()), rec.normal);
     scattered = ray{ rec.p, reflected + fuzz_ * random_in_unit_sphere(), ray_in.time() };
@@ -61,7 +61,7 @@ private:
 public:
   dielectric(double index_of_refraction) : index_of_refraction_{ index_of_refraction } {}
 
-  virtual bool scatter(ray const &ray_in, hit_record const &rec, vec3 &attenuation, ray &scattered) const override
+  virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const override
   {
     attenuation = vec3{ 1.0, 1.0, 1.0 };
     auto refraction_ratio = rec.front_face ? (1.0 / index_of_refraction_) : index_of_refraction_;

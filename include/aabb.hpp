@@ -12,7 +12,7 @@ private:
 
 public:
   aabb() {}
-  aabb(vec3 const &lower_bounds, vec3 const &upper_bounds)
+  aabb(vec3 const& lower_bounds, vec3 const& upper_bounds)
     : lower_bounds_{ lower_bounds }, upper_bounds_{ upper_bounds }
   {}
 
@@ -20,10 +20,10 @@ public:
 
   auto max() const -> vec3 { return upper_bounds_; }
 
-  auto hit(ray const &ray, double t_min, double t_max) const;
+  auto hit(ray const& ray, double t_min, double t_max) const;
 };
 
-auto aabb::hit(ray const &ray, double t_min, double t_max) const
+auto aabb::hit(ray const& ray, double t_min, double t_max) const
 {
   for (auto i = 0; i < 3; ++i) {
     auto inverse_of_direction = 1.0f / ray.direction()[i];
@@ -37,7 +37,7 @@ auto aabb::hit(ray const &ray, double t_min, double t_max) const
   return true;
 }
 
-auto surrounding_box(aabb const &box_0, aabb const &box_1) -> aabb
+auto surrounding_box(aabb const& box_0, aabb const& box_1) -> aabb
 {
   vec3 small{ std::min(box_0.min().x(), box_1.min().x()),
     std::min(box_0.min().y(), box_1.min().y()),
