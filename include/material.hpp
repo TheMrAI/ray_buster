@@ -3,6 +3,7 @@
 
 #include "ray.hpp"
 #include "vec3.hpp"
+#include "texture.hpp"
 
 struct hit_record;
 
@@ -15,10 +16,11 @@ public:
 class lambertian : public material
 {
 private:
-  vec3 albedo_;
+  std::shared_ptr<texture> albedo_;
 
 public:
-  lambertian(vec3 const &albedo) : albedo_{ albedo } {}
+  lambertian(vec3 const &albedo) : albedo_{ std::make_shared<solid_color>(albedo) } {}
+  lambertian(std::shared_ptr<texture> albedo) : albedo_{albedo} {}
 
   virtual bool scatter(ray const &ray_in, hit_record const &rec, vec3 &attenuation, ray &scattered) const override
   {
@@ -28,7 +30,7 @@ public:
     if (scatter_direction.near_zero()) { scatter_direction = rec.normal; }
 
     scattered = ray{ rec.p, scatter_direction, ray_in.time() };
-    attenuation = albedo_;
+    attenuation = albedo_->value(rec.u, rec.v, rec.p);
     return true;
   }
 };

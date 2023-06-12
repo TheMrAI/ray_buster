@@ -13,6 +13,8 @@ struct hit_record
   vec3 normal;
   std::shared_ptr<material> material_ptr;
   double t;
+  double u;
+  double v;
   bool front_face;
 
   void set_face_normal(ray const &r, vec3 const &outward_normal)
