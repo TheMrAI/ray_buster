@@ -6,6 +6,7 @@
 #include "sphere.hpp"
 #include "util.hpp"
 #include "vec3.hpp"
+#include "texture.hpp"
 
 #include <functional>
 #include <future>
@@ -62,7 +63,17 @@ vec3 ray_color(ray const &r, const hittable &world, int depth)
   return (1.0 - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
 }
 
-hittable_list random_scene()
+struct SceneConfig {
+  hittable_list world;
+  vec3 look_from;
+  vec3 look_at;
+  vec3 view_up;
+  double v_fow;
+  double dist_to_focus;
+  double aperture;
+};
+
+auto random_scene() -> SceneConfig
 {
   hittable_list world;
 
@@ -107,7 +118,19 @@ hittable_list random_scene()
   auto material3 = std::make_shared<metal>(vec3(0.7, 0.6, 0.5), 0.0);
   world.add(std::make_shared<sphere>(vec3(4, 1, 0), 1.0, material3));
 
-  return world;
+  return SceneConfig{world, vec3{13.0, 2.0, 3.0}, vec3{0.0, 0.0, 0.0}, vec3{0.0, 1.0, 0.0}, 20.0, 10.0, 0.1};
+}
+
+auto two_spheres() -> SceneConfig {
+  hittable_list world;
+
+  auto checker = std::make_shared<checker_texture>(vec3(0.2, 0.3, 0.1), vec3(0.9, 0.9, 0.9));
+
+  world.add(std::make_shared<sphere>(vec3(0,-10, 0), 10, std::make_shared<lambertian>(checker)));
+  auto albedo = vec3::random(0.5, 1);
+  world.add(std::make_shared<sphere>(vec3(0, 10, 0), 10, std::make_shared<metal>(albedo, 0.2)));
+
+  return SceneConfig{world, vec3{13.0, 2.0, 3.0}, vec3{0.0, 0.0, 0.0}, vec3{0.0, 1.0, 0.0}, 20.0, 10.0, 0.0};
 }
 
 auto main() -> int
@@ -119,44 +142,14 @@ auto main() -> int
   constexpr auto samples_per_pixel = 100;
   constexpr auto max_depth = 50;
 
-  // Camera
-  auto look_from = vec3{ 13.0, 2.0, 3.0 };
-  auto look_at = vec3{ 0.0, 0.0, 0.0 };
-  auto view_up = vec3{ 0.0, 1.0, 0.0 };
-  auto dist_to_focus = 10.0;
-  auto aperture = 0.1;
-  auto cam = camera{ look_from, look_at, view_up, 20, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0 };
-
   // World
-  hittable_list world = random_scene();
-
-  // auto material_ground = std::make_shared<lambertian>(vec3{0.8, 0.8, 0.0});
-  // auto material_center = std::make_shared<lambertian>(vec3{0.1, 0.2, 0.5});
-  // auto material_left   = std::make_shared<dielectric>(1.5);
-  // auto material_right  = std::make_shared<metal>(vec3{0.8, 0.6, 0.2}, 0.0);
-
-  // world.add(std::make_shared<sphere>(vec3( 0.0, -100.5, -1.0), 100.0, material_ground));
-  // world.add(std::make_shared<sphere>(vec3( 0.0,    0.0, -1.0),   0.5, material_center));
-  // world.add(std::make_shared<sphere>(vec3(-1.0,    0.0, -1.0),   0.5, material_left));
-  // world.add(std::make_shared<sphere>(vec3(-1.0,    0.0, -1.0), -0.45, material_left));
-  // world.add(std::make_shared<sphere>(vec3( 1.0,    0.0, -1.0),   0.5, material_right));
+  auto scene = two_spheres();
+  
+  // Camera
+  auto cam = camera{ scene.look_from, scene.look_at, scene.view_up, scene.v_fow, aspect_ratio, scene.aperture, scene.dist_to_focus, 0.0, 1.0 };
 
   // Render
   std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-
-  // for(auto j = image_height - 1; j >= 0; --j) {
-  //     std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
-  //     for(auto i = 0; i < image_width; ++i) {
-  //         auto pixel_color = vec3{0, 0, 0};
-  //         for(auto sample = 0; sample < samples_per_pixel; ++sample) {
-  //             auto u = (i + random_double()) / (image_width-1);
-  //             auto v = (j + random_double()) / (image_height-1);
-  //             auto r = cam.get_ray(u, v);
-  //             pixel_color += ray_color(r, world, max_depth);
-  //         }
-  //         write_color(std::cout, pixel_color, samples_per_pixel);
-  //     }
-  // }
 
   auto const min_number_of_lines_per_thread = 50u;
   auto const max_threads = (image_height + min_number_of_lines_per_thread - 1u) / min_number_of_lines_per_thread;
@@ -165,7 +158,7 @@ auto main() -> int
   int const block_size = (image_height + number_of_threads - 1) / number_of_threads;
   std::cerr << "max_threads: " << max_threads << " number of threads: " << number_of_threads << std::endl;
 
-  auto render_chunk = [image_height, image_width, samples_per_pixel, max_depth, &cam, &world](
+  auto render_chunk = [image_height, image_width, samples_per_pixel, max_depth, &cam, &world=scene.world](
                         int from, int until, bool report = false) {
     auto distance = until - from;
     auto pixel_colors = std::vector<std::vector<vec3>>(distance, std::vector<vec3>(image_width));
