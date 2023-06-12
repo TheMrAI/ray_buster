@@ -2,11 +2,12 @@
 #include "hittable_list.hpp"
 #include "material.hpp"
 #include "moving_sphere.hpp"
+#include "perlin.hpp"
 #include "ray.hpp"
 #include "sphere.hpp"
+#include "texture.hpp"
 #include "util.hpp"
 #include "vec3.hpp"
-#include "texture.hpp"
 
 #include <functional>
 #include <future>
@@ -17,7 +18,7 @@
 
 template<typename Output, typename Iter>
   requires std::derived_from<Output, std::ostream> && std::weakly_incrementable<Iter> && std::indirectly_readable<Iter>
-auto dump_to(Output &output, Iter begin, Iter end)
+auto dump_to(Output& output, Iter begin, Iter end)
 {
   while (begin != end) {
     output << *begin;
@@ -26,7 +27,7 @@ auto dump_to(Output &output, Iter begin, Iter end)
   }
 }
 
-auto hit_sphere(const vec3 &center, double radius, const ray &r) -> double
+auto hit_sphere(const vec3& center, double radius, const ray& r) -> double
 {
   vec3 oc = r.origin() - center;
   auto r_length = r.direction().length();
@@ -43,7 +44,7 @@ auto hit_sphere(const vec3 &center, double radius, const ray &r) -> double
   }
 }
 
-vec3 ray_color(ray const &r, const hittable &world, int depth)
+vec3 ray_color(ray const& r, const hittable& world, int depth)
 {
   // At limit return blackness
   if (depth <= 0) { return vec3(0, 0, 0); }
@@ -63,7 +64,8 @@ vec3 ray_color(ray const &r, const hittable &world, int depth)
   return (1.0 - t) * vec3(1.0, 1.0, 1.0) + t * vec3(0.5, 0.7, 1.0);
 }
 
-struct SceneConfig {
+struct SceneConfig
+{
   hittable_list world;
   vec3 look_from;
   vec3 look_at;
@@ -77,7 +79,7 @@ auto random_scene() -> SceneConfig
 {
   hittable_list world;
 
-  auto checker_ground = std::make_shared<checker_texture>(vec3{0.2, 0.3, 0.1}, vec3{0.9, 0.9, 0.9});
+  auto checker_ground = std::make_shared<checker_texture>(vec3{ 0.2, 0.3, 0.1 }, vec3{ 0.9, 0.9, 0.9 });
   world.add(std::make_shared<sphere>(vec3(0, -1000, 0), 1000, std::make_shared<lambertian>(checker_ground)));
 
   for (int a = -11; a < 11; a++) {
@@ -118,19 +120,32 @@ auto random_scene() -> SceneConfig
   auto material3 = std::make_shared<metal>(vec3(0.7, 0.6, 0.5), 0.0);
   world.add(std::make_shared<sphere>(vec3(4, 1, 0), 1.0, material3));
 
-  return SceneConfig{world, vec3{13.0, 2.0, 3.0}, vec3{0.0, 0.0, 0.0}, vec3{0.0, 1.0, 0.0}, 20.0, 10.0, 0.1};
+  return SceneConfig{ world, vec3{ 13.0, 2.0, 3.0 }, vec3{ 0.0, 0.0, 0.0 }, vec3{ 0.0, 1.0, 0.0 }, 20.0, 10.0, 0.1 };
 }
 
-auto two_spheres() -> SceneConfig {
+auto two_spheres() -> SceneConfig
+{
   hittable_list world;
 
   auto checker = std::make_shared<checker_texture>(vec3(0.2, 0.3, 0.1), vec3(0.9, 0.9, 0.9));
 
-  world.add(std::make_shared<sphere>(vec3(0,-10, 0), 10, std::make_shared<lambertian>(checker)));
+  world.add(std::make_shared<sphere>(vec3(0, -10, 0), 10, std::make_shared<lambertian>(checker)));
   auto albedo = vec3::random(0.5, 1);
   world.add(std::make_shared<sphere>(vec3(0, 10, 0), 10, std::make_shared<metal>(albedo, 0.2)));
 
-  return SceneConfig{world, vec3{13.0, 2.0, 3.0}, vec3{0.0, 0.0, 0.0}, vec3{0.0, 1.0, 0.0}, 20.0, 10.0, 0.0};
+  return SceneConfig{ world, vec3{ 13.0, 2.0, 3.0 }, vec3{ 0.0, 0.0, 0.0 }, vec3{ 0.0, 1.0, 0.0 }, 20.0, 10.0, 0.0 };
+}
+
+auto two_perlin_spheres() -> SceneConfig
+{
+  hittable_list world;
+
+  auto perlin_texture = std::make_shared<noise_texture>(4);
+
+  world.add(std::make_shared<sphere>(vec3(0, -1000, 0), 1000, std::make_shared<lambertian>(perlin_texture)));
+  world.add(std::make_shared<sphere>(vec3(0, 2, 0), 2, std::make_shared<lambertian>(perlin_texture)));
+
+  return SceneConfig{ world, vec3{ 13.0, 2.0, 3.0 }, vec3{ 0.0, 0.0, 0.0 }, vec3{ 0.0, 1.0, 0.0 }, 20.0, 10.0, 0.0 };
 }
 
 auto main() -> int
@@ -143,10 +158,18 @@ auto main() -> int
   constexpr auto max_depth = 50;
 
   // World
-  auto scene = two_spheres();
-  
+  auto scene = two_perlin_spheres();
+
   // Camera
-  auto cam = camera{ scene.look_from, scene.look_at, scene.view_up, scene.v_fow, aspect_ratio, scene.aperture, scene.dist_to_focus, 0.0, 1.0 };
+  auto cam = camera{ scene.look_from,
+    scene.look_at,
+    scene.view_up,
+    scene.v_fow,
+    aspect_ratio,
+    scene.aperture,
+    scene.dist_to_focus,
+    0.0,
+    1.0 };
 
   // Render
   std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
@@ -158,7 +181,7 @@ auto main() -> int
   int const block_size = (image_height + number_of_threads - 1) / number_of_threads;
   std::cerr << "max_threads: " << max_threads << " number of threads: " << number_of_threads << std::endl;
 
-  auto render_chunk = [image_height, image_width, samples_per_pixel, max_depth, &cam, &world=scene.world](
+  auto render_chunk = [image_height, image_width, samples_per_pixel, max_depth, &cam, &world = scene.world](
                         int from, int until, bool report = false) {
     auto distance = until - from;
     auto pixel_colors = std::vector<std::vector<vec3>>(distance, std::vector<vec3>(image_width));
