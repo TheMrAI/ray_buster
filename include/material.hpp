@@ -11,6 +11,7 @@ class material
 {
 public:
   virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const = 0;
+  virtual vec3 emitted(double /*d*/, double /*v*/, vec3 const& /*point*/) const { return vec3{ 0.0, 0.0, 0.0 }; }
 };
 
 class lambertian : public material
@@ -90,6 +91,27 @@ private:
     auto r0 = (1.0 - ref_index) / (1.0 + ref_index);
     r0 = r0 * r0;
     return r0 + (1.0 - r0) * pow(1.0 - cosine, 5);
+  }
+};
+
+class diffuse_light : public material
+{
+private:
+  std::shared_ptr<texture> emitted_texture_;
+
+public:
+  diffuse_light(vec3 emitted_color) : emitted_texture_{ std::make_shared<solid_color>(emitted_color) } {}
+  diffuse_light(std::shared_ptr<texture> emitted_texture) : emitted_texture_{ emitted_texture } {}
+
+  virtual bool scatter(ray const& /*ray_in*/, hit_record const& /*rec*/, vec3& /*attenuation*/, ray& /*scattered*/
+  ) const override
+  {
+    return false;
+  }
+
+  virtual vec3 emitted(double u, double v, const vec3& point) const override
+  {
+    return emitted_texture_->value(u, v, point);
   }
 };
 

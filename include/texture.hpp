@@ -2,8 +2,8 @@
 #define TEXTURE_HPP
 
 #include "perlin.hpp"
-#include "vec3.hpp"
 #include "stb_image.h"
+#include "vec3.hpp"
 
 class texture
 {
@@ -65,18 +65,22 @@ public:
   }
 };
 
-class image_texture : public texture {
+class image_texture : public texture
+{
 private:
   std::unique_ptr<unsigned char> data_;
   size_t width_;
   size_t height_;
   size_t bytes_per_scanline_;
+
 public:
   const static auto bytes_per_pixel = static_cast<size_t>(3);
-public:
-  image_texture() : data_{nullptr}, width_{0}, height_{0}, bytes_per_scanline_{0} {}
 
-  image_texture(std::string filename) {
+public:
+  image_texture() : data_{ nullptr }, width_{ 0 }, height_{ 0 }, bytes_per_scanline_{ 0 } {}
+
+  image_texture(std::string filename)
+  {
     auto components_per_pixel = static_cast<int>(bytes_per_scanline_);
 
     auto int_width = 0;
@@ -85,10 +89,7 @@ public:
     width_ = static_cast<size_t>(int_width);
     height_ = static_cast<size_t>(int_height);
 
-    std::cerr << "Width: " << width_ << std::endl;
-    std::cerr << "Height: " << height_ << std::endl;
-
-    if(!data_) {
+    if (!data_) {
       std::cerr << "ERROR: Could not load texture image file: " << filename << std::endl;
       width_ = 0;
       height_ = 0;
@@ -97,31 +98,26 @@ public:
     bytes_per_scanline_ = bytes_per_pixel * width_;
   }
 
-  virtual vec3 value(double u, double v, vec3 const& /*point*/) const override {
-      // If we have no texture data, then return solid cyan as a debugging aid.
-      if (!data_) {
-        return vec3(0, 1, 1);
-      }
+  virtual vec3 value(double u, double v, vec3 const& /*point*/) const override
+  {
+    // If we have no texture data, then return solid cyan as a debugging aid.
+    if (!data_) { return vec3(0, 1, 1); }
 
-      // Clamp input texture coordinates to [0,1] x [1,0]
-      u = std::clamp(u, 0.0, 1.0);
-      v = 1.0 - std::clamp(v, 0.0, 1.0);  // Flip V to image coordinates
+    // Clamp input texture coordinates to [0,1] x [1,0]
+    u = std::clamp(u, 0.0, 1.0);
+    v = 1.0 - std::clamp(v, 0.0, 1.0);// Flip V to image coordinates
 
-      auto i = static_cast<size_t>(u * width_);
-      auto j = static_cast<size_t>(v * height_);
+    auto i = static_cast<size_t>(u * width_);
+    auto j = static_cast<size_t>(v * height_);
 
-      // Clamp integer mapping, since actual coordinates should be less than 1.0
-      if (i >= width_) {
-        i = width_-1;
-      }
-      if (j >= height_) {
-        j = height_-1;
-      }
+    // Clamp integer mapping, since actual coordinates should be less than 1.0
+    if (i >= width_) { i = width_ - 1; }
+    if (j >= height_) { j = height_ - 1; }
 
-      const auto color_scale = 1.0 / 255.0;
-      auto pixel = data_.get() + j*bytes_per_scanline_ + i*bytes_per_pixel;
+    const auto color_scale = 1.0 / 255.0;
+    auto pixel = data_.get() + j * bytes_per_scanline_ + i * bytes_per_pixel;
 
-      return vec3{color_scale*pixel[0], color_scale*pixel[1], color_scale*pixel[2]};
+    return vec3{ color_scale * pixel[0], color_scale * pixel[1], color_scale * pixel[2] };
   }
 };
 
