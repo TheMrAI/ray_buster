@@ -16,6 +16,9 @@
 #include <numbers>
 #include <thread>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 template<typename Output, typename Iter>
   requires std::derived_from<Output, std::ostream> && std::weakly_incrementable<Iter> && std::indirectly_readable<Iter>
 auto dump_to(Output& output, Iter begin, Iter end)
@@ -148,6 +151,19 @@ auto two_perlin_spheres() -> SceneConfig
   return SceneConfig{ world, vec3{ 13.0, 2.0, 3.0 }, vec3{ 0.0, 0.0, 0.0 }, vec3{ 0.0, 1.0, 0.0 }, 20.0, 10.0, 0.0 };
 }
 
+auto earth() -> SceneConfig
+{
+  hittable_list world;
+
+  auto earth_texture = std::make_shared<image_texture>("/home/davo/tinker/2k_earth_daymap.jpg");
+  auto earth_surface = std::make_shared<lambertian>(earth_texture);
+  auto globe = std::make_shared<sphere>(vec3(0.0, 0.0, 0.0), 2, earth_surface);
+
+  world.add(globe);
+
+  return SceneConfig{ world, vec3{ 13.0, 2.0, 3.0 }, vec3{ 0.0, 0.0, 0.0 }, vec3{ 0.0, 1.0, 0.0 }, 20.0, 10.0, 0.0 };
+}
+
 auto main() -> int
 {
   // Image
@@ -158,7 +174,7 @@ auto main() -> int
   constexpr auto max_depth = 50;
 
   // World
-  auto scene = two_perlin_spheres();
+  auto scene = earth();
 
   // Camera
   auto cam = camera{ scene.look_from,
