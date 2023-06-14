@@ -9,6 +9,7 @@
 #include "texture.hpp"
 #include "util.hpp"
 #include "vec3.hpp"
+#include "box.hpp"
 
 #include <functional>
 #include <future>
@@ -197,7 +198,7 @@ auto cornell_box() -> SceneConfig
   auto red = std::make_shared<lambertian>(vec3(.65, .05, .05));
   auto white = std::make_shared<lambertian>(vec3(.73, .73, .73));
   auto green = std::make_shared<lambertian>(vec3(.12, .45, .15));
-  auto light = std::make_shared<diffuse_light>(vec3(30, 30, 30));
+  auto light = std::make_shared<diffuse_light>(vec3(60, 60, 60));
 
   world.add(std::make_shared<yz_rect>(0, 555, 0, 555, 555, green));
   world.add(std::make_shared<yz_rect>(0, 555, 0, 555, 0, red));
@@ -205,6 +206,16 @@ auto cornell_box() -> SceneConfig
   world.add(std::make_shared<xz_rect>(0, 555, 0, 555, 0, white));
   world.add(std::make_shared<xz_rect>(0, 555, 0, 555, 555, white));
   world.add(std::make_shared<xy_rect>(0, 555, 0, 555, 555, white));
+
+  std::shared_ptr<hittable> box_1 = std::make_shared<box>(vec3{0, 0, 0}, vec3{165, 330, 165}, white);
+  box_1 = std::make_shared<rotate_y>(box_1, 15);
+  box_1 = std::make_shared<translate>(box_1, vec3{265.0, 0.0, 295.0});
+  world.add(box_1);
+
+  std::shared_ptr<hittable> box_2 = std::make_shared<box>(vec3{0, 0, 0}, vec3{165, 165, 165}, white);
+  box_2 = std::make_shared<rotate_y>(box_2, -18);
+  box_2 = std::make_shared<translate>(box_2, vec3{130.0,0.0,65.0});
+  world.add(box_2);
 
   return SceneConfig{ world,
     vec3(0.0, 0.0, 0.0),
@@ -219,10 +230,10 @@ auto cornell_box() -> SceneConfig
 auto main() -> int
 {
   // Image
-  constexpr auto aspect_ratio = 16.0 / 9.0;
+  constexpr auto aspect_ratio = 1.0;
   constexpr auto image_width = 600;
   constexpr auto image_height = static_cast<int>(image_width / aspect_ratio);
-  constexpr auto samples_per_pixel = 500;
+  constexpr auto samples_per_pixel = 100;
   constexpr auto max_depth = 50;
 
   // World

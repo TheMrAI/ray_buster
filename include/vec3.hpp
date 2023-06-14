@@ -62,6 +62,7 @@ public:
   auto operator/=(double const t) -> vec3& { return *this *= 1 / t; }
 
   auto operator[](size_t index) const -> double { return data_[index]; }
+  auto operator[](size_t index) -> double& { return data_[index]; }
 
   auto dot(vec3 const& rhs) const -> double
   {

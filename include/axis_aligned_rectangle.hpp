@@ -1,5 +1,5 @@
 #ifndef AXIS_ALLIGNED_RECTANGLE_HPP
-#define AZIS_ALLIGNED_RECTANGLE_HPP
+#define AXIS_ALLIGNED_RECTANGLE_HPP
 
 #include <memory>
 
@@ -153,6 +153,5 @@ auto yz_rect::bounding_box(double /*time_0*/, double /*time_1*/, aabb& bounding_
   bounding_box = aabb(vec3{ k_ - 0.0001, y0_, z0_ }, vec3{ k_ + 0.0001, y1_, z1_ });
   return true;
 }
-
 
 #endif
