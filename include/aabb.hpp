@@ -2,6 +2,7 @@
 #define AABB_HPP
 
 #include "vec3.hpp"
+#include "ray.hpp"
 #include <algorithm>
 
 class aabb
