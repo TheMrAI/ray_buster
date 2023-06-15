@@ -1,6 +1,7 @@
 #include "axis_aligned_rectangle.hpp"
 #include "box.hpp"
 #include "camera.hpp"
+#include "constant_medium.hpp"
 #include "hittable_list.hpp"
 #include "material.hpp"
 #include "moving_sphere.hpp"
@@ -229,6 +230,44 @@ auto cornell_box() -> SceneConfig
     0.0 };
 }
 
+auto cornell_box_with_smoke() -> SceneConfig
+{
+  hittable_list world;
+
+  auto red = std::make_shared<lambertian>(vec3(.65, .05, .05));
+  auto white = std::make_shared<lambertian>(vec3(.73, .73, .73));
+  auto green = std::make_shared<lambertian>(vec3(.12, .45, .15));
+  auto light = std::make_shared<diffuse_light>(vec3(60, 60, 60));
+
+  world.add(std::make_shared<xz_rect>(213, 343, 227, 332, 554, light));
+  world.add(std::make_shared<yz_rect>(0, 555, -800, 555, 555, green));
+  world.add(std::make_shared<yz_rect>(0, 555, -800, 555, 0, red));
+  world.add(std::make_shared<xz_rect>(0, 555, -800, 555, 555, white));// top
+  world.add(std::make_shared<xz_rect>(0, 555, -800, 555, 0, white));// bottom
+  world.add(std::make_shared<xy_rect>(0, 555, 0, 555, 555, white));// back
+  world.add(std::make_shared<xy_rect>(0, 555, 0, 555, -800, white));
+
+  std::shared_ptr<hittable> box_1 = std::make_shared<box>(vec3{ 0, 0, 0 }, vec3{ 165, 330, 165 }, white);
+  box_1 = std::make_shared<rotate_y>(box_1, 15);
+  box_1 = std::make_shared<translate>(box_1, vec3{ 265.0, 0.0, 295.0 });
+  world.add(std::make_shared<constant_medium>(box_1, 0.01, vec3{ 0, 0, 0 }));
+
+  std::shared_ptr<hittable> box_2 = std::make_shared<box>(vec3{ 0, 0, 0 }, vec3{ 165, 165, 165 }, white);
+  box_2 = std::make_shared<rotate_y>(box_2, -18);
+  box_2 = std::make_shared<translate>(box_2, vec3{ 130.0, 0.0, 65.0 });
+  world.add(std::make_shared<constant_medium>(box_2, 0.01, vec3{ 1, 1, 1 }));
+
+  return SceneConfig{ world,
+    vec3(0.0, 0.0, 0.0),
+    vec3{ 278.0, 278.0, -800.0 },
+    // vec3{ 278.0, 278.0, -1400.0 },
+    vec3{ 278.0, 278.0, 0.0 },
+    vec3{ 0.0, 1.0, 0.0 },
+    40.0,
+    10.0,
+    0.0 };
+}
+
 auto main() -> int
 {
   // Image
@@ -239,7 +278,7 @@ auto main() -> int
   constexpr auto max_depth = 50;
 
   // World
-  auto scene = cornell_box();
+  auto scene = cornell_box_with_smoke();
 
   // Camera
   auto cam = camera{ scene.look_from,
