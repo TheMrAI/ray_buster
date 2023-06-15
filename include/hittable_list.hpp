@@ -18,6 +18,7 @@ public:
 
   auto clear() -> void { objects_.clear(); }
   void add(std::shared_ptr<hittable> object) { objects_.push_back(object); }
+  auto objects() const -> std::vector<std::shared_ptr<hittable>> const& { return objects_; }
 
   virtual bool hit(ray const& r, double t_min, double t_max, hit_record& rec) const override;
   virtual bool bounding_box(double time_0, double time_1, aabb& bounding_box) const override;

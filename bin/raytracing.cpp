@@ -1,5 +1,6 @@
 #include "axis_aligned_rectangle.hpp"
 #include "box.hpp"
+#include "bvh.hpp"
 #include "camera.hpp"
 #include "constant_medium.hpp"
 #include "hittable_list.hpp"
@@ -8,9 +9,9 @@
 #include "perlin.hpp"
 #include "ray.hpp"
 #include "sphere.hpp"
-#include "texture.hpp"
 #include "util.hpp"
 #include "vec3.hpp"
+
 
 #include <functional>
 #include <future>
@@ -21,6 +22,8 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+#include "texture.hpp"
 
 template<typename Output, typename Iter>
   requires std::derived_from<Output, std::ostream> && std::weakly_incrementable<Iter> && std::indirectly_readable<Iter>
@@ -268,17 +271,81 @@ auto cornell_box_with_smoke() -> SceneConfig
     0.0 };
 }
 
+auto raytracing_the_next_week_final_scene() -> SceneConfig
+{
+  auto world = hittable_list{};
+  auto earth_texture = std::make_shared<image_texture>(
+    "/home/davo/tinker/2k_earth_daymap.jpg");// have to load it early or we run out of memory and might fail
+  auto earth_surface = std::make_shared<lambertian>(earth_texture);
+  world.add(std::make_shared<sphere>(vec3{ 400, 300, 400 }, 100, earth_surface));
+
+  auto ground = std::make_shared<lambertian>(vec3{ 0.48, 0.83, 0.53 });
+  auto boxes_1 = hittable_list{};
+  auto const boxes_per_side = 20;
+  for (auto i = 0; i < boxes_per_side; ++i) {
+    for (auto j = 0; j < boxes_per_side; ++j) {
+      auto w = 100.0;
+      auto x0 = -1000.0 + i * w;
+      auto z0 = -1000.0 + j * w;
+      auto y0 = 0.0;
+      auto x1 = x0 + w;
+      auto y1 = random_double(1, 101);
+      auto z1 = z0 + w;
+
+      boxes_1.add(std::make_shared<box>(vec3{ x0, y0, z0 }, vec3{ x1, y1, z1 }, ground));
+    }
+  }
+  world.add(std::make_shared<bvh_node>(boxes_1, 0, 1));
+
+  auto light = std::make_shared<diffuse_light>(vec3{ 7, 7, 7 });
+  world.add(std::make_shared<xz_rect>(123, 423, 147, 412, 554, light));
+
+  auto center_1 = vec3{ 400, 430, 200 };
+  auto center_2 = center_1 + vec3{ 30, 0, 0 };
+  auto moving_sphere_material = std::make_shared<lambertian>(vec3{ 0.7, 0.3, 0.1 });
+  world.add(std::make_shared<moving_sphere>(center_1, center_2, 0, 1, 50, moving_sphere_material));
+
+  world.add(std::make_shared<sphere>(vec3{ 260, 150, 45 }, 50, std::make_shared<dielectric>(1.5)));
+  world.add(std::make_shared<sphere>(vec3{ 0, 150, 145 }, 50, std::make_shared<metal>(vec3{ 0.8, 0.8, 0.9 }, 1.0)));
+
+  auto boundary = std::make_shared<sphere>(vec3{ 360, 150, 145 }, 70, std::make_shared<dielectric>(1.5));
+  world.add(boundary);
+  world.add(std::make_shared<constant_medium>(boundary, 0.2, vec3{ 0.2, 0.4, 0.9 }));
+  boundary = std::make_shared<sphere>(vec3{ 0, 0, 0 }, 5000, std::make_shared<dielectric>(1.5));
+  world.add(std::make_shared<constant_medium>(boundary, .0001, vec3{ 1, 1, 1 }));
+
+  auto pertext = std::make_shared<noise_texture>(0.1);
+  world.add(std::make_shared<sphere>(vec3{ 220, 280, 300 }, 80, std::make_shared<lambertian>(pertext)));
+
+  hittable_list marble_cluster;
+  auto white = std::make_shared<lambertian>(vec3{ .73, .73, .73 });
+  int ns = 1000;
+  for (int j = 0; j < ns; ++j) { marble_cluster.add(std::make_shared<sphere>(vec3::random(0, 165), 10, white)); }
+
+  world.add(std::make_shared<translate>(
+    std::make_shared<rotate_y>(std::make_shared<bvh_node>(marble_cluster, 0.0, 1.0), 15), vec3{ -150, 270, 395 }));
+
+  return SceneConfig{ world,
+    vec3(0.0, 0.0, 0.0),
+    vec3{ 478.0, 278.0, -600.0 },
+    vec3{ 278.0, 278.0, 0.0 },
+    vec3{ 0.0, 1.0, 0.0 },
+    40.0,
+    10.0,
+    0.0 };
+}
+
 auto main() -> int
 {
   // Image
   constexpr auto aspect_ratio = 1.0;
-  constexpr auto image_width = 600;
+  constexpr auto image_width = 800;
   constexpr auto image_height = static_cast<int>(image_width / aspect_ratio);
   constexpr auto samples_per_pixel = 100;
   constexpr auto max_depth = 50;
 
   // World
-  auto scene = cornell_box_with_smoke();
+  auto scene = raytracing_the_next_week_final_scene();
 
   // Camera
   auto cam = camera{ scene.look_from,
