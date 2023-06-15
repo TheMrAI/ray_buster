@@ -1,8 +1,8 @@
 #ifndef AABB_HPP
 #define AABB_HPP
 
-#include "vec3.hpp"
 #include "ray.hpp"
+#include "vec3.hpp"
 #include <algorithm>
 
 class aabb
