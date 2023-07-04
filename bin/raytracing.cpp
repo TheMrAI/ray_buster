@@ -202,7 +202,7 @@ auto cornell_box() -> SceneConfig
   auto red = std::make_shared<lambertian>(vec3(.65, .05, .05));
   auto white = std::make_shared<lambertian>(vec3(.73, .73, .73));
   auto green = std::make_shared<lambertian>(vec3(.12, .45, .15));
-  auto light = std::make_shared<diffuse_light>(vec3(60, 60, 60));
+  auto light = std::make_shared<diffuse_light>(vec3(7, 7, 7));
 
   world.add(std::make_shared<xz_rect>(213, 343, 227, 332, 554, light));
   world.add(std::make_shared<yz_rect>(0, 555, -800, 555, 555, green));
@@ -339,13 +339,13 @@ auto main() -> int
 {
   // Image
   constexpr auto aspect_ratio = 1.0;
-  constexpr auto image_width = 800;
+  constexpr auto image_width = 400;
   constexpr auto image_height = static_cast<int>(image_width / aspect_ratio);
   constexpr auto samples_per_pixel = 100;
-  constexpr auto max_depth = 50;
+  constexpr auto max_depth = 25;
 
   // World
-  auto scene = raytracing_the_next_week_final_scene();
+  auto scene = two_perlin_spheres();
 
   // Camera
   auto cam = camera{ scene.look_from,
@@ -365,7 +365,7 @@ auto main() -> int
   auto const max_threads = (image_height + min_number_of_lines_per_thread - 1u) / min_number_of_lines_per_thread;
   auto const hardware_threads = std::thread::hardware_concurrency();
   auto const number_of_threads = std::min(hardware_threads != 0u ? hardware_threads : 2u, max_threads);
-  int const block_size = (image_height + number_of_threads - 1) / number_of_threads;
+  auto const block_size = (image_height + number_of_threads - 1u) / number_of_threads;
   std::cerr << "max_threads: " << max_threads << " number of threads: " << number_of_threads << std::endl;
 
   auto render_chunk = [image_height,
@@ -395,12 +395,12 @@ auto main() -> int
 
   auto results = std::vector<std::future<std::vector<std::vector<vec3>>>>(number_of_threads);
   auto threads = std::vector<std::jthread>(number_of_threads - 1);
-  for (auto block = 0; block < static_cast<int>(number_of_threads); ++block) {
+  for (auto block = 0u; block < number_of_threads; ++block) {
     auto task = std::packaged_task<std::vector<std::vector<vec3>>(int, int, bool)>(render_chunk);
     results[block] = task.get_future();
-    auto until = static_cast<int>(image_height) - block * block_size;
-    auto from = std::max(static_cast<int>(image_height) - (block + 1) * block_size, 0);
-    if (block < static_cast<int>(number_of_threads) - 1) {
+    auto until = image_height - block * block_size;
+    auto from = std::max(image_height - (block + 1u) * block_size, 0u);
+    if (block < number_of_threads - 1) {
       threads[block] = std::jthread(std::move(task), from, until, false);
     } else {
       task(from, until, true);
