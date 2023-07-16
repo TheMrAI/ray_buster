@@ -15,8 +15,7 @@ cmake -S . -B ./build/
 Then build by:
 
 ```shell
-cd ./build
-make
+cmake --build build/
 ```
 
 ## Base on CMake template:
