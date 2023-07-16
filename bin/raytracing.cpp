@@ -13,10 +13,10 @@
 #include "vec3.hpp"
 
 
+#include <algorithm>
 #include <functional>
 #include <future>
 #include <iostream>
-#include <memory>
 #include <numbers>
 #include <thread>
 
@@ -335,17 +335,52 @@ auto raytracing_the_next_week_final_scene() -> SceneConfig
     0.0 };
 }
 
+auto lights_with_floating_sphere() -> SceneConfig
+{
+  hittable_list world;
+
+  auto white = std::make_shared<diffuse_light>(vec3(6.5, 6.5, 6.5));
+  auto red = std::make_shared<diffuse_light>(vec3(6.5, .5, .5));
+  auto green = std::make_shared<diffuse_light>(vec3(.5, 6.5, .5));
+  auto blue = std::make_shared<diffuse_light>(vec3(.5, .5, 6.5));
+  
+  auto metal_material = std::make_shared<metal>(vec3(1, 1, 1), 0.1);
+  auto perlin_texture = std::make_shared<noise_texture>(1);
+
+  world.add(std::make_shared<xz_rect>(-3000, 3000, -3000, 3000, 0, std::make_shared<lambertian>(perlin_texture)));// floor
+
+  // world.add(std::make_shared<xz_rect>(-50, 50, -50, 50, 1, white)); // center light
+  world.add(std::make_shared<xz_rect>(-500, 500, -500, 500, 1, white)); // center light
+  world.add(std::make_shared<xz_rect>(-1500, 1500, 1000, 1200, 1, red)); // red light
+  world.add(std::make_shared<xz_rect>(-1500, 1500, 1200, 1400, 1, green)); // green light
+  world.add(std::make_shared<xz_rect>(-1500, 1500, 1400, 1600, 1, blue));  // blue light
+  
+  world.add(std::make_shared<sphere>(vec3{ 0, 800, 0 }, 500, std::make_shared<dielectric>(1.5))); // glass sphere
+  world.add(std::make_shared<sphere>(vec3{ 0, -400, 0 }, 3000, metal_material)); // dome
+
+  return SceneConfig{ world,
+    vec3(1.0, 1.0, 1.0),
+    // vec3{ 0.0, 10000.0, -12000.0 },
+    vec3{ 0.0, 100.0, -2900.0 },
+    // vec3{ 0.0, 0.0, 0.0 },
+    vec3{ 0.0, 800.0, 0.0 },
+    vec3{ 0.0, 1.0, 0.0 },
+    40.0,
+    10.0,
+    0.0 };
+}
+
 auto main() -> int
 {
   // Image
-  constexpr auto aspect_ratio = 1.0;
+  constexpr auto aspect_ratio = 16.0/9.0;
   constexpr auto image_width = 400;
   constexpr auto image_height = static_cast<int>(image_width / aspect_ratio);
-  constexpr auto samples_per_pixel = 100;
+  constexpr auto samples_per_pixel = 300;
   constexpr auto max_depth = 25;
 
   // World
-  auto scene = two_perlin_spheres();
+  auto scene = lights_with_floating_sphere();
 
   // Camera
   auto cam = camera{ scene.look_from,
