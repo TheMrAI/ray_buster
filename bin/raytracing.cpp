@@ -349,8 +349,8 @@ auto lights_with_floating_sphere() -> SceneConfig
 
   world.add(std::make_shared<xz_rect>(-3000, 3000, -3000, 3000, 0, std::make_shared<lambertian>(perlin_texture)));// floor
 
-  // world.add(std::make_shared<xz_rect>(-50, 50, -50, 50, 1, white)); // center light
-  world.add(std::make_shared<xz_rect>(-500, 500, -500, 500, 1, white)); // center light
+  world.add(std::make_shared<xz_rect>(-50, 50, -50, 50, 1, white)); // center light
+  // world.add(std::make_shared<xz_rect>(-500, 500, -500, 500, 1, white)); // center light
   world.add(std::make_shared<xz_rect>(-1500, 1500, 1000, 1200, 1, red)); // red light
   world.add(std::make_shared<xz_rect>(-1500, 1500, 1200, 1400, 1, green)); // green light
   world.add(std::make_shared<xz_rect>(-1500, 1500, 1400, 1600, 1, blue));  // blue light
@@ -374,10 +374,10 @@ auto main() -> int
 {
   // Image
   constexpr auto aspect_ratio = 16.0/9.0;
-  constexpr auto image_width = 400;
+  constexpr auto image_width = 1000;
   constexpr auto image_height = static_cast<int>(image_width / aspect_ratio);
-  constexpr auto samples_per_pixel = 300;
-  constexpr auto max_depth = 25;
+  constexpr auto samples_per_pixel = 10000;
+  constexpr auto max_depth = 50;
 
   // World
   auto scene = lights_with_floating_sphere();

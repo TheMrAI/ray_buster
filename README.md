@@ -9,7 +9,13 @@ Huge inspiration and shootout to the motivating source: https://raytracing.githu
 Make the make files using Cmake:
 
 ```shell
-cmake -S . -B ./build/
+cmake -S . -B ./build/ -DCMAKE_BUILD_TYPE=Debug
+```
+
+or
+
+```shell
+cmake -S . -B ./build/ -DCMAKE_BUILD_TYPE=Release
 ```
 
 Then build by:
