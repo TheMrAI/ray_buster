@@ -1,6 +1,7 @@
 #ifndef MATERIAL_HPP
 #define MATERIAL_HPP
 
+#include "onb.hpp"
 #include "ray.hpp"
 #include "texture.hpp"
 #include "vec3.hpp"
@@ -10,11 +11,17 @@ struct hit_record;
 class material
 {
 public:
-  virtual bool scatter(ray const& /*ray_in*/, hit_record const& /*rec*/, vec3& /*albedo*/, ray& /*scattered*/, double& /*pdf*/) const {
+  virtual bool scatter(ray const& /*ray_in*/,
+    hit_record const& /*rec*/,
+    vec3& /*albedo*/,
+    ray& /*scattered*/,
+    double& /*pdf*/) const
+  {
     return false;
   }
 
-  virtual double scattering_pdf(ray const& /*r_in*/, hit_record const& /*rec*/, const ray& /*scattered*/) const {
+  virtual double scattering_pdf(ray const& /*r_in*/, hit_record const& /*rec*/, const ray& /*scattered*/) const
+  {
     return 0;
   }
 
@@ -32,18 +39,16 @@ public:
 
   bool scatter(ray const& ray_in, hit_record const& rec, vec3& albedo, ray& scattered, double& pdf) const override
   {
-    auto scatter_direction = rec.normal + random_unit_vector();
-
-    // Catch degenerate scatter direction
-    if (scatter_direction.near_zero()) { scatter_direction = rec.normal; }
-
-    scattered = ray{ rec.p, unit_vector(scatter_direction), ray_in.time() };
+    auto uvw = onb{ rec.normal };
+    auto direction = uvw.local(random_cosine_direction());
+    scattered = ray{ rec.p, unit_vector(direction), ray_in.time() };
     albedo = albedo_->value(rec.u, rec.v, rec.p);
-    pdf = dot(rec.normal, scattered.direction()) / std::numbers::pi;
+    pdf = dot(uvw.w(), scattered.direction()) / std::numbers::pi;
     return true;
   }
 
-  double scattering_pdf(ray const& /*r_in*/, const hit_record& rec, ray const& scattered) const override {
+  double scattering_pdf(ray const& /*r_in*/, const hit_record& rec, ray const& scattered) const override
+  {
     auto cosine = dot(rec.normal, unit_vector(scattered.direction()));
     return cosine < 0 ? 0 : cosine / std::numbers::pi;
   }
@@ -58,7 +63,8 @@ private:
 public:
   metal(vec3 const& albedo, double fuzz) : albedo_{ albedo }, fuzz_(fuzz < 1.0 ? fuzz : 1.0) {}
 
-  virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& albedo, ray& scattered, double& /*pdf*/) const override
+  virtual bool
+    scatter(ray const& ray_in, hit_record const& rec, vec3& albedo, ray& scattered, double& /*pdf*/) const override
   {
     auto reflected = reflect(unit_vector(ray_in.direction()), rec.normal);
     scattered = ray{ rec.p, reflected + fuzz_ * random_in_unit_sphere(), ray_in.time() };
@@ -75,7 +81,8 @@ private:
 public:
   dielectric(double index_of_refraction) : index_of_refraction_{ index_of_refraction } {}
 
-  virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& albedo, ray& scattered , double& /*pdf*/) const override
+  virtual bool
+    scatter(ray const& ray_in, hit_record const& rec, vec3& albedo, ray& scattered, double& /*pdf*/) const override
   {
     albedo = vec3{ 1.0, 1.0, 1.0 };
     auto refraction_ratio = rec.front_face ? (1.0 / index_of_refraction_) : index_of_refraction_;
@@ -116,8 +123,12 @@ public:
   diffuse_light(vec3 emitted_color) : emitted_texture_{ std::make_shared<solid_color>(emitted_color) } {}
   diffuse_light(std::shared_ptr<texture> emitted_texture) : emitted_texture_{ emitted_texture } {}
 
-  virtual bool scatter(ray const& /*ray_in*/, hit_record const& /*rec*/, vec3& /*albedo*/, ray& /*scattered*/
-  , double& /*pdf*/) const override
+  virtual bool scatter(ray const& /*ray_in*/,
+    hit_record const& /*rec*/,
+    vec3& /*albedo*/,
+    ray& /*scattered*/
+    ,
+    double& /*pdf*/) const override
   {
     return false;
   }
@@ -137,13 +148,16 @@ public:
   isotropic(vec3 color) : albedo_{ std::make_shared<solid_color>(color) } {}
   isotropic(std::shared_ptr<texture> albedo) : albedo_{ albedo } {}
 
-  bool
-    scatter(ray const& incoming_ray, hit_record const& rec, vec3& albedo, ray& scattered_ray, double& /*pdf*/) const override
-    {
-      scattered_ray = ray{ rec.p, random_in_unit_sphere(), incoming_ray.time() };
-      albedo = albedo_->value(rec.u, rec.v, rec.p);
-      return true;
-    }
+  bool scatter(ray const& incoming_ray,
+    hit_record const& rec,
+    vec3& albedo,
+    ray& scattered_ray,
+    double& /*pdf*/) const override
+  {
+    scattered_ray = ray{ rec.p, random_in_unit_sphere(), incoming_ray.time() };
+    albedo = albedo_->value(rec.u, rec.v, rec.p);
+    return true;
+  }
 };
 
 #endif

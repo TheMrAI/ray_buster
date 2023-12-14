@@ -189,8 +189,22 @@ auto refract(vec3 const& uv, vec3 const& n, double etai_over_etat)
 {
   auto cos_theta = fmin(dot(-uv, n), 1.0);
   auto r_out_perp = etai_over_etat * (uv + cos_theta * n);
-  auto r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length() * r_out_perp.length())) * n;
+  auto r_out_parallel = -std::sqrt(fabs(1.0 - r_out_perp.length() * r_out_perp.length())) * n;
   return r_out_perp + r_out_parallel;
+}
+
+// random vector for a hemisphere
+auto random_cosine_direction() -> vec3
+{
+  auto r1 = random_double();
+  auto r2 = random_double();
+  auto z = std::sqrt(1 - r2);
+
+  auto phi = 2 * std::numbers::pi * r1;
+  auto x = std::cos(phi) * std::sqrt(r2);
+  auto y = std::sin(phi) * std::sqrt(r2);
+
+  return vec3{ x, y, z };
 }
 
 #endif
