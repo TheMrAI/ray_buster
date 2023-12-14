@@ -25,7 +25,10 @@ public:
     return 0;
   }
 
-  virtual vec3 emitted(double /*d*/, double /*v*/, vec3 const& /*point*/) const { return vec3{ 0.0, 0.0, 0.0 }; }
+  virtual vec3 emitted(bool /*front_face*/, double /*d*/, double /*v*/, vec3 const& /*point*/) const
+  {
+    return vec3{ 0.0, 0.0, 0.0 };
+  }
 };
 
 class lambertian : public material
@@ -123,19 +126,19 @@ public:
   diffuse_light(vec3 emitted_color) : emitted_texture_{ std::make_shared<solid_color>(emitted_color) } {}
   diffuse_light(std::shared_ptr<texture> emitted_texture) : emitted_texture_{ emitted_texture } {}
 
-  virtual bool scatter(ray const& /*ray_in*/,
+  bool scatter(ray const& /*ray_in*/,
     hit_record const& /*rec*/,
     vec3& /*albedo*/,
-    ray& /*scattered*/
-    ,
+    ray& /*scattered*/,
     double& /*pdf*/) const override
   {
     return false;
   }
 
-  virtual vec3 emitted(double u, double v, const vec3& point) const override
+  vec3 emitted(bool front_face, double u, double v, const vec3& point) const override
   {
-    return emitted_texture_->value(u, v, point);
+    if (front_face) { return emitted_texture_->value(u, v, point); }
+    return vec3{ 0, 0, 0 };
   }
 };
 

@@ -26,7 +26,7 @@
 #include "texture.hpp"
 
 template<typename Output, typename Iter>
-  requires std::derived_from<Output, std::ostream> && std::weakly_incrementable<Iter> && std::indirectly_readable<Iter>
+requires std::derived_from<Output, std::ostream> && std::weakly_incrementable<Iter> && std::indirectly_readable<Iter>
 auto dump_to(Output& output, Iter begin, Iter end)
 {
   while (begin != end) {
@@ -63,15 +63,29 @@ vec3 ray_color(ray const& r, vec3 const& background_color, hittable const& world
   if (!world.hit(r, 0.001, std::numeric_limits<double>::infinity(), rec)) { return background_color; }
 
   auto scattered = ray{};
-  auto emitted = rec.material_ptr->emitted(rec.u, rec.v, rec.p);
-  auto pdf = double{0};
+  auto emitted = rec.material_ptr->emitted(rec.front_face, rec.u, rec.v, rec.p);
+  auto pdf = double{ 0 };
   auto albedo = vec3{};
 
   if (!rec.material_ptr->scatter(r, rec, albedo, scattered, pdf)) { return emitted; }
 
-  return emitted + albedo 
-                * rec.material_ptr->scattering_pdf(r, rec, scattered)
-                * ray_color(scattered, background_color, world, depth - 1) / pdf;
+  auto on_light = vec3{ random_double(213, 343), 554, random_double(227, 332) };
+  auto to_light = on_light - rec.p;
+  auto distance_squared = to_light.length() * to_light.length();
+  to_light = unit_vector(to_light);
+
+  if (dot(to_light, rec.normal) < 0) { return emitted; }
+
+  auto light_area = (343.0 - 213.0) * (332.0 - 227.0);
+  auto light_cosine = std::fabs(to_light.y());
+  if (light_cosine < 0.000001) { return emitted; }
+
+  pdf = distance_squared / (light_cosine * light_area);
+  scattered = ray{ rec.p, to_light, r.time() };
+
+  return emitted
+         + albedo * rec.material_ptr->scattering_pdf(r, rec, scattered)
+             * ray_color(scattered, background_color, world, depth - 1) / pdf;
 }
 
 struct SceneConfig
@@ -207,7 +221,7 @@ auto cornell_box() -> SceneConfig
   auto green = std::make_shared<lambertian>(vec3(.12, .45, .15));
   auto light = std::make_shared<diffuse_light>(vec3(15, 15, 15));
 
-  world.add(std::make_shared<xz_rect>(213, 343, 227, 332, 554, light));
+  world.add(std::make_shared<flip_face>(std::make_shared<xz_rect>(213, 343, 227, 332, 554, light)));
   world.add(std::make_shared<yz_rect>(0, 555, -800, 555, 555, green));
   world.add(std::make_shared<yz_rect>(0, 555, -800, 555, 0, red));
   world.add(std::make_shared<xz_rect>(0, 555, -800, 555, 555, white));// top
@@ -346,20 +360,21 @@ auto lights_with_floating_sphere() -> SceneConfig
   auto red = std::make_shared<diffuse_light>(vec3(6.5, .5, .5));
   auto green = std::make_shared<diffuse_light>(vec3(.5, 6.5, .5));
   auto blue = std::make_shared<diffuse_light>(vec3(.5, .5, 6.5));
-  
+
   auto metal_material = std::make_shared<metal>(vec3(1, 1, 1), 0.1);
   auto perlin_texture = std::make_shared<noise_texture>(1);
 
-  world.add(std::make_shared<xz_rect>(-3000, 3000, -3000, 3000, 0, std::make_shared<lambertian>(perlin_texture)));// floor
+  world.add(
+    std::make_shared<xz_rect>(-3000, 3000, -3000, 3000, 0, std::make_shared<lambertian>(perlin_texture)));// floor
 
-  world.add(std::make_shared<xz_rect>(-50, 50, -50, 50, 1, white)); // center light
+  world.add(std::make_shared<xz_rect>(-50, 50, -50, 50, 1, white));// center light
   // world.add(std::make_shared<xz_rect>(-500, 500, -500, 500, 1, white)); // center light
-  world.add(std::make_shared<xz_rect>(-1500, 1500, 1000, 1200, 1, red)); // red light
-  world.add(std::make_shared<xz_rect>(-1500, 1500, 1200, 1400, 1, green)); // green light
-  world.add(std::make_shared<xz_rect>(-1500, 1500, 1400, 1600, 1, blue));  // blue light
-  
-  world.add(std::make_shared<sphere>(vec3{ 0, 800, 0 }, 500, std::make_shared<dielectric>(1.5))); // glass sphere
-  world.add(std::make_shared<sphere>(vec3{ 0, -400, 0 }, 3000, metal_material)); // dome
+  world.add(std::make_shared<xz_rect>(-1500, 1500, 1000, 1200, 1, red));// red light
+  world.add(std::make_shared<xz_rect>(-1500, 1500, 1200, 1400, 1, green));// green light
+  world.add(std::make_shared<xz_rect>(-1500, 1500, 1400, 1600, 1, blue));// blue light
+
+  world.add(std::make_shared<sphere>(vec3{ 0, 800, 0 }, 500, std::make_shared<dielectric>(1.5)));// glass sphere
+  world.add(std::make_shared<sphere>(vec3{ 0, -400, 0 }, 3000, metal_material));// dome
 
   return SceneConfig{ world,
     vec3(1.0, 1.0, 1.0),
@@ -381,7 +396,7 @@ auto main() -> int
   constexpr auto image_width = 1000;
   constexpr auto image_height = static_cast<int>(image_width / aspect_ratio);
   constexpr auto samples_per_pixel = 100;
-  constexpr auto max_depth = 15;
+  constexpr auto max_depth = 2;
 
   // World
   auto scene = cornell_box();

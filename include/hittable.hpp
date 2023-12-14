@@ -32,6 +32,29 @@ public:
   virtual bool bounding_box(double time_0, double time_1, aabb& bounding_box) const = 0;
 };
 
+class flip_face : public hittable
+{
+public:
+  flip_face(std::shared_ptr<hittable> p) : ptr_(p) {}
+
+  bool hit(ray const& r, double t_min, double t_max, hit_record& rec) const override
+  {
+
+    if (!ptr_->hit(r, t_min, t_max, rec)) return false;
+
+    rec.front_face = !rec.front_face;
+    return true;
+  }
+
+  bool bounding_box(double time0, double time1, aabb& output_box) const override
+  {
+    return ptr_->bounding_box(time0, time1, output_box);
+  }
+
+private:
+  std::shared_ptr<hittable> ptr_;
+};
+
 class translate : public hittable
 {
 private:
@@ -41,8 +64,8 @@ private:
 public:
   translate(std::shared_ptr<hittable> object, vec3 const& displacement) : object_{ object }, offset_{ displacement } {}
 
-  virtual bool hit(ray const& incoming_ray, double t_min, double t_max, hit_record& rec) const override;
-  virtual bool bounding_box(double time_0, double time_1, aabb& bounding_box) const override;
+  bool hit(ray const& incoming_ray, double t_min, double t_max, hit_record& rec) const override;
+  bool bounding_box(double time_0, double time_1, aabb& bounding_box) const override;
 };
 
 auto translate::hit(ray const& incoming_ray, double t_min, double t_max, hit_record& rec) const -> bool
@@ -76,8 +99,8 @@ private:
 public:
   rotate_y(std::shared_ptr<hittable> object, double angle);
 
-  virtual bool hit(ray const& incoming_ray, double t_min, double t_max, hit_record& rec) const override;
-  virtual bool bounding_box(double time_0, double time_1, aabb& bounding_box) const override;
+  bool hit(ray const& incoming_ray, double t_min, double t_max, hit_record& rec) const override;
+  bool bounding_box(double time_0, double time_1, aabb& bounding_box) const override;
 };
 
 rotate_y::rotate_y(std::shared_ptr<hittable> object, double angle) : object_{ object }
