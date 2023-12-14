@@ -63,12 +63,15 @@ vec3 ray_color(ray const& r, vec3 const& background_color, hittable const& world
   if (!world.hit(r, 0.001, std::numeric_limits<double>::infinity(), rec)) { return background_color; }
 
   auto scattered = ray{};
-  auto attenuation = vec3{};
   auto emitted = rec.material_ptr->emitted(rec.u, rec.v, rec.p);
+  auto pdf = double{0};
+  auto albedo = vec3{};
 
-  if (!rec.material_ptr->scatter(r, rec, attenuation, scattered)) { return emitted; }
+  if (!rec.material_ptr->scatter(r, rec, albedo, scattered, pdf)) { return emitted; }
 
-  return emitted + attenuation * ray_color(scattered, background_color, world, depth - 1);
+  return emitted + albedo 
+                * rec.material_ptr->scattering_pdf(r, rec, scattered)
+                * ray_color(scattered, background_color, world, depth - 1) / pdf;
 }
 
 struct SceneConfig
@@ -202,7 +205,7 @@ auto cornell_box() -> SceneConfig
   auto red = std::make_shared<lambertian>(vec3(.65, .05, .05));
   auto white = std::make_shared<lambertian>(vec3(.73, .73, .73));
   auto green = std::make_shared<lambertian>(vec3(.12, .45, .15));
-  auto light = std::make_shared<diffuse_light>(vec3(7, 7, 7));
+  auto light = std::make_shared<diffuse_light>(vec3(15, 15, 15));
 
   world.add(std::make_shared<xz_rect>(213, 343, 227, 332, 554, light));
   world.add(std::make_shared<yz_rect>(0, 555, -800, 555, 555, green));
@@ -373,14 +376,15 @@ auto lights_with_floating_sphere() -> SceneConfig
 auto main() -> int
 {
   // Image
-  constexpr auto aspect_ratio = 16.0/9.0;
+  // constexpr auto aspect_ratio = 16.0/9.0;
+  constexpr auto aspect_ratio = 1.0;
   constexpr auto image_width = 1000;
   constexpr auto image_height = static_cast<int>(image_width / aspect_ratio);
-  constexpr auto samples_per_pixel = 10000;
-  constexpr auto max_depth = 50;
+  constexpr auto samples_per_pixel = 100;
+  constexpr auto max_depth = 15;
 
   // World
-  auto scene = lights_with_floating_sphere();
+  auto scene = cornell_box();
 
   // Camera
   auto cam = camera{ scene.look_from,
