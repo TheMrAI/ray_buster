@@ -73,8 +73,10 @@ public:
     : x0_{ x0 }, x1_{ x1 }, z0_{ z0 }, z1_{ z1 }, k_{ k }, material_ptr_{ material }
   {}
 
-  virtual bool hit(ray const& ray, double t_min, double t_max, hit_record& rec) const override;
-  virtual bool bounding_box(double time_0, double time_1, aabb& bounding_box) const override;
+  auto hit(ray const& ray, double t_min, double t_max, hit_record& rec) const -> bool override;
+  auto bounding_box(double time_0, double time_1, aabb& bounding_box) const -> bool override;
+  auto pdf_value(vec3 const& origin, vec3 const& v) const -> double override;
+  auto random(vec3 const& origin) const -> vec3 override;
 };
 
 auto xz_rect::hit(ray const& ray, double t_min, double t_max, hit_record& rec) const -> bool
@@ -105,6 +107,23 @@ auto xz_rect::bounding_box(double /*time_0*/, double /*time_1*/, aabb& bounding_
   return true;
 }
 
+auto xz_rect::pdf_value(vec3 const& origin, vec3 const& v) const -> double
+{
+  hit_record rec;
+  if (!this->hit(ray(origin, v), 0.001, std::numeric_limits<double>::infinity(), rec)) { return 0; }
+
+  auto area = (x1_ - x0_) * (z1_ - z0_);
+  auto distance_squared = rec.t * rec.t * v.length() * v.length();
+  auto cosine = std::fabs(dot(v, rec.normal) / v.length());
+
+  return distance_squared / (cosine * area);
+}
+
+auto xz_rect::random(vec3 const& origin) const -> vec3
+{
+  auto random_point = vec3{ random_double(x0_, x1_), k_, random_double(z0_, z1_) };
+  return random_point - origin;
+}
 
 class yz_rect : public hittable
 {

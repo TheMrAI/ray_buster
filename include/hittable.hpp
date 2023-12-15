@@ -28,8 +28,10 @@ struct hit_record
 class hittable
 {
 public:
-  virtual bool hit(ray const& r, double t_min, double t_max, hit_record& rec) const = 0;
-  virtual bool bounding_box(double time_0, double time_1, aabb& bounding_box) const = 0;
+  virtual auto hit(ray const& r, double t_min, double t_max, hit_record& rec) const -> bool = 0;
+  virtual auto bounding_box(double time_0, double time_1, aabb& bounding_box) const -> bool = 0;
+  virtual auto pdf_value(vec3 const& /*origin*/, vec3 const& /*v*/) const -> double { return 0.0; }
+  virtual auto random(vec3 const& /*origin*/) const -> vec3 { return vec3{ 1, 0, 0 }; }
 };
 
 class flip_face : public hittable
