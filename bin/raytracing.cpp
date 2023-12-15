@@ -74,17 +74,13 @@ vec3 ray_color(ray const& r,
 
   if (!rec.material_ptr->scatter(r, rec, albedo, scattered, pdf_val)) { return emitted; }
 
-  // if (light) {
-  hittable_pdf light_pdf{ light, rec.p };
-  scattered = ray{ rec.p, light_pdf.generate(), r.time() };
-  pdf_val = light_pdf.value(scattered.direction());
-  // }
-  //  else {
-  //   cosine_pdf p{ rec.normal };
-  //   scattered = ray{ rec.p, p.generate(), r.time() };
-  //   pdf_val = p.value(scattered.direction());
-  // }
+  // we don't handle if light is nullptr!
+  auto pdf_one = std::make_shared<hittable_pdf>(light, rec.p);
+  auto pdf_two = std::make_shared<cosine_pdf>(rec.normal);
+  auto mixed_pdf = mixture_pdf{ pdf_one, pdf_two };
 
+  scattered = ray{ rec.p, mixed_pdf.generate(), r.time() };
+  pdf_val = mixed_pdf.value(scattered.direction());
 
   return emitted
          + albedo * rec.material_ptr->scattering_pdf(r, rec, scattered)
@@ -436,7 +432,7 @@ auto main() -> int
   constexpr auto aspect_ratio = 1.0;
   constexpr auto image_width = 1000;
   constexpr auto image_height = static_cast<int>(image_width / aspect_ratio);
-  constexpr auto samples_per_pixel = 150;
+  constexpr auto samples_per_pixel = 100;
   constexpr auto max_depth = 20;
 
   // World

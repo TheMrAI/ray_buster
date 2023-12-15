@@ -45,4 +45,24 @@ private:
   vec3 origin_;
 };
 
+class mixture_pdf : public pdf
+{
+private:
+  std::array<std::shared_ptr<pdf>, 2> pdfs_;
+
+public:
+  mixture_pdf(std::shared_ptr<pdf> lhs, std::shared_ptr<pdf> rhs) : pdfs_{ lhs, rhs } {}
+
+  auto value(vec3 const& direction) const -> double override
+  {
+    return 0.5 * pdfs_[0]->value(direction) + 0.5 * pdfs_[1]->value(direction);
+  }
+
+  auto generate() const -> vec3 override
+  {
+    if (random_double() < 0.5) { return pdfs_[0]->generate(); }
+    return pdfs_[1]->generate();
+  }
+};
+
 #endif
