@@ -67,23 +67,23 @@ vec3 ray_color(ray const& r,
   // If the ray hits nothing, return the background color
   if (!world.hit(r, 0.001, std::numeric_limits<double>::infinity(), rec)) { return background_color; }
 
-  auto scattered = ray{};
-  auto emitted = rec.material_ptr->emitted(rec.front_face, rec.u, rec.v, rec.p);
-  auto pdf_val = double{ 0 };
-  auto albedo = vec3{};
+  auto srec = scatter_record{};
+  auto emitted = rec.material_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
+  if (!rec.material_ptr->scatter(r, rec, srec)) { return emitted; }
 
-  if (!rec.material_ptr->scatter(r, rec, albedo, scattered, pdf_val)) { return emitted; }
+  if (srec.is_specular) {
+    return srec.attenuation * ray_color(srec.specular_ray, background_color, world, light, depth-1);
+  }
 
   // we don't handle if light is nullptr!
-  auto pdf_one = std::make_shared<hittable_pdf>(light, rec.p);
-  auto pdf_two = std::make_shared<cosine_pdf>(rec.normal);
-  auto mixed_pdf = mixture_pdf{ pdf_one, pdf_two };
+  auto light_pdf_ptr = std::make_shared<hittable_pdf>(light, rec.p);
+  auto mixed_pdf = mixture_pdf{ light_pdf_ptr, srec.pdf_ptr };
 
-  scattered = ray{ rec.p, mixed_pdf.generate(), r.time() };
-  pdf_val = mixed_pdf.value(scattered.direction());
+  auto scattered = ray{ rec.p, mixed_pdf.generate(), r.time() };
+  auto pdf_val = mixed_pdf.value(scattered.direction());
 
   return emitted
-         + albedo * rec.material_ptr->scattering_pdf(r, rec, scattered)
+         + srec.attenuation * rec.material_ptr->scattering_pdf(r, rec, scattered)
              * ray_color(scattered, background_color, world, light, depth - 1) / pdf_val;
 }
 
@@ -261,15 +261,18 @@ auto cornell_box() -> SceneConfig
   world.add(std::make_shared<xy_rect>(0, 555, 0, 555, 555, white));// back
   world.add(std::make_shared<xy_rect>(0, 555, 0, 555, -800, white));
 
-  std::shared_ptr<hittable> box_1 = std::make_shared<box>(vec3{ 0, 0, 0 }, vec3{ 165, 330, 165 }, white);
+  auto aluminium = std::make_shared<metal>(vec3{0.8, 0.85, 0.88}, 0.0);
+  std::shared_ptr<hittable> box_1 = std::make_shared<box>(vec3{ 0, 0, 0 }, vec3{ 165, 330, 165 }, aluminium);
   box_1 = std::make_shared<rotate_y>(box_1, 15);
   box_1 = std::make_shared<translate>(box_1, vec3{ 265.0, 0.0, 295.0 });
   world.add(box_1);
 
-  std::shared_ptr<hittable> box_2 = std::make_shared<box>(vec3{ 0, 0, 0 }, vec3{ 165, 165, 165 }, white);
-  box_2 = std::make_shared<rotate_y>(box_2, -18);
-  box_2 = std::make_shared<translate>(box_2, vec3{ 130.0, 0.0, 65.0 });
-  world.add(box_2);
+  auto glass = std::make_shared<dielectric>(1.5);
+  world.add(std::make_shared<sphere>(vec3{190, 150, 190}, 90, glass));
+  // std::shared_ptr<hittable> box_2 = std::make_shared<box>(vec3{ 0, 0, 0 }, vec3{ 165, 165, 165 }, white);
+  // box_2 = std::make_shared<rotate_y>(box_2, -18);
+  // box_2 = std::make_shared<translate>(box_2, vec3{ 130.0, 0.0, 65.0 });
+  // world.add(box_2);
 
   return SceneConfig{ world,
     std::make_shared<xz_rect>(213, 343, 227, 332, 554, std::shared_ptr<material>()),
@@ -291,9 +294,11 @@ auto cornell_box_with_smoke() -> SceneConfig
   auto red = std::make_shared<lambertian>(vec3(.65, .05, .05));
   auto white = std::make_shared<lambertian>(vec3(.73, .73, .73));
   auto green = std::make_shared<lambertian>(vec3(.12, .45, .15));
-  auto light = std::make_shared<diffuse_light>(vec3(60, 60, 60));
+  auto light_color = std::make_shared<diffuse_light>(vec3(60, 60, 60));
 
-  world.add(std::make_shared<xz_rect>(213, 343, 227, 332, 554, light));
+  auto light = std::make_shared<flip_face>(std::make_shared<xz_rect>(213, 343, 227, 332, 554, light_color));
+
+  world.add(light);
   world.add(std::make_shared<yz_rect>(0, 555, -800, 555, 555, green));
   world.add(std::make_shared<yz_rect>(0, 555, -800, 555, 0, red));
   world.add(std::make_shared<xz_rect>(0, 555, -800, 555, 555, white));// top
@@ -312,7 +317,7 @@ auto cornell_box_with_smoke() -> SceneConfig
   world.add(std::make_shared<constant_medium>(box_2, 0.01, vec3{ 1, 1, 1 }));
 
   return SceneConfig{ world,
-    std::shared_ptr<hittable>{},
+    std::make_shared<xz_rect>(213, 343, 227, 332, 554, std::shared_ptr<material>()),
     vec3(0.0, 0.0, 0.0),
     vec3{ 278.0, 278.0, -800.0 },
     // vec3{ 278.0, 278.0, -1400.0 },
@@ -432,11 +437,11 @@ auto main() -> int
   constexpr auto aspect_ratio = 1.0;
   constexpr auto image_width = 1000;
   constexpr auto image_height = static_cast<int>(image_width / aspect_ratio);
-  constexpr auto samples_per_pixel = 100;
+  constexpr auto samples_per_pixel = 1000;
   constexpr auto max_depth = 20;
 
   // World
-  auto scene = cornell_box();
+  auto scene = cornell_box_with_smoke();
 
   // Camera
   auto cam = camera{ scene.look_from,

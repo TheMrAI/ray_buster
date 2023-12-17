@@ -5,27 +5,31 @@
 #include "ray.hpp"
 #include "texture.hpp"
 #include "vec3.hpp"
+#include "pdf.hpp"
 
 struct hit_record;
+
+struct scatter_record {
+  ray specular_ray;
+  bool is_specular;
+  vec3 attenuation;
+  std::shared_ptr<pdf> pdf_ptr;
+};
 
 class material
 {
 public:
-  virtual bool scatter(ray const& /*ray_in*/,
-    hit_record const& /*rec*/,
-    vec3& /*albedo*/,
-    ray& /*scattered*/,
-    double& /*pdf*/) const
+  virtual auto scatter(ray const& /*r_in*/, hit_record const& /*rec*/, scatter_record& /*srec*/) const -> bool
   {
     return false;
   }
 
-  virtual double scattering_pdf(ray const& /*r_in*/, hit_record const& /*rec*/, const ray& /*scattered*/) const
+  virtual auto scattering_pdf(ray const& /*r_in*/, hit_record const& /*rec*/, const ray& /*scattered*/) const -> double
   {
     return 0;
   }
 
-  virtual vec3 emitted(bool /*front_face*/, double /*d*/, double /*v*/, vec3 const& /*point*/) const
+  virtual auto emitted(ray const& /*r_in*/, hit_record const& /*rec*/, double /*u*/, double /*v*/, vec3 const& /*point*/)const -> vec3
   {
     return vec3{ 0.0, 0.0, 0.0 };
   }
@@ -40,13 +44,11 @@ public:
   lambertian(vec3 const& albedo) : albedo_{ std::make_shared<solid_color>(albedo) } {}
   lambertian(std::shared_ptr<texture> albedo) : albedo_{ albedo } {}
 
-  bool scatter(ray const& ray_in, hit_record const& rec, vec3& albedo, ray& scattered, double& pdf) const override
+  bool scatter(ray const& /*r_in*/, hit_record const& rec, scatter_record& srec) const override
   {
-    auto uvw = onb{ rec.normal };
-    auto direction = uvw.local(random_cosine_direction());
-    scattered = ray{ rec.p, unit_vector(direction), ray_in.time() };
-    albedo = albedo_->value(rec.u, rec.v, rec.p);
-    pdf = dot(uvw.w(), scattered.direction()) / std::numbers::pi;
+    srec.is_specular = false;
+    srec.attenuation = albedo_->value(rec.u, rec.v, rec.p);
+    srec.pdf_ptr = std::make_shared<cosine_pdf>(rec.normal);
     return true;
   }
 
@@ -66,13 +68,15 @@ private:
 public:
   metal(vec3 const& albedo, double fuzz) : albedo_{ albedo }, fuzz_(fuzz < 1.0 ? fuzz : 1.0) {}
 
-  virtual bool
-    scatter(ray const& ray_in, hit_record const& rec, vec3& albedo, ray& scattered, double& /*pdf*/) const override
+  virtual auto
+    scatter(ray const& ray_in, hit_record const& rec, scatter_record& srec) const -> bool override
   {
     auto reflected = reflect(unit_vector(ray_in.direction()), rec.normal);
-    scattered = ray{ rec.p, reflected + fuzz_ * random_in_unit_sphere(), ray_in.time() };
-    albedo = albedo_;
-    return (dot(scattered.direction(), rec.normal) > 0);
+    srec.specular_ray = ray(rec.p, reflected+fuzz_*random_in_unit_sphere());
+    srec.attenuation = albedo_;
+    srec.is_specular = true;
+    srec.pdf_ptr = nullptr;
+    return true;
   }
 };
 
@@ -84,10 +88,12 @@ private:
 public:
   dielectric(double index_of_refraction) : index_of_refraction_{ index_of_refraction } {}
 
-  virtual bool
-    scatter(ray const& ray_in, hit_record const& rec, vec3& albedo, ray& scattered, double& /*pdf*/) const override
+  virtual auto
+    scatter(ray const& ray_in, hit_record const& rec, scatter_record& srec) const -> bool override
   {
-    albedo = vec3{ 1.0, 1.0, 1.0 };
+    srec.is_specular = true;
+    srec.pdf_ptr = nullptr;
+    srec.attenuation = vec3{ 1.0, 1.0, 1.0 };
     auto refraction_ratio = rec.front_face ? (1.0 / index_of_refraction_) : index_of_refraction_;
 
     auto unit_direction = unit_vector(ray_in.direction());
@@ -103,7 +109,7 @@ public:
       direction = refract(unit_direction, rec.normal, refraction_ratio);
     }
 
-    scattered = ray{ rec.p, direction, ray_in.time() };
+    srec.specular_ray = ray{ rec.p, direction, ray_in.time() };
     return true;
   }
 
@@ -126,18 +132,9 @@ public:
   diffuse_light(vec3 emitted_color) : emitted_texture_{ std::make_shared<solid_color>(emitted_color) } {}
   diffuse_light(std::shared_ptr<texture> emitted_texture) : emitted_texture_{ emitted_texture } {}
 
-  bool scatter(ray const& /*ray_in*/,
-    hit_record const& /*rec*/,
-    vec3& /*albedo*/,
-    ray& /*scattered*/,
-    double& /*pdf*/) const override
+  auto emitted(ray const& /*r_in*/, hit_record const& rec, double u, double v, vec3 const& point)const -> vec3
   {
-    return false;
-  }
-
-  vec3 emitted(bool front_face, double u, double v, const vec3& point) const override
-  {
-    if (front_face) { return emitted_texture_->value(u, v, point); }
+    if (rec.front_face) { return emitted_texture_->value(u, v, point); }
     return vec3{ 0, 0, 0 };
   }
 };
@@ -151,14 +148,12 @@ public:
   isotropic(vec3 color) : albedo_{ std::make_shared<solid_color>(color) } {}
   isotropic(std::shared_ptr<texture> albedo) : albedo_{ albedo } {}
 
-  bool scatter(ray const& incoming_ray,
-    hit_record const& rec,
-    vec3& albedo,
-    ray& scattered_ray,
-    double& /*pdf*/) const override
+    auto scatter(ray const& r_in, hit_record const& rec, scatter_record& srec) const -> bool
   {
-    scattered_ray = ray{ rec.p, random_in_unit_sphere(), incoming_ray.time() };
-    albedo = albedo_->value(rec.u, rec.v, rec.p);
+    srec.specular_ray = ray{ rec.p, random_in_unit_sphere(), r_in.time() };
+    srec.is_specular = true;
+    srec.attenuation = albedo_->value(rec.u, rec.v, rec.p);
+    srec.pdf_ptr = nullptr;
     return true;
   }
 };
