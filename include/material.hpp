@@ -1,17 +1,38 @@
 #ifndef MATERIAL_HPP
 #define MATERIAL_HPP
 
+#include "onb.hpp"
 #include "ray.hpp"
 #include "texture.hpp"
 #include "vec3.hpp"
+#include "pdf.hpp"
 
 struct hit_record;
+
+struct scatter_record {
+  ray skip_pdf_ray;
+  bool skip_pdf;
+  vec3 attenuation;
+  std::shared_ptr<pdf> pdf_ptr;
+};
 
 class material
 {
 public:
-  virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const = 0;
-  virtual vec3 emitted(double /*d*/, double /*v*/, vec3 const& /*point*/) const { return vec3{ 0.0, 0.0, 0.0 }; }
+  virtual auto scatter(ray const& /*r_in*/, hit_record const& /*rec*/, scatter_record& /*srec*/) const -> bool
+  {
+    return false;
+  }
+
+  virtual auto scattering_pdf(ray const& /*r_in*/, hit_record const& /*rec*/, const ray& /*scattered*/) const -> double
+  {
+    return 0;
+  }
+
+  virtual auto emitted(ray const& /*r_in*/, hit_record const& /*rec*/, double /*u*/, double /*v*/, vec3 const& /*point*/)const -> vec3
+  {
+    return vec3{ 0.0, 0.0, 0.0 };
+  }
 };
 
 class lambertian : public material
@@ -23,16 +44,18 @@ public:
   lambertian(vec3 const& albedo) : albedo_{ std::make_shared<solid_color>(albedo) } {}
   lambertian(std::shared_ptr<texture> albedo) : albedo_{ albedo } {}
 
-  virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const override
+  bool scatter(ray const& /*r_in*/, hit_record const& rec, scatter_record& srec) const override
   {
-    auto scatter_direction = rec.normal + random_unit_vector();
-
-    // Catch degenerate scatter direction
-    if (scatter_direction.near_zero()) { scatter_direction = rec.normal; }
-
-    scattered = ray{ rec.p, scatter_direction, ray_in.time() };
-    attenuation = albedo_->value(rec.u, rec.v, rec.p);
+    srec.attenuation = albedo_->value(rec.u, rec.v, rec.p);
+    srec.pdf_ptr = std::make_shared<cosine_pdf>(rec.normal);
+    srec.skip_pdf = false;
     return true;
+  }
+
+  double scattering_pdf(ray const& /*r_in*/, const hit_record& rec, ray const& scattered) const override
+  {
+    auto cosine = dot(rec.normal, unit_vector(scattered.direction()));
+    return cosine < 0 ? 0 : cosine / std::numbers::pi;
   }
 };
 
@@ -45,12 +68,15 @@ private:
 public:
   metal(vec3 const& albedo, double fuzz) : albedo_{ albedo }, fuzz_(fuzz < 1.0 ? fuzz : 1.0) {}
 
-  virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const override
+  virtual auto
+    scatter(ray const& ray_in, hit_record const& rec, scatter_record& srec) const -> bool override
   {
+    srec.attenuation = albedo_;
+    srec.pdf_ptr = nullptr;
+    srec.skip_pdf = true;
     auto reflected = reflect(unit_vector(ray_in.direction()), rec.normal);
-    scattered = ray{ rec.p, reflected + fuzz_ * random_in_unit_sphere(), ray_in.time() };
-    attenuation = albedo_;
-    return (dot(scattered.direction(), rec.normal) > 0);
+    srec.skip_pdf_ray = ray{rec.p, reflected+fuzz_*random_in_unit_sphere(), ray_in.time()};
+    return true;
   }
 };
 
@@ -62,16 +88,19 @@ private:
 public:
   dielectric(double index_of_refraction) : index_of_refraction_{ index_of_refraction } {}
 
-  virtual bool scatter(ray const& ray_in, hit_record const& rec, vec3& attenuation, ray& scattered) const override
+  virtual auto
+    scatter(ray const& ray_in, hit_record const& rec, scatter_record& srec) const -> bool override
   {
-    attenuation = vec3{ 1.0, 1.0, 1.0 };
+    srec.attenuation = vec3{ 1.0, 1.0, 1.0 };
+    srec.pdf_ptr = nullptr;
+    srec.skip_pdf = true;
     auto refraction_ratio = rec.front_face ? (1.0 / index_of_refraction_) : index_of_refraction_;
 
     auto unit_direction = unit_vector(ray_in.direction());
     auto cos_theta = std::fmin(dot(-unit_direction, rec.normal), 1.0);
     auto sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
 
-    bool cannot_refract = refraction_ratio * sin_theta > 1.0;
+    auto cannot_refract = refraction_ratio * sin_theta > 1.0;
     auto direction = vec3{};
 
     if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double()) {
@@ -80,7 +109,7 @@ public:
       direction = refract(unit_direction, rec.normal, refraction_ratio);
     }
 
-    scattered = ray{ rec.p, direction, ray_in.time() };
+    srec.skip_pdf_ray = ray{ rec.p, direction, ray_in.time() };
     return true;
   }
 
@@ -103,15 +132,10 @@ public:
   diffuse_light(vec3 emitted_color) : emitted_texture_{ std::make_shared<solid_color>(emitted_color) } {}
   diffuse_light(std::shared_ptr<texture> emitted_texture) : emitted_texture_{ emitted_texture } {}
 
-  virtual bool scatter(ray const& /*ray_in*/, hit_record const& /*rec*/, vec3& /*attenuation*/, ray& /*scattered*/
-  ) const override
+  auto emitted(ray const& /*r_in*/, hit_record const& rec, double u, double v, vec3 const& point)const -> vec3
   {
-    return false;
-  }
-
-  virtual vec3 emitted(double u, double v, const vec3& point) const override
-  {
-    return emitted_texture_->value(u, v, point);
+    if (rec.front_face) { return emitted_texture_->value(u, v, point); }
+    return vec3{ 0, 0, 0 };
   }
 };
 
@@ -124,16 +148,18 @@ public:
   isotropic(vec3 color) : albedo_{ std::make_shared<solid_color>(color) } {}
   isotropic(std::shared_ptr<texture> albedo) : albedo_{ albedo } {}
 
-  virtual bool
-    scatter(ray const& incoming_ray, hit_record const& rec, vec3& attenuation, ray& scattered_ray) const override;
-};
+  auto scatter(ray const& /*r_in*/, hit_record const& rec, scatter_record& srec) const -> bool override
+  {
+    srec.attenuation = albedo_->value(rec.u, rec.v, rec.p);
+    srec.pdf_ptr = std::make_shared<sphere_pdf>();
+    srec.skip_pdf = false;
+    return true;
+  }
 
-auto isotropic::scatter(ray const& incoming_ray, hit_record const& rec, vec3& attenuation, ray& scattered_ray) const
-  -> bool
-{
-  scattered_ray = ray{ rec.p, random_in_unit_sphere(), incoming_ray.time() };
-  attenuation = albedo_->value(rec.u, rec.v, rec.p);
-  return true;
-}
+  auto scattering_pdf(ray const& /*r_in*/, hit_record const& /*rec*/, const ray& /*scattered*/) const -> double override
+  {
+    return 1 / (4*std::numbers::pi);
+  }
+};
 
 #endif
