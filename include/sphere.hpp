@@ -5,6 +5,18 @@
 #include "vec3.hpp"
 #include <memory>
 
+auto random_to_sphere(double radius, double distance_squared) -> vec3 {
+    auto r1 = random_double();
+    auto r2 = random_double();
+    auto z = 1 + r2*(std::sqrt(1-radius*radius/distance_squared) - 1);
+
+    auto phi = 2*std::numbers::pi*r1;
+    auto x = std::cos(phi)*std::sqrt(1-z*z);
+    auto y = std::sin(phi)*std::sqrt(1-z*z);
+
+    return vec3{x, y, z};
+}
+
 class sphere : public hittable
 {
 private:
@@ -17,9 +29,10 @@ public:
   sphere(vec3 center, double radius, std::shared_ptr<material> material)
     : center_{ center }, radius_{ radius }, material_ptr_{ material } {};
 
-  virtual bool hit(ray const& r, double t_min, double t_max, hit_record& rec) const override;
-  virtual bool bounding_box(double time_0, double time_1, aabb& bounding_box) const override;
-
+  auto hit(ray const& r, double t_min, double t_max, hit_record& rec) const -> bool override;
+  auto bounding_box(double time_0, double time_1, aabb& bounding_box) const -> bool override;
+  auto pdf_value(vec3 const& o, vec3 const& v) const -> double override;
+  auto random(vec3 const& o) const -> vec3 override;
 private:
   auto get_sphere_uv(vec3 const& point, double& u, double& v) const -> void
   {
@@ -72,6 +85,26 @@ bool sphere::bounding_box(double /*time_0*/, double /*time_1*/, aabb& bounding_b
 {
   bounding_box = aabb{ center_ - vec3{ radius_, radius_, radius_ }, center_ + vec3{ radius_, radius_, radius_ } };
   return true;
+}
+
+auto sphere::pdf_value(vec3 const& o, vec3 const& v) const -> double {
+  hit_record rec;
+  if(!this->hit(ray{o, v}, 0.001, std::numeric_limits<double>::infinity(), rec)) {
+    return 0;
+  }
+
+  auto distance = (center_-o).length();
+  auto cos_theta_max = std::sqrt(1 - radius_*radius_/ (distance*distance));
+  auto solid_angle = 2*std::numbers::pi*(1 - cos_theta_max);
+
+  return 1 / solid_angle;
+}
+
+auto sphere::random(vec3 const& o) const -> vec3 {
+  auto direction = center_ - o;
+  auto distance = direction.length();
+  auto uvw = onb{direction};
+  return uvw.local(random_to_sphere(radius_, distance*distance));
 }
 
 #endif

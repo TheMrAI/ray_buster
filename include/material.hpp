@@ -10,8 +10,8 @@
 struct hit_record;
 
 struct scatter_record {
-  ray specular_ray;
-  bool is_specular;
+  ray skip_pdf_ray;
+  bool skip_pdf;
   vec3 attenuation;
   std::shared_ptr<pdf> pdf_ptr;
 };
@@ -46,9 +46,9 @@ public:
 
   bool scatter(ray const& /*r_in*/, hit_record const& rec, scatter_record& srec) const override
   {
-    srec.is_specular = false;
     srec.attenuation = albedo_->value(rec.u, rec.v, rec.p);
     srec.pdf_ptr = std::make_shared<cosine_pdf>(rec.normal);
+    srec.skip_pdf = false;
     return true;
   }
 
@@ -71,11 +71,11 @@ public:
   virtual auto
     scatter(ray const& ray_in, hit_record const& rec, scatter_record& srec) const -> bool override
   {
-    auto reflected = reflect(unit_vector(ray_in.direction()), rec.normal);
-    srec.specular_ray = ray(rec.p, reflected+fuzz_*random_in_unit_sphere());
     srec.attenuation = albedo_;
-    srec.is_specular = true;
     srec.pdf_ptr = nullptr;
+    srec.skip_pdf = true;
+    auto reflected = reflect(unit_vector(ray_in.direction()), rec.normal);
+    srec.skip_pdf_ray = ray{rec.p, reflected+fuzz_*random_in_unit_sphere(), ray_in.time()};
     return true;
   }
 };
@@ -91,16 +91,16 @@ public:
   virtual auto
     scatter(ray const& ray_in, hit_record const& rec, scatter_record& srec) const -> bool override
   {
-    srec.is_specular = true;
-    srec.pdf_ptr = nullptr;
     srec.attenuation = vec3{ 1.0, 1.0, 1.0 };
+    srec.pdf_ptr = nullptr;
+    srec.skip_pdf = true;
     auto refraction_ratio = rec.front_face ? (1.0 / index_of_refraction_) : index_of_refraction_;
 
     auto unit_direction = unit_vector(ray_in.direction());
     auto cos_theta = std::fmin(dot(-unit_direction, rec.normal), 1.0);
     auto sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
 
-    bool cannot_refract = refraction_ratio * sin_theta > 1.0;
+    auto cannot_refract = refraction_ratio * sin_theta > 1.0;
     auto direction = vec3{};
 
     if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double()) {
@@ -109,7 +109,7 @@ public:
       direction = refract(unit_direction, rec.normal, refraction_ratio);
     }
 
-    srec.specular_ray = ray{ rec.p, direction, ray_in.time() };
+    srec.skip_pdf_ray = ray{ rec.p, direction, ray_in.time() };
     return true;
   }
 
@@ -148,13 +148,17 @@ public:
   isotropic(vec3 color) : albedo_{ std::make_shared<solid_color>(color) } {}
   isotropic(std::shared_ptr<texture> albedo) : albedo_{ albedo } {}
 
-    auto scatter(ray const& r_in, hit_record const& rec, scatter_record& srec) const -> bool
+  auto scatter(ray const& /*r_in*/, hit_record const& rec, scatter_record& srec) const -> bool override
   {
-    srec.specular_ray = ray{ rec.p, random_in_unit_sphere(), r_in.time() };
-    srec.is_specular = true;
     srec.attenuation = albedo_->value(rec.u, rec.v, rec.p);
-    srec.pdf_ptr = nullptr;
+    srec.pdf_ptr = std::make_shared<sphere_pdf>();
+    srec.skip_pdf = false;
     return true;
+  }
+
+  auto scattering_pdf(ray const& /*r_in*/, hit_record const& /*rec*/, const ray& /*scattered*/) const -> double override
+  {
+    return 1 / (4*std::numbers::pi);
   }
 };
 

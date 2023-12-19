@@ -14,6 +14,19 @@ public:
   virtual auto generate() const -> vec3 = 0;
 };
 
+class sphere_pdf : public pdf {
+  public:
+    sphere_pdf() { }
+
+    auto value(const vec3& /*direction*/) const -> double override {
+        return 1/ (4 * std::numbers::pi);
+    }
+
+    auto generate() const -> vec3 override {
+        return random_unit_vector();
+    }
+};
+
 class cosine_pdf : public pdf
 {
 public:
@@ -34,7 +47,7 @@ private:
 class hittable_pdf : public pdf
 {
 public:
-  hittable_pdf(std::shared_ptr<hittable> hittable, vec3 const& origin) : hittable_{ hittable }, origin_{ origin } {}
+  hittable_pdf(std::shared_ptr<hittable> hittable, vec3 const& origin) : hittable_{ std::move(hittable) }, origin_{ origin } {}
 
   auto value(vec3 const& direction) const -> double override { return hittable_->pdf_value(origin_, direction); }
 

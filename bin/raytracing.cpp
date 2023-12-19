@@ -57,7 +57,7 @@ auto hit_sphere(const vec3& center, double radius, const ray& r) -> double
 vec3 ray_color(ray const& r,
   vec3 const& background_color,
   hittable const& world,
-  std::shared_ptr<hittable> const& light,
+  std::shared_ptr<hittable> const & lights,
   int depth)
 {
   // At limit return blackness
@@ -68,29 +68,32 @@ vec3 ray_color(ray const& r,
   if (!world.hit(r, 0.001, std::numeric_limits<double>::infinity(), rec)) { return background_color; }
 
   auto srec = scatter_record{};
-  auto emitted = rec.material_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
-  if (!rec.material_ptr->scatter(r, rec, srec)) { return emitted; }
+  auto color_from_emission = rec.material_ptr->emitted(r, rec, rec.u, rec.v, rec.p);
+  if (!rec.material_ptr->scatter(r, rec, srec)) { return color_from_emission; }
 
-  if (srec.is_specular) {
-    return srec.attenuation * ray_color(srec.specular_ray, background_color, world, light, depth-1);
+  if (srec.skip_pdf) {
+    return srec.attenuation * ray_color(srec.skip_pdf_ray, background_color, world, lights, depth-1);
   }
 
   // we don't handle if light is nullptr!
-  auto light_pdf_ptr = std::make_shared<hittable_pdf>(light, rec.p);
+  auto light_pdf_ptr = std::make_shared<hittable_pdf>(lights, rec.p);
   auto mixed_pdf = mixture_pdf{ light_pdf_ptr, srec.pdf_ptr };
 
   auto scattered = ray{ rec.p, mixed_pdf.generate(), r.time() };
   auto pdf_val = mixed_pdf.value(scattered.direction());
 
-  return emitted
-         + srec.attenuation * rec.material_ptr->scattering_pdf(r, rec, scattered)
-             * ray_color(scattered, background_color, world, light, depth - 1) / pdf_val;
+  auto scattering_pdf =  rec.material_ptr->scattering_pdf(r, rec, scattered);
+  
+  auto sample_color = ray_color(scattered, background_color, world, lights, depth - 1);
+  auto color_from_scatter = (srec.attenuation * scattering_pdf * sample_color) / pdf_val;
+
+  return color_from_emission + color_from_scatter;
 }
 
 struct SceneConfig
 {
   hittable_list world;
-  std::shared_ptr<hittable> light;
+  std::shared_ptr<hittable> lights;
   vec3 background_color;
   vec3 look_from;
   vec3 look_at;
@@ -273,9 +276,12 @@ auto cornell_box() -> SceneConfig
   // box_2 = std::make_shared<rotate_y>(box_2, -18);
   // box_2 = std::make_shared<translate>(box_2, vec3{ 130.0, 0.0, 65.0 });
   // world.add(box_2);
+  auto lights = std::make_shared<hittable_list>();
+  lights->add(std::make_shared<xz_rect>(213, 343, 227, 332, 554, std::shared_ptr<material>()));
+  // lights->add(std::make_shared<sphere>(vec3(190, 150, 190), 90, std::shared_ptr<material>()));
 
   return SceneConfig{ world,
-    std::make_shared<xz_rect>(213, 343, 227, 332, 554, std::shared_ptr<material>()),
+    lights,
     // std::shared_ptr<hittable>{},
     vec3(0.0, 0.0, 0.0),
     vec3{ 278.0, 278.0, -800.0 },
@@ -316,8 +322,11 @@ auto cornell_box_with_smoke() -> SceneConfig
   box_2 = std::make_shared<translate>(box_2, vec3{ 130.0, 0.0, 65.0 });
   world.add(std::make_shared<constant_medium>(box_2, 0.01, vec3{ 1, 1, 1 }));
 
+  auto lights = std::make_shared<hittable_list>();
+  lights->add(std::make_shared<xz_rect>(213, 343, 227, 332, 554, std::shared_ptr<material>()));
+
   return SceneConfig{ world,
-    std::make_shared<xz_rect>(213, 343, 227, 332, 554, std::shared_ptr<material>()),
+    lights,
     vec3(0.0, 0.0, 0.0),
     vec3{ 278.0, 278.0, -800.0 },
     // vec3{ 278.0, 278.0, -1400.0 },
@@ -417,8 +426,14 @@ auto lights_with_floating_sphere() -> SceneConfig
   world.add(std::make_shared<sphere>(vec3{ 0, 800, 0 }, 500, std::make_shared<dielectric>(1.5)));// glass sphere
   world.add(std::make_shared<sphere>(vec3{ 0, -400, 0 }, 3000, metal_material));// dome
 
+  auto lights = std::make_shared<hittable_list>();
+  lights->add(std::make_shared<xz_rect>(-50, 50, -50, 50, 1, std::shared_ptr<material>()));
+  lights->add(std::make_shared<xz_rect>(-1500, 1500, 1000, 1200, 1, std::shared_ptr<material>()));
+  lights->add(std::make_shared<xz_rect>(-1500, 1500, 1200, 1400, 1, std::shared_ptr<material>()));
+  lights->add(std::make_shared<xz_rect>(-1500, 1500, 1400, 1600, 1, std::shared_ptr<material>()));
+
   return SceneConfig{ world,
-    std::shared_ptr<hittable>{},
+    lights,
     vec3(1.0, 1.0, 1.0),
     // vec3{ 0.0, 10000.0, -12000.0 },
     vec3{ 0.0, 100.0, -2900.0 },
@@ -438,10 +453,10 @@ auto main() -> int
   constexpr auto image_width = 1000;
   constexpr auto image_height = static_cast<int>(image_width / aspect_ratio);
   constexpr auto samples_per_pixel = 1000;
-  constexpr auto max_depth = 20;
+  constexpr auto max_depth = 50;
 
   // World
-  auto scene = cornell_box_with_smoke();
+  auto scene = cornell_box();
 
   // Camera
   auto cam = camera{ scene.look_from,
@@ -470,7 +485,7 @@ auto main() -> int
                         max_depth,
                         &cam,
                         &world = scene.world,
-                        &light = scene.light,
+                        &lights = scene.lights,
                         &background_color = scene.background_color](int from, int until, bool report = false) {
     auto distance = until - from;
     auto pixel_colors = std::vector<std::vector<vec3>>(distance, std::vector<vec3>(image_width));
@@ -482,7 +497,7 @@ auto main() -> int
           auto u = (i + random_double()) / (image_width - 1);
           auto v = (j + random_double()) / (image_height - 1);
           auto r = cam.get_ray(u, v);
-          pixel_color += ray_color(r, background_color, world, light, max_depth);
+          pixel_color += ray_color(r, background_color, world, lights, max_depth);
         }
         pixel_colors[j - from][i] = prepare_color(pixel_color, samples_per_pixel);
       }

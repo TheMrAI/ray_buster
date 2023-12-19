@@ -20,8 +20,10 @@ public:
   void add(std::shared_ptr<hittable> object) { objects_.push_back(object); }
   auto objects() const -> std::vector<std::shared_ptr<hittable>> const& { return objects_; }
 
-  virtual bool hit(ray const& r, double t_min, double t_max, hit_record& rec) const override;
-  virtual bool bounding_box(double time_0, double time_1, aabb& bounding_box) const override;
+  auto hit(ray const& r, double t_min, double t_max, hit_record& rec) const -> bool override;
+  auto bounding_box(double time_0, double time_1, aabb& bounding_box) const -> bool override;
+  auto pdf_value(vec3 const& /*origin*/, vec3 const& /*v*/) const -> double override;
+  auto random(vec3 const& o) const -> vec3 override;
 };
 
 auto hittable_list::hit(ray const& r, double t_min, double t_max, hit_record& rec) const -> bool
@@ -55,6 +57,21 @@ auto hittable_list::bounding_box(double time_0, double time_1, aabb& bounding_bo
   }
 
   return true;
+}
+
+auto hittable_list::pdf_value(vec3 const& o, vec3 const& v) const -> double {
+  auto weight = 1.0/objects_.size();
+  auto sum = 0.0;
+
+  for (auto const& object : objects_) {
+    sum += weight * object->pdf_value(o, v);
+  }
+  return sum;
+}
+
+auto hittable_list::random(vec3 const& o) const -> vec3 {
+  auto int_size = static_cast<int>(objects_.size());
+  return objects_[random_int(0, int_size-1)]->random(o);
 }
 
 #endif
