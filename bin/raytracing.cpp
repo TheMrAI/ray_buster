@@ -252,17 +252,21 @@ auto cornell_box() -> SceneConfig
   auto red = std::make_shared<lambertian>(vec3(.65, .05, .05));
   auto white = std::make_shared<lambertian>(vec3(.73, .73, .73));
   auto green = std::make_shared<lambertian>(vec3(.12, .45, .15));
-  auto light_color = std::make_shared<diffuse_light>(vec3(15, 15, 15));
+  auto blue = std::make_shared<lambertian>(vec3{0.07, 0.039, 0.5586});
 
-  auto light = std::make_shared<flip_face>(std::make_shared<xz_rect>(213, 343, 227, 332, 554, light_color));
+  auto light_color_one = std::make_shared<diffuse_light>(vec3(15, 15, 15));
+  auto light_one = std::make_shared<flip_face>(std::make_shared<xz_rect>(313, 443, 227, 332, 554, light_color_one));
+  auto light_color_two = std::make_shared<diffuse_light>(vec3(15, 12, 5));
+  auto light_two = std::make_shared<flip_face>(std::make_shared<xz_rect>(113, 243, 227, 332, 554, light_color_two));
 
-  world.add(light);
-  world.add(std::make_shared<yz_rect>(0, 555, -800, 555, 555, green));
-  world.add(std::make_shared<yz_rect>(0, 555, -800, 555, 0, red));
+  world.add(light_one);
+  world.add(light_two);
+  world.add(std::make_shared<yz_rect>(0, 555, -800, 555, 555, green)); // left
+  world.add(std::make_shared<yz_rect>(0, 555, -800, 555, 0, red)); // right
   world.add(std::make_shared<xz_rect>(0, 555, -800, 555, 555, white));// top
   world.add(std::make_shared<xz_rect>(0, 555, -800, 555, 0, white));// bottom
-  world.add(std::make_shared<xy_rect>(0, 555, 0, 555, 555, white));// back
-  world.add(std::make_shared<xy_rect>(0, 555, 0, 555, -800, white));
+  world.add(std::make_shared<xy_rect>(0, 555, 0, 555, 555, blue));// back
+  world.add(std::make_shared<xy_rect>(0, 555, 0, 555, -800, white)); // front
 
   auto aluminium = std::make_shared<metal>(vec3{0.8, 0.85, 0.88}, 0.0);
   std::shared_ptr<hittable> box_1 = std::make_shared<box>(vec3{ 0, 0, 0 }, vec3{ 165, 330, 165 }, aluminium);
@@ -277,8 +281,9 @@ auto cornell_box() -> SceneConfig
   // box_2 = std::make_shared<translate>(box_2, vec3{ 130.0, 0.0, 65.0 });
   // world.add(box_2);
   auto lights = std::make_shared<hittable_list>();
-  lights->add(std::make_shared<xz_rect>(213, 343, 227, 332, 554, std::shared_ptr<material>()));
-  // lights->add(std::make_shared<sphere>(vec3(190, 150, 190), 90, std::shared_ptr<material>()));
+  lights->add(std::make_shared<xz_rect>(313, 443, 227, 332, 554, std::shared_ptr<material>()));
+  lights->add(std::make_shared<xz_rect>(113, 243, 227, 332, 554, std::shared_ptr<material>()));
+  lights->add(std::make_shared<sphere>(vec3(190, 150, 190), 90, std::shared_ptr<material>()));
 
   return SceneConfig{ world,
     lights,
@@ -452,8 +457,8 @@ auto main() -> int
   constexpr auto aspect_ratio = 1.0;
   constexpr auto image_width = 1000;
   constexpr auto image_height = static_cast<int>(image_width / aspect_ratio);
-  constexpr auto samples_per_pixel = 1000;
-  constexpr auto max_depth = 50;
+  constexpr auto samples_per_pixel = 1500;
+  constexpr auto max_depth = 20;
 
   // World
   auto scene = cornell_box();
