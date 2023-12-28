@@ -1,4 +1,5 @@
 cc_binary(
     name = "ray_buster",
     srcs = ["ray_buster.cc"],
+    deps = ["//lib:lina"],
 )

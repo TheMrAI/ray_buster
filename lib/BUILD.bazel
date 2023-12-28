@@ -1,0 +1,14 @@
+
+cc_library(
+    name = "lina",
+    srcs = ["lina.cc"],
+    hdrs = ["lina.h"],
+    visibility=["//main:__pkg__"]
+)
+
+cc_test(
+  name = "lina_test",
+  size = "small",
+  srcs = ["lina_test.cc"],
+  deps = ["lina", "@googletest//:gtest_main"],
+)

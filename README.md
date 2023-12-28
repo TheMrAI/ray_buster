@@ -13,7 +13,7 @@ bazelisk build //main:ray_buster
 Test:
 
 ```bash
-bazelisk test --cxxopt=-std=c++14 --test_output=all //vector:hello_test
+bazelisk test --cxxopt=-std=c++23 --test_output=all //lib:lina_test
 ```
 
 ## Inspired by
