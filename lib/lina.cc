@@ -1,7 +1,7 @@
 #include "lina.h"
 #include <array>
-#include <span>
 #include <cmath>
+#include <span>
 
 auto lina::add(std::span<double const, 3> const lhs, std::span<double const, 3> const rhs) -> std::array<double, 3>
 {
@@ -44,24 +44,19 @@ auto lina::dot(std::span<double const, 3> const lhs, std::span<double const, 3> 
   return result;
 }
 
-auto lina::unit(std::span<double const, 3> const vector) -> std::array<double, 3> 
+auto lina::unit(std::span<double const, 3> const vector) -> std::array<double, 3>
 {
   auto result = std::array<double, 3>{};
   auto length = lina::length(vector);
-  for (std::size_t i = 0; i < vector.size(); i++) {
-    result[i] = vector[i] / length;
-  }
+  for (std::size_t i = 0; i < vector.size(); i++) { result[i] = vector[i] / length; }
   return result;
 }
 
-auto lina::length_squared(std::span<double const, 3> const vector) -> double {
-    auto result = 0.0;
-    for (auto val : vector) {
-        result += val * val;
-    }
-    return result;
+auto lina::length_squared(std::span<double const, 3> const vector) -> double
+{
+  auto result = 0.0;
+  for (auto val : vector) { result += val * val; }
+  return result;
 }
 
-auto lina::length(std::span<double const, 3> const vector) -> double {
-    return std::sqrt(length_squared(vector));
-}
+auto lina::length(std::span<double const, 3> const vector) -> double { return std::sqrt(length_squared(vector)); }

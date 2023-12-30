@@ -3,42 +3,19 @@
 
 #include "lib/lina.h"
 #include "lib/vec3.h"
+#include "lib/collision.h"
 
-class Ray {
-public:
-    Ray(lina::Vec3 source, lina::Vec3 direction): source_{source}, dir_{direction} {};
+auto ray_color(trace::Ray const& r) -> lina::Vec3 {
+    auto sphere = trace::Sphere{lina::Vec3{0.0, 0.0, -1.0}, 0.5};
+    auto world = trace::Sphere{lina::Vec3{0.0, -105.5, -1.0}, 100};
 
-    lina::Vec3 const& Source() const {
-        return source_;
+    auto collision = sphere.collide(r);
+    if (collision) {
+        return 0.5*lina::Vec3{collision.value().normal[0] + 1.0, collision.value().normal[1] + 1.0, collision.value().normal[2] + 1.0};
     }
-
-    lina::Vec3 const& Direction() const {
-        return dir_;
-    }
-private:
-    lina::Vec3 source_;
-    lina::Vec3 dir_;
-};
-
-auto sphere_hit(lina::Vec3 const& center, double radius, Ray const& r) -> double {
-    auto oc = r.Source() - center;
-    auto a = lina::length_squared(r.Direction().Components());
-    auto half_b = dot(oc, r.Direction());
-    auto c = lina::length_squared(oc.Components()) - radius*radius;
-    auto discriminant = half_b*half_b - a*c;
-
-    if (discriminant < 0) {
-        return -1.0;
-    }
-    return (-half_b - std::sqrt(discriminant)) / a;
-}
-
-auto ray_color(Ray const& r) -> lina::Vec3 {
-    auto t = sphere_hit(lina::Vec3{0.0, 0.0, -1.0}, 0.5, r);
-    if (t != -1.0) {
-        auto hit_point = r.Source() + t*r.Direction();
-        auto normal = lina::unit(hit_point - lina::Vec3{0.0, 0.0, -1.0});
-        return 0.5*lina::Vec3{normal[0] + 1.0, normal[1] + 1.0, normal[2] + 1.0};
+    collision = world.collide(r);
+    if (collision) {
+        return lina::Vec3{0.0, 1.0, 0.0};
     }
 
     auto a = 0.5*(r.Direction()[1] + 1.0);
@@ -46,7 +23,7 @@ auto ray_color(Ray const& r) -> lina::Vec3 {
 }
 
 auto write_color(lina::Vec3 const& color) {
-    std::cout << static_cast<int>(255.9999 * color[0]) << " " << static_cast<int>(255.9999 * color[1]) << " " << static_cast<int>(255.9999 * color[1]) << std::endl;
+    std::cout << static_cast<int>(255.9999 * color[0]) << " " << static_cast<int>(255.9999 * color[1]) << " " << static_cast<int>(255.9999 * color[2]) << std::endl;
 }
 
 auto main() -> int {
@@ -76,7 +53,7 @@ auto main() -> int {
         for (auto j = size_t{0}; j < image_width; ++j) {
             auto pixel_center = first_pixel_position + (j * pixel_delta_u) + (i * pixel_delta_v);
             auto ray_direction = lina::unit(pixel_center - camera_center);
-            auto ray = Ray{camera_center, ray_direction};
+            auto ray = trace::Ray{camera_center, ray_direction};
             auto color = ray_color(ray);
             write_color(color);
         }
