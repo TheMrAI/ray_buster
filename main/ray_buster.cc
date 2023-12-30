@@ -9,8 +9,9 @@
 #include "lib/trace/camera.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/geometry/sphere.h"
-#include "lib/trace/lambertian.h"
+#include "lib/trace/material/lambertian.h"
 #include "lib/trace/ray.h"
+#include "lib/trace/scattering.h"
 #include "lib/trace/util.h"
 
 auto closest_collision(trace::Ray const& ray, std::vector<std::unique_ptr<trace::Component>> const& scene_components)

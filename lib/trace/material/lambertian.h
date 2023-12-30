@@ -1,28 +1,13 @@
-#ifndef RAY_BUSTER_TRACE_LAMBERTIAN_H_
-#define RAY_BUSTER_TRACE_LAMBERTIAN_H_
+#ifndef RAY_BUSTER_LIB_TRACE_MATERIAL_LAMBERTIAN_H_
+#define RAY_BUSTER_LIB_TRACE_MATERIAL_LAMBERTIAN_H_
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/ray.h"
+#include "lib/trace/scattering.h"
 #include "lib/trace/util.h"
 
 namespace trace {
-
-struct Scattering
-{
-  trace::Ray ray;
-  lina::Vec3 attenuation;
-};
-
-class Material
-{
-public:
-  virtual auto Scatter(Ray const& ray, Collision const& collision, std::mt19937& randomGenerator)
-    -> std::optional<Scattering>
-  {
-    return std::optional<Scattering>{};
-  };
-};
 
 class Lambertian : public Material
 {
