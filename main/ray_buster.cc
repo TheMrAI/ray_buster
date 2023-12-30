@@ -9,6 +9,7 @@
 #include "lib/trace/camera.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/geometry/sphere.h"
+#include "lib/trace/lambertian.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/util.h"
 
@@ -41,11 +42,13 @@ auto ray_color(trace::Ray const& ray,
 
   auto collision = closest_collision(ray, scene_components);
   if (collision) {
-    // auto bounceDirection = trace::randomOnUnitHemisphere(randomGenerator, collision.value().normal);
-    auto bounceDirection = trace::randomOnUnitSphere(randomGenerator) + collision.value().normal;
-    return 0.5
-           * ray_color(
-             trace::Ray{ collision.value().point, bounceDirection }, scene_components, randomGenerator, depth - 1);
+    auto material = trace::Lambertian{ lina::Vec3{ 0.5, 0.5, 0.5 } };
+    auto scattering = material.Scatter(ray, collision.value(), randomGenerator);
+    if (scattering) {
+      return scattering.value().attenuation
+             * ray_color(scattering.value().ray, scene_components, randomGenerator, depth - 1);
+    }
+    return lina::Vec3{ 0.0, 0.0, 0.0 };
   }
 
   auto a = 0.5 * (ray.Direction()[1] + 1.0);

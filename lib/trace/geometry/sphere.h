@@ -16,7 +16,7 @@ public:
   Sphere() : center_{ lina::Vec3{} }, radius_{ 1.0 } {}
   Sphere(lina::Vec3 center, double radius) : center_{ center }, radius_{ radius } {}
 
-  auto Collide(Ray const& ray) -> std::optional<Collision>
+  auto Collide(Ray const& ray) -> std::optional<Collision> override
   {
     auto oc = ray.Source() - center_;
     auto a = lina::length_squared(ray.Direction().Components());
@@ -25,9 +25,7 @@ public:
     auto discriminant = half_b * half_b - a * c;
 
     auto t = (-half_b - std::sqrt(discriminant)) / a;
-    if (t < 0.0) {
-        t = (-half_b + std::sqrt(discriminant)) / a;
-    }
+    if (t < 0.0) { t = (-half_b + std::sqrt(discriminant)) / a; }
     if (discriminant < 0.0 || t < 0.0) { return std::optional<Collision>{}; }
 
     auto collision = Collision{};
@@ -37,7 +35,7 @@ public:
     // push the point away from the surface, so the ray doesn't accidentally hit it again
     collision.point += collision.normal * 0.00001;
     collision.front_face = dot(ray.Direction(), collision.normal) < 0.0;
-    return std::optional<Collision>{ collision };
+    return std::optional<Collision>{ std::move(collision) };
   }
 
 private:

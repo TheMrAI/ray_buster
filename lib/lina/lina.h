@@ -9,6 +9,7 @@ namespace lina {
 
 auto add(std::span<double const, 3> const lhs, std::span<double const, 3> const rhs) -> std::array<double, 3>;
 auto sub(std::span<double const, 3> const lhs, std::span<double const, 3> const rhs) -> std::array<double, 3>;
+auto mul(std::span<double const, 3> const lhs, std::span<double const, 3> const rhs) -> std::array<double, 3>;
 auto scale(std::span<double const, 3> const vector, double scalar) -> std::array<double, 3>;
 auto scale(double scalar, std::span<double const, 3> const vector) -> std::array<double, 3>;
 auto cross(std::span<double const, 3> const lhs, std::span<double const, 3> const rhs) -> std::array<double, 3>;

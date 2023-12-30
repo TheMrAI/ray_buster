@@ -17,6 +17,12 @@ auto lina::sub(std::span<double const, 3> const lhs, std::span<double const, 3> 
   return result;
 }
 
+auto lina::mul(std::span<double const, 3> const lhs, std::span<double const, 3> const rhs) -> std::array<double, 3> {
+  auto result = std::array<double, 3>{};
+  for (std::size_t i = 0; i < lhs.size(); ++i) { result[i] = lhs[i] * rhs[i]; }
+  return result;
+}
+
 auto lina::scale(double scalar, std::span<double const, 3> const vector) -> std::array<double, 3>
 {
   auto result = std::array<double, 3>{};

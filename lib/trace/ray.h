@@ -9,7 +9,7 @@ class Ray
 {
 public:
   Ray() : source_{ lina::Vec3{ 0.0, 0.0, 0.0 } }, dir_{ lina::Vec3{ 0.0, 1.0, 0.0 } } {}
-  Ray(lina::Vec3 source, lina::Vec3 direction) : source_{ source }, dir_{ direction } {}
+  Ray(lina::Vec3 source, lina::Vec3 direction) : source_{ source }, dir_{ lina::unit(direction) } {}
 
   lina::Vec3 const& Source() const { return source_; }
 

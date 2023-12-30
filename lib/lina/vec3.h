@@ -53,6 +53,8 @@ Vec3 operator+(Vec3 const& lhs, Vec3 const& rhs) { return Vec3{ lina::add(lhs.Co
 
 Vec3 operator-(Vec3 const& lhs, Vec3 const& rhs) { return Vec3{ lina::sub(lhs.Components(), rhs.Components()) }; }
 
+Vec3 operator*(Vec3 const& lhs, Vec3 const& rhs) { return Vec3{ lina::mul(lhs.Components(), rhs.Components()) }; }
+
 Vec3 operator*(Vec3 const& lhs, double scalar) { return Vec3{ lina::scale(scalar, lhs.Components()) }; }
 
 Vec3 operator*(double scalar, Vec3 const& lhs) { return Vec3{ lina::scale(scalar, lhs.Components()) }; }
@@ -64,6 +66,12 @@ double dot(Vec3 const& lhs, Vec3 const& rhs) { return lina::dot(lhs.Components()
 Vec3 cross(Vec3 const& lhs, Vec3 const& rhs) { return Vec3{ lina::cross(lhs.Components(), rhs.Components()) }; }
 
 Vec3 unit(Vec3 const& vector) { return Vec3{ lina::unit(vector.Components()) }; }
+
+auto nearZero(Vec3 const& vector) -> bool
+{
+  auto epsilon = 1e-8;
+  return std::fabs(vector[0]) < epsilon && std::fabs(vector[1]) < epsilon && std::fabs(vector[2]) < epsilon;
+}
 
 }// namespace lina
 
