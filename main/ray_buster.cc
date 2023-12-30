@@ -1,8 +1,8 @@
 #include <cmath>
 #include <iostream>
 #include <memory>
-#include <vector>
 #include <random>
+#include <vector>
 
 #include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
@@ -32,29 +32,38 @@ auto closest_collision(trace::Ray const& ray, std::vector<std::unique_ptr<trace:
   return closest_collision;
 }
 
-auto ray_color(trace::Ray const& ray, std::vector<std::unique_ptr<trace::Component>> const& scene_components,  std::mt19937& randomGenerator, std::size_t depth)
-  -> lina::Vec3
+auto ray_color(trace::Ray const& ray,
+  std::vector<std::unique_ptr<trace::Component>> const& scene_components,
+  std::mt19937& randomGenerator,
+  std::size_t depth) -> lina::Vec3
 {
-    if (depth == 0) {
-        return lina::Vec3{0.0, 0.0, 0.0};
-    }
+  if (depth == 0) { return lina::Vec3{ 0.0, 0.0, 0.0 }; }
 
   auto collision = closest_collision(ray, scene_components);
   if (collision) {
     // auto bounceDirection = trace::randomOnUnitHemisphere(randomGenerator, collision.value().normal);
-    auto bounceDirection = trace::randomOnUnitHemisphere(randomGenerator, collision.value().normal);
+    auto bounceDirection = trace::randomOnUnitSphere(randomGenerator) + collision.value().normal;
     return 0.5
-           * ray_color(trace::Ray{collision.value().point, bounceDirection}, scene_components, randomGenerator, depth-1);
+           * ray_color(
+             trace::Ray{ collision.value().point, bounceDirection }, scene_components, randomGenerator, depth - 1);
   }
 
   auto a = 0.5 * (ray.Direction()[1] + 1.0);
   return (1.0 - a) * lina::Vec3{ 1.0, 1.0, 1.0 } + a * lina::Vec3{ 0.5, 0.7, 1.0 };
 }
 
+// applying gamma correction to the colors
+auto linearToGamma(double LinearSpaceValue) -> double { return std::sqrt(LinearSpaceValue); }
+
 auto write_color(lina::Vec3 const& color)
 {
-  std::cout << static_cast<int>(255.9999 * color[0]) << " " << static_cast<int>(255.9999 * color[1]) << " "
-            << static_cast<int>(255.9999 * color[2]) << std::endl;
+  auto red = linearToGamma(color[0]);
+  auto green = linearToGamma(color[1]);
+  auto blue = linearToGamma(color[2]);
+
+  // we can get close to 256, but not above, granted the input comes in between [0.0, 1.0)
+  std::cout << static_cast<int>(255.9999 * red) << " " << static_cast<int>(255.9999 * green) << " "
+            << static_cast<int>(255.9999 * blue) << std::endl;
 }
 
 auto main() -> int
@@ -71,7 +80,7 @@ auto main() -> int
   scene_components.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, -100.5, -1.0 }, 100));// world
 
   auto randomDevice = std::random_device{};
-  auto randomGenerator = std::mt19937{randomDevice()};
+  auto randomGenerator = std::mt19937{ randomDevice() };
 
   std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
   for (auto i = size_t{ 0 }; i < image_height; ++i) {
