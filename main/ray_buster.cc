@@ -10,6 +10,7 @@
 #include "lib/trace/collision.h"
 #include "lib/trace/geometry/sphere.h"
 #include "lib/trace/material/lambertian.h"
+#include "lib/trace/material/metal.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/scattering.h"
 #include "lib/trace/util.h"
@@ -43,7 +44,7 @@ auto ray_color(trace::Ray const& ray,
 
   auto collision = closest_collision(ray, scene_components);
   if (collision) {
-    auto material = trace::Lambertian{ lina::Vec3{ 0.5, 0.5, 0.5 } };
+    auto material = trace::Metal{ lina::Vec3{ 0.7, 0.7, 0.7 } };
     auto scattering = material.Scatter(ray, collision.value(), randomGenerator);
     if (scattering) {
       return scattering.value().attenuation
