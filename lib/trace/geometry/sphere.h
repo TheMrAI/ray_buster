@@ -24,13 +24,18 @@ public:
     auto c = lina::length_squared(oc.Components()) - radius_ * radius_;
     auto discriminant = half_b * half_b - a * c;
 
-
     auto t = (-half_b - std::sqrt(discriminant)) / a;
+    if (t < 0.0) {
+        t = (-half_b + std::sqrt(discriminant)) / a;
+    }
     if (discriminant < 0.0 || t < 0.0) { return std::optional<Collision>{}; }
 
     auto collision = Collision{};
     collision.point = ray.Source() + ray.Direction() * t;
     collision.normal = lina::unit(collision.point - center_);
+    // floating point correction
+    // push the point away from the surface, so the ray doesn't accidentally hit it again
+    collision.point += collision.normal * 0.00001;
     collision.front_face = dot(ray.Direction(), collision.normal) < 0.0;
     return std::optional<Collision>{ collision };
   }

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <random>
 
 #include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
@@ -9,6 +10,7 @@
 #include "lib/trace/collision.h"
 #include "lib/trace/geometry/sphere.h"
 #include "lib/trace/ray.h"
+#include "lib/trace/util.h"
 
 auto closest_collision(trace::Ray const& ray, std::vector<std::unique_ptr<trace::Component>> const& scene_components)
   -> std::optional<trace::Collision>
@@ -30,15 +32,19 @@ auto closest_collision(trace::Ray const& ray, std::vector<std::unique_ptr<trace:
   return closest_collision;
 }
 
-auto ray_color(trace::Ray const& ray, std::vector<std::unique_ptr<trace::Component>> const& scene_components)
+auto ray_color(trace::Ray const& ray, std::vector<std::unique_ptr<trace::Component>> const& scene_components,  std::mt19937& randomGenerator, std::size_t depth)
   -> lina::Vec3
 {
+    if (depth == 0) {
+        return lina::Vec3{0.0, 0.0, 0.0};
+    }
+
   auto collision = closest_collision(ray, scene_components);
   if (collision) {
+    // auto bounceDirection = trace::randomOnUnitHemisphere(randomGenerator, collision.value().normal);
+    auto bounceDirection = trace::randomOnUnitHemisphere(randomGenerator, collision.value().normal);
     return 0.5
-           * lina::Vec3{
-               collision.value().normal[0] + 1.0, collision.value().normal[1] + 1.0, collision.value().normal[2] + 1.0
-             };
+           * ray_color(trace::Ray{collision.value().point, bounceDirection}, scene_components, randomGenerator, depth-1);
   }
 
   auto a = 0.5 * (ray.Direction()[1] + 1.0);
@@ -62,13 +68,16 @@ auto main() -> int
 
   auto scene_components = std::vector<std::unique_ptr<trace::Component>>{};
   scene_components.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 0.0, -1.0 }, 0.5));// sphere
-  scene_components.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, -105.5, -1.0 }, 100));// world
+  scene_components.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, -100.5, -1.0 }, 100));// world
+
+  auto randomDevice = std::random_device{};
+  auto randomGenerator = std::mt19937{randomDevice()};
 
   std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
   for (auto i = size_t{ 0 }; i < image_height; ++i) {
     for (auto j = size_t{ 0 }; j < image_width; ++j) {
       auto ray = sampling_rays[i][j];
-      auto color = ray_color(ray, scene_components);
+      auto color = ray_color(ray, scene_components, randomGenerator, 10);
       write_color(color);
     }
   }

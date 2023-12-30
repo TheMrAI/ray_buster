@@ -37,6 +37,10 @@ public:
     return *this;
   }
 
+  Vec3 operator-() const {
+    return Vec3{-v_[0], -v_[1], -v_[2]};
+  }
+
   double operator[](size_t i) const { return v_[i]; }
 
   double Length() const { return lina::length(v_); }
