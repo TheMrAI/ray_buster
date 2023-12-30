@@ -28,19 +28,20 @@ private:
   lina::Vec3 dir_;
 };
 
-class Operation
+class Component
 {
-  virtual auto collide(Ray const& ray) -> std::optional<Collision> = 0;
+public:
+  virtual auto Collide(Ray const& ray) -> std::optional<Collision> = 0;
 };
 
 
-class Sphere : public Operation
+class Sphere : public Component
 {
 public:
   Sphere() : center_{ lina::Vec3{} }, radius_{ 1.0 } {}
   Sphere(lina::Vec3 center, double radius) : center_{ center }, radius_{ radius } {}
 
-  auto collide(Ray const& ray) -> std::optional<Collision>
+  auto Collide(Ray const& ray) -> std::optional<Collision>
   {
     auto oc = ray.Source() - center_;
     auto a = lina::length_squared(ray.Direction().Components());
