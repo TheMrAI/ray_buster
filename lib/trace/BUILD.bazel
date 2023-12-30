@@ -1,0 +1,8 @@
+
+cc_library(
+    name = "trace",
+    srcs = [],
+    hdrs = ["collision.h"],
+    visibility=["//main:__pkg__"],
+    deps = ["//lib/lina:lina"],
+)

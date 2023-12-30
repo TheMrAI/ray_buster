@@ -2,8 +2,8 @@
 cc_library(
     name = "lina",
     srcs = ["lina.cc"],
-    hdrs = ["lina.h", "vec3.h", "collision.h"],
-    visibility=["//main:__pkg__"]
+    hdrs = ["lina.h", "vec3.h"],
+    visibility=["//main:__pkg__", "//lib/trace:__pkg__"]
 )
 
 cc_test(

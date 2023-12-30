@@ -3,9 +3,9 @@
 #include <memory>
 #include <vector>
 
-#include "lib/collision.h"
-#include "lib/lina.h"
-#include "lib/vec3.h"
+#include "lib/trace/collision.h"
+#include "lib/lina/lina.h"
+#include "lib/lina/vec3.h"
 
 auto closest_collision(trace::Ray const& ray, std::vector<std::unique_ptr<trace::Component>> const& scene_components)
   -> std::optional<trace::Collision>

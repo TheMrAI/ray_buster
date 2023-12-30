@@ -1,7 +1,7 @@
 #ifndef RAY_BUSTER_COLLISION_HEADER
 #define RAY_BUSTER_COLLISION_HEADER
 
-#include "vec3.h"
+#include "lib/lina/vec3.h"
 #include <optional>
 
 namespace trace {
