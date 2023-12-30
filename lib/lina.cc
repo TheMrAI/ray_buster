@@ -44,6 +44,16 @@ auto lina::dot(std::span<double const, 3> const lhs, std::span<double const, 3> 
   return result;
 }
 
+auto lina::unit(std::span<double const, 3> const vector) -> std::array<double, 3> 
+{
+  auto result = std::array<double, 3>{};
+  auto length = lina::length(vector);
+  for (std::size_t i = 0; i < vector.size(); i++) {
+    result[i] = vector[i] / length;
+  }
+  return result;
+}
+
 auto lina::length_squared(std::span<double const, 3> const vector) -> double {
     auto result = 0.0;
     for (auto val : vector) {
