@@ -11,7 +11,7 @@ struct Collision
 {
   lina::Vec3 point = lina::Vec3{};
   lina::Vec3 normal = lina::Vec3{};
-  bool front_face = true;// which face the normal vector is on
+  bool frontFace = true;// which face the normal vector is on
   // this is an arbitrary property, front face could be either face, depends on the object itself
 };
 

@@ -2,7 +2,7 @@
 cc_library(
     name = "trace",
     srcs = [],
-    hdrs = ["collision.h", "ray.h", "geometry/sphere.h", "camera.h", "util.h", "scattering.h", "material/lambertian.h", "material/metal.h"],
+    hdrs = ["collision.h", "ray.h", "geometry/sphere.h", "camera.h", "util.h", "scattering.h", "material/lambertian.h", "material/metal.h", "material/dielectric.h"],
     visibility=["//main:__pkg__"],
     deps = ["//lib/lina:lina"],
 )

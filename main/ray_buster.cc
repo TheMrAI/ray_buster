@@ -12,6 +12,7 @@
 #include "lib/trace/geometry/sphere.h"
 #include "lib/trace/material/lambertian.h"
 #include "lib/trace/material/metal.h"
+#include "lib/trace/material/dielectric.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/scattering.h"
 #include "lib/trace/util.h"
@@ -101,7 +102,7 @@ auto main() -> int
   sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 0.0, -1.0 }, 0.5),
     std::make_unique<trace::Lambertian>(lina::Vec3{ 0.5, 0.5, 0.5 }));// sphere
   sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ -1.0, 0.0, -1.0 }, 0.5),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.5, 0.5, 0.7 }));// blue sphere
+    std::make_unique<trace::Dielectric>(1.7));// glass sphere
 
   auto randomDevice = std::random_device{};
   auto randomGenerator = std::mt19937{ randomDevice() };
