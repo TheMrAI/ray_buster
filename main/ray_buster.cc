@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 #include <random>
+#include <utility>
 #include <vector>
 
 #include "lib/lina/lina.h"
@@ -15,40 +16,52 @@
 #include "lib/trace/scattering.h"
 #include "lib/trace/util.h"
 
-auto closest_collision(trace::Ray const& ray, std::vector<std::unique_ptr<trace::Component>> const& scene_components)
-  -> std::optional<trace::Collision>
+struct SceneElement
 {
-  auto closest_collision = std::optional<trace::Collision>{};
+  std::unique_ptr<trace::Component> component;
+  std::unique_ptr<trace::Material> material;
+};
 
-  for (auto const& component : scene_components) {
-    auto collision = component->Collide(ray);
+auto closestCollision(trace::Ray const& ray, std::vector<SceneElement> const& sceneElements)
+  -> std::pair<std::optional<trace::Collision>, size_t>
+{
+  auto closestCollision = std::optional<trace::Collision>{};
+  auto elementIndex = size_t{ 0 };
+
+  for (auto i = size_t{ 0 }; i < sceneElements.size(); ++i) {
+    auto collision = sceneElements[i].component->Collide(ray);
     if (!collision) { continue; }
-    if (!closest_collision) {
-      closest_collision = collision;
+    if (!closestCollision) {
+      closestCollision = collision;
+      elementIndex = i;
       continue;
     }
-    auto closest_distance = (closest_collision->point - ray.Source()).Length();
-    auto collision_distance = (collision->point - ray.Source()).Length();
-    if (collision_distance < closest_distance) { closest_collision = collision; }
+    auto closestDistance = (closestCollision->point - ray.Source()).Length();
+    auto collisionDistance = (collision->point - ray.Source()).Length();
+    if (collisionDistance < closestDistance) {
+      closestCollision = collision;
+      elementIndex = i;
+    }
   }
 
-  return closest_collision;
+  return std::make_pair(closestCollision, elementIndex);
 }
 
 auto ray_color(trace::Ray const& ray,
-  std::vector<std::unique_ptr<trace::Component>> const& scene_components,
+  std::vector<SceneElement> const& sceneElements,
   std::mt19937& randomGenerator,
   std::size_t depth) -> lina::Vec3
 {
   if (depth == 0) { return lina::Vec3{ 0.0, 0.0, 0.0 }; }
 
-  auto collision = closest_collision(ray, scene_components);
+  auto [collision, elementIndex] = closestCollision(ray, sceneElements);
   if (collision) {
-    auto material = trace::Metal{ lina::Vec3{ 0.7, 0.7, 0.7 } };
-    auto scattering = material.Scatter(ray, collision.value(), randomGenerator);
+    // auto material = trace::Metal{ lina::Vec3{ 0.7, 0.7, 0.7 } };
+    auto const& material = sceneElements[elementIndex].material;
+    auto scattering = material->Scatter(ray, collision.value(), randomGenerator);
     if (scattering) {
       return scattering.value().attenuation
-             * ray_color(scattering.value().ray, scene_components, randomGenerator, depth - 1);
+             * ray_color(scattering.value().ray, sceneElements, randomGenerator, depth - 1);
     }
     return lina::Vec3{ 0.0, 0.0, 0.0 };
   }
@@ -80,9 +93,11 @@ auto main() -> int
   auto camera = trace::Camera{ image_width, image_height, lina::Vec3{} };
   auto sampling_rays = camera.GenerateSamplingRays();
 
-  auto scene_components = std::vector<std::unique_ptr<trace::Component>>{};
-  scene_components.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 0.0, -1.0 }, 0.5));// sphere
-  scene_components.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, -100.5, -1.0 }, 100));// world
+  auto sceneElements = std::vector<SceneElement>{};
+  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 0.0, -1.0 }, 0.5),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.5, 0.5, 0.5 }));// sphere
+  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, -100.5, -1.0 }, 100),
+    std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.1));// world
 
   auto randomDevice = std::random_device{};
   auto randomGenerator = std::mt19937{ randomDevice() };
@@ -91,7 +106,7 @@ auto main() -> int
   for (auto i = size_t{ 0 }; i < image_height; ++i) {
     for (auto j = size_t{ 0 }; j < image_width; ++j) {
       auto ray = sampling_rays[i][j];
-      auto color = ray_color(ray, scene_components, randomGenerator, 10);
+      auto color = ray_color(ray, sceneElements, randomGenerator, 10);
       write_color(color);
     }
   }
