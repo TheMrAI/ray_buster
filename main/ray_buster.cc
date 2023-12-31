@@ -91,7 +91,12 @@ auto main() -> int
   auto image_height = size_t{ 768 };
 
   // Camera
-  auto camera = trace::Camera{ image_width, image_height, lina::Vec3{} };
+  auto camera = trace::Camera{ image_width,
+    image_height,
+    lina::Vec3{ 0.0, 0.0, 0.0 },
+    lina::Vec3{ 0.0, 0.0, -1.0 },
+    lina::Vec3{ 0.0, 1.0, 0.0 },
+    90.0 };
   auto sampling_rays = camera.GenerateSamplingRays();
 
   auto sceneElements = std::vector<SceneElement>{};
