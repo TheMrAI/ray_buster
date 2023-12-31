@@ -24,7 +24,7 @@ public:
     // The fuzz would break the ray back into the object, in this case we throw it away.
     // Not optimal, but works for now.
     if (lina::dot(scattered.Direction(), collision.normal) <= 0.0) { return std::optional<Scattering>{}; }
-    
+
     auto adjustedCollisionPoint = collision.point + collision.normal * 0.00001;
 
     auto scattering = Scattering{};
