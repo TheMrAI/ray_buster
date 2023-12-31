@@ -7,7 +7,7 @@ Huge inspiration and shootout to the motivating source: <https://raytracing.gith
 Build:
 
 ```bash
-bazelisk build //main:ray_buster
+bazelisk build -c opt //main:ray_buster
 ```
 
 Test:

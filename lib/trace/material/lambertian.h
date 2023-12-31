@@ -6,6 +6,7 @@
 #include "lib/trace/ray.h"
 #include "lib/trace/scattering.h"
 #include "lib/trace/util.h"
+#include <random>
 
 namespace trace {
 

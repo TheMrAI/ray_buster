@@ -97,7 +97,6 @@ auto main() -> int
     lina::Vec3{ 0.0, 0.0, -1.0 },
     lina::Vec3{ 0.0, 1.0, 0.0 },
     90.0 };
-  auto sampling_rays = camera.GenerateSamplingRays();
 
   auto sceneElements = std::vector<SceneElement>{};
   sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, -100.5, -1.0 }, 100),
@@ -112,11 +111,18 @@ auto main() -> int
   auto randomDevice = std::random_device{};
   auto randomGenerator = std::mt19937{ randomDevice() };
 
+  auto sampleCount = size_t{ 10 };
+  auto sampling_rays = camera.GenerateSamplingRays(randomGenerator, sampleCount);
+
   std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
   for (auto i = size_t{ 0 }; i < image_height; ++i) {
     for (auto j = size_t{ 0 }; j < image_width; ++j) {
-      auto ray = sampling_rays[i][j];
-      auto color = ray_color(ray, sceneElements, randomGenerator, 10);
+      auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
+      for (auto sample = size_t{ 0 }; sample < sampleCount; ++sample) {
+        auto ray = sampling_rays[i][j][sample];
+        color += ray_color(ray, sceneElements, randomGenerator, 10);
+      }
+      color /= sampleCount;
       write_color(color);
     }
   }
