@@ -94,10 +94,14 @@ auto main() -> int
   auto sampling_rays = camera.GenerateSamplingRays();
 
   auto sceneElements = std::vector<SceneElement>{};
-  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 0.0, -1.0 }, 0.5),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.5, 0.5, 0.5 }));// sphere
   sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, -100.5, -1.0 }, 100),
     std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.1));// world
+  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 1.0, 0.0, -1.0 }, 0.5),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));// red sphere
+  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 0.0, -1.0 }, 0.5),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.5, 0.5, 0.5 }));// sphere
+  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ -1.0, 0.0, -1.0 }, 0.5),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.5, 0.5, 0.7 }));// blue sphere
 
   auto randomDevice = std::random_device{};
   auto randomGenerator = std::mt19937{ randomDevice() };
