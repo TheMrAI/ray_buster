@@ -23,11 +23,13 @@ public:
     // vector.
     if (lina::nearZero(scatterDirection)) { scatterDirection = collision.normal; }
 
+    auto adjustedCollisionPoint = collision.point + collision.normal * 0.00001;
+
     auto scattering = Scattering{};
     scattering.attenuation = albedo_;
-    scattering.ray = trace::Ray{ collision.point, scatterDirection };
+    scattering.ray = trace::Ray{ adjustedCollisionPoint, scatterDirection };
 
-    return std::optional<Scattering>{ std::move(scattering) };
+    return std::optional<Scattering>{ scattering };
   }
 
 private:

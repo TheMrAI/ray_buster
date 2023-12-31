@@ -24,12 +24,14 @@ public:
     // The fuzz would break the ray back into the object, in this case we throw it away.
     // Not optimal, but works for now.
     if (lina::dot(scattered.Direction(), collision.normal) <= 0.0) { return std::optional<Scattering>{}; }
+    
+    auto adjustedCollisionPoint = collision.point + collision.normal * 0.00001;
 
     auto scattering = Scattering{};
     scattering.attenuation = albedo_;
-    scattering.ray = trace::Ray{ collision.point, reflectedDirection };
+    scattering.ray = trace::Ray{ adjustedCollisionPoint, reflectedDirection };
 
-    return std::optional<Scattering>{ std::move(scattering) };
+    return std::optional<Scattering>{ scattering };
   }
 
 private:
