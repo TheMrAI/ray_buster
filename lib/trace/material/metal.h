@@ -12,12 +12,18 @@ namespace trace {
 class Metal : public Material
 {
 public:
-  Metal(lina::Vec3 albedo) : albedo_{ albedo } {}
+  // fuzz_radius 0.0 means reflections act as perfect
+  Metal(lina::Vec3 albedo, double fuzz_radius = 0.0) : albedo_{ albedo }, fuzz_radius_{ fuzz_radius } {}
 
   auto Scatter(Ray const& ray, Collision const& collision, std::mt19937& randomGenerator)
     -> std::optional<Scattering> override
   {
     auto reflectedDirection = ray.Direction() - 2.0 * lina::dot(ray.Direction(), collision.normal) * collision.normal;
+    auto scattered = Ray{ ray.Source(), reflectedDirection + randomOnUnitSphere(randomGenerator) };
+
+    // The fuzz would break the ray back into the object, in this case we throw it away.
+    // Not optimal, but works for now.
+    if (lina::dot(scattered.Direction(), collision.normal) <= 0.0) { return std::optional<Scattering>{}; }
 
     auto scattering = Scattering{};
     scattering.attenuation = albedo_;
@@ -28,6 +34,7 @@ public:
 
 private:
   lina::Vec3 albedo_;
+  double fuzz_radius_;
 };
 
 }// namespace trace
