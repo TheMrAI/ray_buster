@@ -2,7 +2,7 @@
 
 #include "lina.h"
 
-auto check_equality(std::span<double, 3> result, std::span<double, 3> expected)
+auto checkEquality(std::span<double, 3> result, std::span<double, 3> expected)
 {
   for (std::size_t i = 0; i < result.size(); i++) { EXPECT_DOUBLE_EQ(result[i], expected[i]); }
 }
@@ -14,9 +14,9 @@ TEST(Add, UnitToZero)
   auto expected = std::array<double, 3>{ 1.0, 1.0, 1.0 };
 
   auto result = lina::add(lhs, rhs);
-  check_equality(result, expected);
+  checkEquality(result, expected);
   result = lina::add(rhs, lhs);
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Add, UnitToInverse)
@@ -26,9 +26,9 @@ TEST(Add, UnitToInverse)
   auto expected = std::array<double, 3>{ 0.0, 0.0, 0.0 };
 
   auto result = lina::add(lhs, rhs);
-  check_equality(result, expected);
+  checkEquality(result, expected);
   result = lina::add(rhs, lhs);
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Add, Random)
@@ -38,9 +38,9 @@ TEST(Add, Random)
   auto expected = std::array<double, 3>{ 1.445555, 10.011675, 13.76899 };
 
   auto result = lina::add(lhs, rhs);
-  check_equality(result, expected);
+  checkEquality(result, expected);
   result = lina::add(rhs, lhs);
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Sub, UnitFromZero)
@@ -50,7 +50,7 @@ TEST(Sub, UnitFromZero)
   auto expected = std::array<double, 3>{ -1.0, -1.0, -1.0 };
   auto result = lina::sub(lhs, rhs);
 
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Sub, ZeroFromUnit)
@@ -60,7 +60,7 @@ TEST(Sub, ZeroFromUnit)
   auto expected = std::array<double, 3>{ 1.0, 1.0, 1.0 };
   auto result = lina::sub(lhs, rhs);
 
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Sub, UnitFromUnit)
@@ -70,7 +70,7 @@ TEST(Sub, UnitFromUnit)
   auto expected = std::array<double, 3>{ 0.0, 0.0, 0.0 };
   auto result = lina::sub(lhs, rhs);
 
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Sub, Random)
@@ -80,7 +80,7 @@ TEST(Sub, Random)
   auto expected = std::array<double, 3>{ 5.685555, -5.765675, -10.83101 };
   auto result = lina::sub(lhs, rhs);
 
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Scale, UnitByZero)
@@ -89,9 +89,9 @@ TEST(Scale, UnitByZero)
   auto expected = std::array<double, 3>{ 0.0, 0.0, 0.0 };
   auto result = lina::scale(0.0, vector);
 
-  check_equality(result, expected);
+  checkEquality(result, expected);
   result = lina::scale(vector, 0.0);
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Scale, UnitByOne)
@@ -100,9 +100,9 @@ TEST(Scale, UnitByOne)
   auto expected = std::array<double, 3>{ 1.0, 1.0, 1.0 };
   auto result = lina::scale(1.0, vector);
 
-  check_equality(result, expected);
+  checkEquality(result, expected);
   result = lina::scale(vector, 1.0);
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Scale, UnitByMinusOne)
@@ -111,9 +111,9 @@ TEST(Scale, UnitByMinusOne)
   auto expected = std::array<double, 3>{ -1.0, -1.0, -1.0 };
   auto result = lina::scale(-1.0, vector);
 
-  check_equality(result, expected);
+  checkEquality(result, expected);
   result = lina::scale(vector, -1.0);
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Scale, RandomByRandom)
@@ -122,9 +122,9 @@ TEST(Scale, RandomByRandom)
   auto expected = std::array<double, 3>{ 6.6638861, -24.7968073961875, -38.66311275 };
   auto result = lina::scale(-3.1433425, vector);
 
-  check_equality(result, expected);
+  checkEquality(result, expected);
   result = lina::scale(vector, -3.1433425);
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Cross, IhatJHat)
@@ -134,11 +134,11 @@ TEST(Cross, IhatJHat)
   auto expected = std::array<double, 3>{ 0.0, 0.0, 1.0 };
   auto result = lina::cross(lhs, rhs);
 
-  check_equality(result, expected);
+  checkEquality(result, expected);
   // reversed
   expected = std::array<double, 3>{ 0.0, 0.0, -1.0 };
   result = lina::cross(rhs, lhs);
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Cross, JhatKHat)
@@ -148,11 +148,11 @@ TEST(Cross, JhatKHat)
   auto expected = std::array<double, 3>{ 1.0, 0.0, 0.0 };
   auto result = lina::cross(lhs, rhs);
 
-  check_equality(result, expected);
+  checkEquality(result, expected);
   // reversed
   expected = std::array<double, 3>{ -1.0, 0.0, 0.0 };
   result = lina::cross(rhs, lhs);
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Cross, IhatKHat)
@@ -162,11 +162,11 @@ TEST(Cross, IhatKHat)
   auto expected = std::array<double, 3>{ 0.0, -1.0, 0.0 };
   auto result = lina::cross(lhs, rhs);
 
-  check_equality(result, expected);
+  checkEquality(result, expected);
   // reversed
   expected = std::array<double, 3>{ 0.0, 1.0, 0.0 };
   result = lina::cross(rhs, lhs);
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Cross, Random)
@@ -176,11 +176,11 @@ TEST(Cross, Random)
   auto expected = std::array<double, 3>{ -21.14349816825, 12.9334485218, 32.628264589625 };
   auto result = lina::cross(lhs, rhs);
 
-  check_equality(result, expected);
+  checkEquality(result, expected);
   // reversed
   expected = std::array<double, 3>{ 21.14349816825, -12.9334485218, -32.628264589625 };
   result = lina::cross(rhs, lhs);
-  check_equality(result, expected);
+  checkEquality(result, expected);
 }
 
 TEST(Dot, IHatJHat)
