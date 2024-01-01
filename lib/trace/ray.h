@@ -8,12 +8,11 @@ namespace trace {
 class Ray
 {
 public:
-  Ray() : source_{ lina::Vec3{ 0.0, 0.0, 0.0 } }, dir_{ lina::Vec3{ 0.0, 1.0, 0.0 } } {}
-  Ray(lina::Vec3 source, lina::Vec3 direction) : source_{ source }, dir_{ lina::unit(direction) } {}
+  Ray();
+  Ray(lina::Vec3 source, lina::Vec3 direction);
 
-  lina::Vec3 const& Source() const { return source_; }
-
-  lina::Vec3 const& Direction() const { return dir_; }
+  auto Source() const -> lina::Vec3 const&;
+  auto Direction() const -> lina::Vec3 const&;
 
 private:
   lina::Vec3 source_;
