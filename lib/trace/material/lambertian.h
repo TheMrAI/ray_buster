@@ -5,7 +5,7 @@
 #include "lib/trace/collision.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/scattering.h"
-#include "lib/trace/util.h"
+#include <optional>
 #include <random>
 
 namespace trace {
@@ -13,25 +13,10 @@ namespace trace {
 class Lambertian : public Material
 {
 public:
-  Lambertian(lina::Vec3 albedo) : albedo_{ albedo } {}
+  Lambertian(lina::Vec3 albedo);
 
   auto Scatter(Ray const& ray, Collision const& collision, std::mt19937& randomGenerator)
-    -> std::optional<Scattering> override
-  {
-    auto scatterDirection = trace::randomOnUnitSphere(randomGenerator) + collision.normal;
-
-    // Resolve edge case where the scatter direction is almost completely inverse to the normal
-    // vector.
-    if (lina::nearZero(scatterDirection)) { scatterDirection = collision.normal; }
-
-    auto adjustedCollisionPoint = collision.point + collision.normal * 0.00001;
-
-    auto scattering = Scattering{};
-    scattering.attenuation = albedo_;
-    scattering.ray = trace::Ray{ adjustedCollisionPoint, scatterDirection };
-
-    return std::optional<Scattering>{ scattering };
-  }
+    -> std::optional<Scattering> override;
 
 private:
   lina::Vec3 albedo_;

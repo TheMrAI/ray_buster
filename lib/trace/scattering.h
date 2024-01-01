@@ -1,11 +1,17 @@
 #ifndef RAY_BUSTER_LIB_TRACE_SCATTERING_H_
 #define RAY_BUSTER_LIB_TRACE_SCATTERING_H_
 
+#include "collision.h"
+#include "lib/lina/vec3.h"
+#include "ray.h"
+#include <optional>
+#include <random>
+
 namespace trace {
 
 struct Scattering
 {
-  trace::Ray ray;
+  Ray ray;
   lina::Vec3 attenuation;
 };
 
