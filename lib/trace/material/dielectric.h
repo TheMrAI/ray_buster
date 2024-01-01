@@ -52,7 +52,7 @@ public:
     } else {
       auto refractDirectionPerpendicular = refractionRatio * (ray.Direction() + cosTheta * normal);
       auto refractDirectionParallel =
-        -std::sqrt(std::fabs(1.0 - lina::length_squared(refractDirectionPerpendicular.Components()))) * normal;
+        -std::sqrt(std::fabs(1.0 - lina::lengthSquared(refractDirectionPerpendicular.Components()))) * normal;
       auto refractedDirection = refractDirectionPerpendicular + refractDirectionParallel;
 
       // adjust collision point depending from which side did we hit the boundary

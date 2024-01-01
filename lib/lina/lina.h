@@ -1,5 +1,5 @@
-#ifndef RAY_BUSTER_VECTOR_HEADER
-#define RAY_BUSTER_VECTOR_HEADER
+#ifndef RAY_BUSTER_LIB_LINA_LINA_H_
+#define RAY_BUSTER_LIB_LINA_LINA_H_
 
 #include <array>
 #include <span>
@@ -16,7 +16,7 @@ auto cross(std::span<double const, 3> const lhs, std::span<double const, 3> cons
 auto dot(std::span<double const, 3> const lhs, std::span<double const, 3> const rhs) -> double;
 auto unit(std::span<double const, 3> const vector) -> std::array<double, 3>;
 auto length(std::span<double const, 3> const vector) -> double;
-auto length_squared(std::span<double const, 3> const vector) -> double;
+auto lengthSquared(std::span<double const, 3> const vector) -> double;
 
 }// namespace lina
 

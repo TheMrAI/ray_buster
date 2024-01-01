@@ -59,11 +59,11 @@ auto lina::unit(std::span<double const, 3> const vector) -> std::array<double, 3
   return result;
 }
 
-auto lina::length_squared(std::span<double const, 3> const vector) -> double
+auto lina::lengthSquared(std::span<double const, 3> const vector) -> double
 {
   auto result = 0.0;
   for (auto val : vector) { result += val * val; }
   return result;
 }
 
-auto lina::length(std::span<double const, 3> const vector) -> double { return std::sqrt(length_squared(vector)); }
+auto lina::length(std::span<double const, 3> const vector) -> double { return std::sqrt(lengthSquared(vector)); }

@@ -1,5 +1,5 @@
-#ifndef RAY_BUSTER_VEC3_HEADER
-#define RAY_BUSTER_VEC3_HEADER
+#ifndef RAY_BUSTER_LIB_LINA_VEC3_H_
+#define RAY_BUSTER_LIB_LINA_VEC3_H_
 
 #include "lina.h"
 #include <array>
