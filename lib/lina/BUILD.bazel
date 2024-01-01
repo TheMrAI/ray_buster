@@ -1,8 +1,14 @@
 
 cc_library(
     name = "lina",
-    srcs = ["lina.cc", "vec3.cc"],
-    hdrs = ["lina.h", "vec3.h"],
+    srcs = [
+            "lina.cc",
+            "vec3.cc"
+            ],
+    hdrs = [
+            "lina.h",
+            "vec3.h"
+            ],
     visibility=["//main:__pkg__", "//lib/trace:__pkg__"]
 )
 
