@@ -53,7 +53,7 @@ auto ray_color(trace::Ray const& ray,
   std::mt19937& randomGenerator,
   std::size_t depth) -> lina::Vec3
 {
-  if (depth == 0) { return lina::Vec3{ 0.0, 1.0, 0.0 }; }
+  if (depth == 0) { return lina::Vec3{ 0.0, 0.0, 0.0 }; }
 
   auto [collision, elementIndex] = closestCollision(ray, sceneElements);
   if (collision) {
@@ -101,19 +101,17 @@ auto main() -> int
   auto sceneElements = std::vector<SceneElement>{};
   sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, -100.5, -1.0 }, 100),
     std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// world
-  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 1.0, 0.0, -1.0 }, 0.5),
-  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));// red sphere
-  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 0.0, -1.0 }, 0.5),
-  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.5, 0.5, 0.5 }));// sphere
-  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ -1.0, 0.0, -1.0 }, 0.5),
-  //   std::make_unique<trace::Dielectric>(1.0));// glass sphere
+  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 1.0, 0.0, -1.0 }, 0.5),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));// pink sphere
   sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 0.0, -1.0 }, 0.5),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.5, 0.5, 0.5 }));// sphere
+  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ -1.0, 0.0, -1.0 }, 0.5),
     std::make_unique<trace::Dielectric>(1.4));// glass sphere
 
   auto randomDevice = std::random_device{};
   auto randomGenerator = std::mt19937{ randomDevice() };
 
-  auto sampleCount = size_t{ 1 };
+  auto sampleCount = size_t{ 10 };
   auto sampling_rays = camera.GenerateSamplingRays(randomGenerator, sampleCount);
 
   std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
