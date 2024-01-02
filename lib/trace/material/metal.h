@@ -13,15 +13,17 @@ namespace trace {
 class Metal : public Material
 {
 public:
-  // fuzz_radius 0.0 means reflections act as perfect
-  Metal(lina::Vec3 albedo, double fuzz_radius = 0.0);
+  // Fuzz 0.0 means perfect reflections, while bigger/lower values increase the probability of the reflected ray
+  // deviating from the perfect reflection. Fuzz can take on both positive/negative values, they always produce the
+  // same effect.
+  Metal(lina::Vec3 albedo, double fuzz = 0.0);
 
   auto Scatter(Ray const& ray, Collision const& collision, std::mt19937& randomGenerator)
     -> std::optional<Scattering> override;
 
 private:
   lina::Vec3 albedo_;
-  double fuzz_radius_;
+  double fuzz_;
 };
 
 }// namespace trace

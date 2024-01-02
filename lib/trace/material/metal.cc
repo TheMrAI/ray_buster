@@ -9,23 +9,24 @@
 
 namespace trace {
 
-Metal::Metal(lina::Vec3 albedo, double fuzz_radius) : albedo_{ albedo }, fuzz_radius_{ fuzz_radius } {}
+Metal::Metal(lina::Vec3 albedo, double fuzz) : albedo_{ albedo }, fuzz_{ fuzz } {}
 
 auto Metal::Scatter(Ray const& ray, Collision const& collision, std::mt19937& randomGenerator)
   -> std::optional<Scattering>
 {
-  auto reflectedDirection = ray.Direction() - 2.0 * lina::dot(ray.Direction(), collision.normal) * collision.normal;
-  auto scattered = Ray{ ray.Source(), reflectedDirection + randomOnUnitSphere(randomGenerator) };
-
-  // The fuzz would break the ray back into the object, in this case we throw it away.
-  // Not optimal, but works for now.
-  if (lina::dot(scattered.Direction(), collision.normal) <= 0.0) { return std::optional<Scattering>{}; }
-
   auto adjustedCollisionPoint = collision.point + collision.normal * 0.00001;
+  auto reflectedDirection = ray.Direction() - (2.0 * lina::dot(ray.Direction(), collision.normal) * collision.normal);
+
+  auto fuzzedDirection = reflectedDirection + randomOnUnitSphere(randomGenerator) * fuzz_;
+  // Should the fuzzedDirection point in a direction [orthogonal to normal, opposite to normal], then we just
+  // regenerate the fuzzed direction. This way we can ensure that we always return a valid ray.
+  while (lina::dot(fuzzedDirection, collision.normal) <= 0.0) {
+    fuzzedDirection = reflectedDirection + randomOnUnitSphere(randomGenerator) * fuzz_;
+  }
 
   auto scattering = Scattering{};
   scattering.attenuation = albedo_;
-  scattering.ray = Ray{ adjustedCollisionPoint, reflectedDirection };
+  scattering.ray = Ray{ adjustedCollisionPoint, fuzzedDirection };
 
   return std::optional<Scattering>{ scattering };
 }
