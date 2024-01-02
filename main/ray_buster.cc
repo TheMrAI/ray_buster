@@ -100,13 +100,15 @@ auto main() -> int
 
   auto sceneElements = std::vector<SceneElement>{};
   sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, -100.5, -1.0 }, 100),
-    std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.01));// world
-  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 1.0, 0.0, -1.0 }, 0.5),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));// red sphere
+    std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// world
+  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 1.0, 0.0, -1.0 }, 0.5),
+  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));// red sphere
+  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 0.0, -1.0 }, 0.5),
+  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.5, 0.5, 0.5 }));// sphere
+  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ -1.0, 0.0, -1.0 }, 0.5),
+  //   std::make_unique<trace::Dielectric>(1.0));// glass sphere
   sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 0.0, -1.0 }, 0.5),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.5, 0.5, 0.5 }));// sphere
-  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ -1.0, 0.0, -1.0 }, 0.5),
-    std::make_unique<trace::Dielectric>(1.7));// glass sphere
+    std::make_unique<trace::Dielectric>(1.4));// glass sphere
 
   auto randomDevice = std::random_device{};
   auto randomGenerator = std::mt19937{ randomDevice() };
@@ -116,6 +118,7 @@ auto main() -> int
 
   std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
   for (auto i = size_t{ 0 }; i < image_height; ++i) {
+    std::clog << "\rScanlines remaining: " << (image_height - i - 1) << ' ' << std::flush;
     for (auto j = size_t{ 0 }; j < image_width; ++j) {
       auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
       for (auto sample = size_t{ 0 }; sample < sampleCount; ++sample) {

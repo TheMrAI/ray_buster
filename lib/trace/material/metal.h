@@ -16,7 +16,10 @@ public:
   // Fuzz 0.0 means perfect reflections, while bigger/lower values increase the probability of the reflected ray
   // deviating from the perfect reflection. Fuzz can take on both positive/negative values, they always produce the
   // same effect.
-  Metal(lina::Vec3 albedo, double fuzz = 0.0);
+  // Retry count describes how many times we wish to retry generating the fuzzed ray. It is important to keep
+  // this number reasonable small, or the render could spend a lot of time while trying to generate very a ray in
+  // very unlikely circumstances.
+  Metal(lina::Vec3 albedo, double fuzz = 0.01, size_t retryCount = 0);
 
   auto Scatter(Ray const& ray, Collision const& collision, std::mt19937& randomGenerator)
     -> std::optional<Scattering> override;
@@ -24,6 +27,7 @@ public:
 private:
   lina::Vec3 albedo_;
   double fuzz_;
+  size_t retryCount_;
 };
 
 }// namespace trace
