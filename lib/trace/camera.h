@@ -11,9 +11,9 @@ namespace trace {
 class Camera
 {
 public:
-  Camera(std::size_t image_width,
-    std::size_t image_height,
-    lina::Vec3 camera_center,
+  Camera(std::size_t imageWidth,
+    std::size_t imageHeight,
+    lina::Vec3 cameraCenter,
     lina::Vec3 lookAt,
     lina::Vec3 cameraUp,// this vector serves as a starting point for the orthonormal base generation, doesn't have to
                         // be on the plane of the camera viewport, but it has to be on the proper axis
@@ -27,15 +27,15 @@ public:
     -> std::vector<std::vector<std::vector<trace::Ray>>>;
 
 private:
-  std::size_t image_width_;
-  std::size_t image_height_;
-  lina::Vec3 camera_center_;
+  std::size_t imageWidth_;
+  std::size_t imageHeight_;
+  lina::Vec3 cameraCenter_;
   lina::Vec3 baseU_;
   lina::Vec3 baseV_;
   lina::Vec3 baseW_;
-  lina::Vec3 pixel_delta_u_;
-  lina::Vec3 pixel_delta_v_;
-  lina::Vec3 first_pixel_position_;
+  lina::Vec3 pixelDeltaU_;
+  lina::Vec3 pixelDeltaV_;
+  lina::Vec3 firstPixelPosition_;
   // defocus lense
   double lenseRadius_;
   lina::Vec3 lenseU_;
