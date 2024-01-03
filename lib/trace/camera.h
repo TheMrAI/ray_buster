@@ -17,7 +17,9 @@ public:
     lina::Vec3 lookAt,
     lina::Vec3 cameraUp,// this vector serves as a starting point for the orthonormal base generation, doesn't have to
                         // be on the plane of the camera viewport, but it has to be on the proper axis
-    double degreesVerticalFOV);
+    double degreesVerticalFOV = 90.0,
+    double defocusAngle = 0.0,
+    double focusDistance = 1.0);
 
 
   // Generate a matrix of rays, with multisamplingCount number of rays per pixel
@@ -34,10 +36,19 @@ private:
   lina::Vec3 pixel_delta_u_;
   lina::Vec3 pixel_delta_v_;
   lina::Vec3 first_pixel_position_;
+  // defocus lense
+  double lenseRadius_;
+  lina::Vec3 lenseU_;
+  lina::Vec3 lenseV_;
 };
 
 auto sampleInUnitSquare(std::mt19937& randomGenerator, lina::Vec3 const& unitDeltaU, lina::Vec3 const& unitDeltaV)
   -> lina::Vec3;
+
+auto sampleInUnitDisk(std::mt19937& randomGenerator,
+  lina::Vec3 const& center,
+  lina::Vec3 const& lenseU,
+  lina::Vec3 const& lenseV) -> lina::Vec3;
 
 }// namespace trace
 

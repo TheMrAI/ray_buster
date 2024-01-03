@@ -96,7 +96,8 @@ auto main() -> int
     lina::Vec3{ 0.0, 0.0, 0.0 },
     lina::Vec3{ 0.0, 0.0, -1.0 },
     lina::Vec3{ 0.0, 1.0, 0.0 },
-    90.0 };
+    90.0,
+    0.0 };
 
   auto sceneElements = std::vector<SceneElement>{};
   sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, -100.5, -1.0 }, 100),
@@ -116,7 +117,7 @@ auto main() -> int
 
   std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
   for (auto i = size_t{ 0 }; i < image_height; ++i) {
-    std::clog << "\rScanlines remaining: " << (image_height - i - 1) << ' ' << std::flush;
+    std::clog << "\rScan-lines remaining: " << (image_height - i - 1) << ' ' << std::flush;
     for (auto j = size_t{ 0 }; j < image_width; ++j) {
       auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
       for (auto sample = size_t{ 0 }; sample < sampleCount; ++sample) {

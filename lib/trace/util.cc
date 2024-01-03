@@ -52,4 +52,15 @@ auto randomOnUnitHemisphere(std::mt19937& generator, lina::Vec3 const& normal) -
   return onHemisphere;
 }
 
+// source: https://mathworld.wolfram.com/DiskPointPicking.html
+auto randomOnUnitDisk(std::mt19937& generator) -> lina::Vec3
+{
+  auto r = randomUniformDouble(generator, 0.0, 1.0);
+  auto theta = randomUniformDouble(generator, 0.0, 2.0 * std::numbers::pi);
+  auto sqrtR = std::sqrt(r);
+  return lina::Vec3{ sqrtR * std::cos(theta), sqrtR * std::sin(theta), 0.0 };
+}
+
+auto degreesToRadians(double degrees) -> double { return degrees * (std::numbers::pi / 180.0); }
+
 }// namespace trace
