@@ -102,14 +102,14 @@ auto main() -> int
 
   auto camera = trace::Camera{ image_width,
     image_height,
-    lina::Vec3{ 0.0, 0.1, -1.0 },
-    lina::Vec3{ 0.0, 0.1, 0.0 },
-    lina::Vec3{ 0.0, 1.0, 0.0 },
+    lina::Vec3{ 0.0, -1.0, 1.0 },
+    lina::Vec3{ 0.0, 0.0, 0.0 },
+    lina::Vec3{ 0.0, 0.0, 1.0 },
     90.0,
     0.0 };
 
   auto sceneElements = std::vector<SceneElement>{};
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(lina::Vec3{ 0.0, 0.0, 0.0 }, 2.0, 3.0),
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(lina::Vec3{ 0.0,0.0, 0.0 }, 1.0, 1.0),
     std::make_unique<trace::Lambertian>(lina::Vec3{ 1.0, 0.3, 0.3 }));
   // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, -100.5, -1.0 }, 100),
   //   std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// world
