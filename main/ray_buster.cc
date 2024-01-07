@@ -9,6 +9,7 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/camera.h"
 #include "lib/trace/collision.h"
+#include "lib/trace/geometry/plane.h"
 #include "lib/trace/geometry/sphere.h"
 #include "lib/trace/material/dielectric.h"
 #include "lib/trace/material/lambertian.h"
@@ -91,28 +92,38 @@ auto main() -> int
   auto image_height = size_t{ 768 };
 
   // Camera
+  // auto camera = trace::Camera{ image_width,
+  //   image_height,
+  //   lina::Vec3{ 0.0, 0.0, 0.0 },
+  //   lina::Vec3{ 0.0, 0.0, -1.0 },
+  //   lina::Vec3{ 0.0, 1.0, 0.0 },
+  //   90.0,
+  //   0.0 };
+
   auto camera = trace::Camera{ image_width,
     image_height,
-    lina::Vec3{ 0.0, 0.0, 0.0 },
-    lina::Vec3{ 0.0, 0.0, -1.0 },
+    lina::Vec3{ 0.0, 0.1, -1.0 },
+    lina::Vec3{ 0.0, 0.1, 0.0 },
     lina::Vec3{ 0.0, 1.0, 0.0 },
     90.0,
     0.0 };
 
   auto sceneElements = std::vector<SceneElement>{};
-  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, -100.5, -1.0 }, 100),
-    std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// world
-  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 1.0, 0.0, -1.0 }, 0.5),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));// pink sphere
-  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 0.0, -1.0 }, 0.5),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.5, 0.5, 0.5 }));// sphere
-  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ -1.0, 0.0, -1.0 }, 0.5),
-    std::make_unique<trace::Dielectric>(1.4));// glass sphere
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(lina::Vec3{ 0.0, 0.0, 0.0 }, 2.0, 3.0),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 1.0, 0.3, 0.3 }));
+  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, -100.5, -1.0 }, 100),
+  //   std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// world
+  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 1.0, 0.0, -1.0 }, 0.5),
+  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));// pink sphere
+  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 0.0, -1.0 }, 0.5),
+  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.5, 0.5, 0.5 }));// sphere
+  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ -1.0, 0.0, -1.0 }, 0.5),
+  //   std::make_unique<trace::Dielectric>(1.4));// glass sphere
 
   auto randomDevice = std::random_device{};
   auto randomGenerator = std::mt19937{ randomDevice() };
 
-  auto sampleCount = size_t{ 10 };
+  auto sampleCount = size_t{ 1 };
   auto sampling_rays = camera.GenerateSamplingRays(randomGenerator, sampleCount);
 
   std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";

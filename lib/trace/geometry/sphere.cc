@@ -26,8 +26,8 @@ auto Sphere::Collide(Ray const& ray) -> std::optional<Collision>
   auto collision = Collision{};
   collision.point = ray.Source() + ray.Direction() * t;
   collision.normal = lina::unit(collision.point - center_);
-
   collision.frontFace = dot(ray.Direction(), collision.normal) < 0.0;
+  
   return std::optional<Collision>{ std::move(collision) };
 }
 
