@@ -23,6 +23,8 @@ public:
   {
     return std::optional<Scattering>{};
   };
+
+  virtual auto Emit() const -> lina::Vec3 { return lina::Vec3{ 0.0, 0.0, 0.0 }; }
 };
 
 }// namespace trace

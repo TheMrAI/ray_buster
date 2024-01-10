@@ -12,6 +12,7 @@
 #include "lib/trace/geometry/plane.h"
 #include "lib/trace/geometry/sphere.h"
 #include "lib/trace/material/dielectric.h"
+#include "lib/trace/material/emissive.h"
 #include "lib/trace/material/lambertian.h"
 #include "lib/trace/material/metal.h"
 #include "lib/trace/ray.h"
@@ -59,17 +60,17 @@ auto ray_color(trace::Ray const& ray,
   auto [collision, elementIndex] = closestCollision(ray, sceneElements);
   if (collision) {
     auto const& material = sceneElements[elementIndex].material;
+    auto const emission = material->Emit();
     auto scattering = material->Scatter(ray, collision.value(), randomGenerator);
-    if (scattering) {
-      return scattering.value().attenuation
-             * ray_color(scattering.value().ray, sceneElements, randomGenerator, depth - 1);
-    }
-    // This is not acceptable
-    return lina::Vec3{ 1.0, 0.0, 0.0 };
+    if (!scattering) { return emission; }
+    return emission
+           + (scattering.value().attenuation
+              * ray_color(scattering.value().ray, sceneElements, randomGenerator, depth - 1));
   }
 
-  auto a = 0.5 * (ray.Direction()[1] + 1.0);
-  return (1.0 - a) * lina::Vec3{ 1.0, 1.0, 1.0 } + a * lina::Vec3{ 0.5, 0.7, 1.0 };
+  // auto a = 0.5 * (ray.Direction()[1] + 1.0);
+  // return (1.0 - a) * lina::Vec3{ 1.0, 1.0, 1.0 } + a * lina::Vec3{ 0.5, 0.7, 1.0 };
+  return lina::Vec3{ 0.0, 0.0, 0.0 };
 }
 
 // applying gamma correction to the colors
@@ -102,12 +103,14 @@ auto main() -> int
 
   auto sceneElements = std::vector<SceneElement>{};
 
-  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 1.0,  -100.5 }, 100),
-    std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// world
+  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 1.0, -100.5 }, 100),
+  //   std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// world
+  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 1.0, -100.5 }, 100),
+    std::make_unique<trace::Emissive>(lina::Vec3{ 0.3, 0.6, 0.3 }));// world
   sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 1.0, 1.0, 0.0 }, 0.5),
     std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));// pink sphere
   sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 1.0, 0.0 }, 0.5),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.5, 0.5, 0.5 }));// sphere
+    std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// sphere
   sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ -1.0, 1.0, 0.0 }, 0.5),
     std::make_unique<trace::Dielectric>(1.4));// glass sphere
 

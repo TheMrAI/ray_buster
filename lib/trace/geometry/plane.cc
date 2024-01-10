@@ -7,9 +7,8 @@
 namespace trace {
 
 Plane::Plane(lina::Vec3 center, double width, double depth)
-  : center_{ center }, normal_{ lina::Vec3{ 0.0, 0.0, 1.0 } }, width_{width}, depth_{depth}, u_{ lina::Vec3{ width, 0.0, 0.0 } }, v_{
-      lina::Vec3{ 0.0, depth, 0.0 }
-    }
+  : center_{ center }, normal_{ lina::Vec3{ 0.0, 0.0, 1.0 } }, width_{ width }, depth_{ depth },
+    u_{ lina::Vec3{ width, 0.0, 0.0 } }, v_{ lina::Vec3{ 0.0, depth, 0.0 } }
 {
   D_ = lina::dot(center_, normal_);
   Q_ = center_ - (u_ / 2.0) - (v_ / 2.0);
