@@ -67,3 +67,37 @@ auto lina::lengthSquared(std::span<double const, 3> const vector) -> double
 }
 
 auto lina::length(std::span<double const, 3> const vector) -> double { return std::sqrt(lengthSquared(vector)); }
+
+
+auto lina::mul(std::span<double const, 9> lhs, std::span<double const, 9> rhs) -> std::array<double, 9>
+{
+  auto rowZero = std::span<double const, 3>(lhs.begin(), size_t{ 3 });
+  auto rowOne = std::span<double const, 3>(std::next(lhs.begin(), 3), size_t{ 3 });
+  auto rowTwo = std::span<double const, 3>(std::next(lhs.begin(), 6), size_t{ 3 });
+  auto columnZero = std::array<double, 3>{ rhs[0], rhs[3], rhs[6] };
+  auto columnOne = std::array<double, 3>{ rhs[1], rhs[4], rhs[7] };
+  auto columnTwo = std::array<double, 3>{ rhs[2], rhs[5], rhs[8] };
+
+  auto result = std::array<double, 9>{ dot(rowZero, columnZero),
+    dot(rowZero, columnOne),
+    dot(rowZero, columnTwo),
+    dot(rowOne, columnZero),
+    dot(rowOne, columnOne),
+    dot(rowOne, columnTwo),
+    dot(rowTwo, columnZero),
+    dot(rowTwo, columnOne),
+    dot(rowTwo, columnTwo) };
+
+  return result;
+}
+
+auto lina::mul(std::span<double const, 9> lhs, std::span<double const, 3> rhs) -> std::array<double, 3>
+{
+  auto rowZero = std::span<double const, 3>(lhs.begin(), size_t{ 3 });
+  auto rowOne = std::span<double const, 3>(std::next(lhs.begin(), 3), size_t{ 3 });
+  auto rowTwo = std::span<double const, 3>(std::next(lhs.begin(), 6), size_t{ 3 });
+
+  auto result = std::array<double, 3>{ dot(rowZero, rhs), dot(rowOne, rhs), dot(rowTwo, rhs) };
+
+  return result;
+}

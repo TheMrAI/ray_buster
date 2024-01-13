@@ -19,17 +19,17 @@ public:
   // Specifying 0.0 or smaller width/depth means that tha plane is infinite in that direction.
   Plane(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 }, double width = 0.0, double depth = 0.0);
 
-  auto Collide(Ray const& ray) -> std::optional<Collision> override;
+  auto Collide(Ray const& ray) const -> std::optional<Collision> override;
+  auto Transform(std::span<double const, 9> transformationMatrix) -> void override;
 
 private:
   lina::Vec3 center_;
   lina::Vec3 normal_;
   double width_;
   double depth_;
-  lina::Vec3 u_;
-  lina::Vec3 v_;
+  lina::Vec3 globalU_;
+  lina::Vec3 globalV_;
   double D_;
-  lina::Vec3 Q_;
 };
 
 }// namespace trace

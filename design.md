@@ -18,6 +18,20 @@ Similarly, the scope of supported material types is constrained to lambertian, m
 Each object has to be able to be moved, rotated, scaled. These operations should be implemented using simple linear algebra.
 Rotation doesn't have to use quaternions or geometric algebra. The simplest linear transformations are satisfactory.
 
+For a consistent an easy mental model we should assume the for every vector the coordinates are x, y, z. The orientation of are scenes is the follows.
+The ground plane is defined by the x, y axis.
+
+Viewed from the top:
+
+```text
+y ^
+  |
+  |
+  o ---> x
+```
+
+Then the z axis is always pointing upwards. In the example towards us.
+
 ## Dictionary
 
 [Path tracing](https://en.wikipedia.org/wiki/Path_tracing) is a rendering technique, simulating rays of light and their interaction with the environment.

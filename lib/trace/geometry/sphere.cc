@@ -11,11 +11,11 @@ namespace trace {
 Sphere::Sphere() : center_{ lina::Vec3{} }, radius_{ 1.0 } {}
 Sphere::Sphere(lina::Vec3 center, double radius) : center_{ center }, radius_{ radius } {}
 
-auto Sphere::Collide(Ray const& ray) -> std::optional<Collision>
+auto Sphere::Collide(Ray const& ray) const -> std::optional<Collision>
 {
   auto oc = ray.Source() - center_;
   auto a = lina::lengthSquared(ray.Direction().Components());
-  auto half_b = dot(oc, ray.Direction());
+  auto half_b = lina::dot(oc, ray.Direction());
   auto c = lina::lengthSquared(oc.Components()) - radius_ * radius_;
   auto discriminant = half_b * half_b - a * c;
 
@@ -26,9 +26,14 @@ auto Sphere::Collide(Ray const& ray) -> std::optional<Collision>
   auto collision = Collision{};
   collision.point = ray.Source() + ray.Direction() * t;
   collision.normal = lina::unit(collision.point - center_);
-  collision.frontFace = dot(ray.Direction(), collision.normal) < 0.0;
+  collision.frontFace = lina::dot(ray.Direction(), collision.normal) < 0.0;
 
   return std::optional<Collision>{ std::move(collision) };
+}
+
+auto Transform(std::span<double const, 9> transformationMatrix) -> void
+{
+  // No-op for now
 }
 
 }// namespace trace

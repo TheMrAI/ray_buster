@@ -17,6 +17,7 @@
 #include "lib/trace/material/metal.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/scattering.h"
+#include "lib/trace/transform.h"
 #include "lib/trace/util.h"
 
 struct SceneElement
@@ -68,9 +69,9 @@ auto ray_color(trace::Ray const& ray,
               * ray_color(scattering.value().ray, sceneElements, randomGenerator, depth - 1));
   }
 
-  // auto a = 0.5 * (ray.Direction()[1] + 1.0);
-  // return (1.0 - a) * lina::Vec3{ 1.0, 1.0, 1.0 } + a * lina::Vec3{ 0.5, 0.7, 1.0 };
-  return lina::Vec3{ 0.0, 0.0, 0.0 };
+  auto a = 0.5 * (ray.Direction()[1] + 1.0);
+  return (1.0 - a) * lina::Vec3{ 1.0, 1.0, 1.0 } + a * lina::Vec3{ 0.5, 0.7, 1.0 };
+  // return lina::Vec3{ 0.0, 0.0, 0.0 };
 }
 
 // applying gamma correction to the colors
@@ -95,8 +96,8 @@ auto main() -> int
   // Camera
   auto camera = trace::Camera{ image_width,
     image_height,
-    lina::Vec3{ 0.0, 0.0, 0.0 },
-    lina::Vec3{ 0.0, 1.0, 0.0 },
+    lina::Vec3{ 0.0, -1.0, 1.0 },// camera center
+    lina::Vec3{ 0.0, 0.0, 0.0 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
     90.0,
     0.0 };
@@ -105,14 +106,23 @@ auto main() -> int
 
   // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 1.0, -100.5 }, 100),
   //   std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// world
-  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 1.0, -100.5 }, 100),
-    std::make_unique<trace::Emissive>(lina::Vec3{ 0.3, 0.6, 0.3 }));// world
-  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 1.0, 1.0, 0.0 }, 0.5),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));// pink sphere
-  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 1.0, 0.0 }, 0.5),
-    std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// sphere
-  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ -1.0, 1.0, 0.0 }, 0.5),
-    std::make_unique<trace::Dielectric>(1.4));// glass sphere
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(lina::Vec3{ 0.0, 0.0, 0.0 }, 1.5, 1.5),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));
+
+  auto rotationDegrees = 90.0;
+  auto inRadians = (rotationDegrees * std::numbers::pi) / 180.0;
+  auto rotationMatrixX = trace::rotateAlongX(inRadians);
+  auto rotationMatrixZ = trace::rotateAlongZ(inRadians);
+  sceneElements[sceneElements.size() - 1].component->Transform(lina::mul(rotationMatrixX, rotationMatrixZ));
+
+  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 1.0, -100.5 }, 100),
+  //   std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// world
+  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 1.0, 1.0, 0.0 }, 0.5),
+  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));// pink sphere
+  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 1.0, 0.0 }, 0.5),
+  //   std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// sphere
+  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ -1.0, 1.0, 0.0 }, 0.5),
+  //   std::make_unique<trace::Dielectric>(1.4));// glass sphere
 
   auto randomDevice = std::random_device{};
   auto randomGenerator = std::mt19937{ randomDevice() };
