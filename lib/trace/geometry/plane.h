@@ -20,15 +20,15 @@ public:
   Plane(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 }, double width = 0.0, double depth = 0.0);
 
   auto Collide(Ray const& ray) const -> std::optional<Collision> override;
-  auto Transform(std::span<double const, 9> transformationMatrix) -> void override;
+  auto Transform(std::span<double const, 16> transformationMatrix) -> void override;
 
 private:
   lina::Vec3 center_;
   lina::Vec3 normal_;
   double width_;
   double depth_;
-  lina::Vec3 globalU_;
-  lina::Vec3 globalV_;
+  lina::Vec3 localU_;
+  lina::Vec3 localV_;
   double D_;
 };
 

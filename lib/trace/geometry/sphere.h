@@ -15,7 +15,7 @@ public:
   Sphere(lina::Vec3 center, double radius);
 
   auto Collide(Ray const& ray) const -> std::optional<Collision> override;
-  auto Transform(std::span<double const, 9> transformationMatrix) -> void override;
+  auto Transform(std::span<double const, 16> transformationMatrix) -> void override;
 
 private:
   lina::Vec3 center_;

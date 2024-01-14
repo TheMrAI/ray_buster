@@ -15,14 +15,16 @@ auto scale(std::span<double const, 3> const vector, double scalar) -> std::array
 auto scale(double scalar, std::span<double const, 3> const vector) -> std::array<double, 3>;
 auto cross(std::span<double const, 3> const lhs, std::span<double const, 3> const rhs) -> std::array<double, 3>;
 auto dot(std::span<double const, 3> const lhs, std::span<double const, 3> const rhs) -> double;
+auto dot(std::span<double const, 4> const lhs, std::span<double const, 4> const rhs) -> double;
 auto unit(std::span<double const, 3> const vector) -> std::array<double, 3>;
 auto length(std::span<double const, 3> const vector) -> double;
 auto lengthSquared(std::span<double const, 3> const vector) -> double;
 
 // For 3x3 matrices
 // It would be preferable to use mdspan, but that is not yet available
-auto mul(std::span<double const, 9> lhs, std::span<double const, 9> rhs) -> std::array<double, 9>;
 auto mul(std::span<double const, 9> lhs, std::span<double const, 3> rhs) -> std::array<double, 3>;
+auto mul(std::span<double const, 16> lhs, std::span<double const, 16> rhs) -> std::array<double, 16>;
+auto mul(std::span<double const, 16> lhs, std::span<double const, 4> rhs) -> std::array<double, 4>;
 
 }// namespace lina
 

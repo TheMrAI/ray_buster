@@ -51,6 +51,13 @@ auto lina::dot(std::span<double const, 3> const lhs, std::span<double const, 3> 
   return result;
 }
 
+auto lina::dot(std::span<double const, 4> const lhs, std::span<double const, 4> const rhs) -> double
+{
+  auto result = 0.0;
+  for (std::size_t i = 0; i < lhs.size(); ++i) { result += lhs[i] * rhs[i]; }
+  return result;
+}
+
 auto lina::unit(std::span<double const, 3> const vector) -> std::array<double, 3>
 {
   auto result = std::array<double, 3>{};
@@ -68,29 +75,6 @@ auto lina::lengthSquared(std::span<double const, 3> const vector) -> double
 
 auto lina::length(std::span<double const, 3> const vector) -> double { return std::sqrt(lengthSquared(vector)); }
 
-
-auto lina::mul(std::span<double const, 9> lhs, std::span<double const, 9> rhs) -> std::array<double, 9>
-{
-  auto rowZero = std::span<double const, 3>(lhs.begin(), size_t{ 3 });
-  auto rowOne = std::span<double const, 3>(std::next(lhs.begin(), 3), size_t{ 3 });
-  auto rowTwo = std::span<double const, 3>(std::next(lhs.begin(), 6), size_t{ 3 });
-  auto columnZero = std::array<double, 3>{ rhs[0], rhs[3], rhs[6] };
-  auto columnOne = std::array<double, 3>{ rhs[1], rhs[4], rhs[7] };
-  auto columnTwo = std::array<double, 3>{ rhs[2], rhs[5], rhs[8] };
-
-  auto result = std::array<double, 9>{ dot(rowZero, columnZero),
-    dot(rowZero, columnOne),
-    dot(rowZero, columnTwo),
-    dot(rowOne, columnZero),
-    dot(rowOne, columnOne),
-    dot(rowOne, columnTwo),
-    dot(rowTwo, columnZero),
-    dot(rowTwo, columnOne),
-    dot(rowTwo, columnTwo) };
-
-  return result;
-}
-
 auto lina::mul(std::span<double const, 9> lhs, std::span<double const, 3> rhs) -> std::array<double, 3>
 {
   auto rowZero = std::span<double const, 3>(lhs.begin(), size_t{ 3 });
@@ -98,6 +82,51 @@ auto lina::mul(std::span<double const, 9> lhs, std::span<double const, 3> rhs) -
   auto rowTwo = std::span<double const, 3>(std::next(lhs.begin(), 6), size_t{ 3 });
 
   auto result = std::array<double, 3>{ dot(rowZero, rhs), dot(rowOne, rhs), dot(rowTwo, rhs) };
+
+  return result;
+}
+
+auto lina::mul(std::span<double const, 16> lhs, std::span<double const, 16> rhs) -> std::array<double, 16>
+{
+  auto rowZero = std::span<double const, 4>(lhs.begin(), size_t{ 4 });
+  auto rowOne = std::span<double const, 4>(std::next(lhs.begin(), 4), size_t{ 4 });
+  auto rowTwo = std::span<double const, 4>(std::next(lhs.begin(), 8), size_t{ 4 });
+  auto rowThree = std::span<double const, 4>(std::next(lhs.begin(), 12), size_t{ 4 });
+  auto columnZero = std::array<double, 4>{ rhs[0], rhs[4], rhs[8], rhs[12] };
+  auto columnOne = std::array<double, 4>{ rhs[1], rhs[5], rhs[9], rhs[13] };
+  auto columnTwo = std::array<double, 4>{ rhs[2], rhs[6], rhs[10], rhs[14] };
+  auto columnThree = std::array<double, 4>{ rhs[3], rhs[7], rhs[11], rhs[15] };
+
+  auto result = std::array<double, 16>{
+    dot(rowZero, columnZero),
+    dot(rowZero, columnOne),
+    dot(rowZero, columnTwo),
+    dot(rowZero, columnThree),
+    dot(rowOne, columnZero),
+    dot(rowOne, columnOne),
+    dot(rowOne, columnTwo),
+    dot(rowOne, columnThree),
+    dot(rowTwo, columnZero),
+    dot(rowTwo, columnOne),
+    dot(rowTwo, columnTwo),
+    dot(rowTwo, columnThree),
+    dot(rowThree, columnZero),
+    dot(rowThree, columnOne),
+    dot(rowThree, columnTwo),
+    dot(rowThree, columnThree),
+  };
+
+  return result;
+}
+
+auto lina::mul(std::span<double const, 16> lhs, std::span<double const, 4> rhs) -> std::array<double, 4>
+{
+  auto rowZero = std::span<double const, 4>(lhs.begin(), size_t{ 4 });
+  auto rowOne = std::span<double const, 4>(std::next(lhs.begin(), 4), size_t{ 4 });
+  auto rowTwo = std::span<double const, 4>(std::next(lhs.begin(), 8), size_t{ 4 });
+  auto rowThree = std::span<double const, 4>(std::next(lhs.begin(), 12), size_t{ 4 });
+
+  auto result = std::array<double, 4>{ dot(rowZero, rhs), dot(rowOne, rhs), dot(rowTwo, rhs), dot(rowThree, rhs) };
 
   return result;
 }

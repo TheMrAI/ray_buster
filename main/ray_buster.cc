@@ -109,11 +109,16 @@ auto main() -> int
   sceneElements.emplace_back(std::make_unique<trace::Plane>(lina::Vec3{ 0.0, 0.0, 0.0 }, 1.5, 1.5),
     std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));
 
-  auto rotationDegrees = 90.0;
+  auto rotationDegrees = 20.0;
   auto inRadians = (rotationDegrees * std::numbers::pi) / 180.0;
-  auto rotationMatrixX = trace::rotateAlongX(inRadians);
+  // auto rotationMatrixX = trace::rotateAlongX(inRadians);
   auto rotationMatrixZ = trace::rotateAlongZ(inRadians);
-  sceneElements[sceneElements.size() - 1].component->Transform(lina::mul(rotationMatrixX, rotationMatrixZ));
+  auto scalarMatrix = trace::scale(lina::Vec3{ 0.5, 1.0, 1.0 });
+  auto translate = trace::translate(lina::Vec3{ 0.0, 0.0, 0.5 });
+
+  sceneElements[sceneElements.size() - 1].component->Transform(
+    lina::mul(translate, lina::mul(scalarMatrix, rotationMatrixZ)));
+  // sceneElements[sceneElements.size() - 1].component->Transform(rotationMatrixZ);
 
   // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 1.0, -100.5 }, 100),
   //   std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// world

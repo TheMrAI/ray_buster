@@ -31,7 +31,7 @@ auto Sphere::Collide(Ray const& ray) const -> std::optional<Collision>
   return std::optional<Collision>{ std::move(collision) };
 }
 
-auto Transform(std::span<double const, 9> transformationMatrix) -> void
+auto Transform(std::span<double const, 16> transformationMatrix) -> void
 {
   // No-op for now
 }

@@ -21,7 +21,7 @@ public:
   virtual auto Collide(Ray const& ray) const -> std::optional<Collision> = 0;
 
   // Apply the linear transformation matrix to the object.
-  virtual auto Transform(std::span<double const, 9> transformationMatrix) -> void = 0;
+  virtual auto Transform(std::span<double const, 16> transformationMatrix) -> void = 0;
 };
 
 }// namespace trace

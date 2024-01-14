@@ -5,13 +5,14 @@
 #include "lib/trace/ray.h"
 #include <optional>
 
+#include <iostream>
+
 namespace trace {
 
 Plane::Plane(lina::Vec3 center, double width, double depth)
   : center_{ center }, normal_{ lina::Vec3{ 0.0, 0.0, 1.0 } }, width_{ width }, depth_{ depth },
-    globalU_{ center_ + lina::Vec3{ width, 0.0, 0.0 } }, globalV_{ center_ + lina::Vec3{ 0.0, depth, 0.0 } }, D_{
-      lina::dot(center_, normal_)
-    }
+    localU_{ lina::Vec3{ width, 0.0, 0.0 } }, localV_{ lina::Vec3{ 0.0, depth, 0.0 } }, D_{ lina::dot(center_,
+                                                                                          normal_) }
 {}
 
 // using the plane equation of n*v = D
@@ -24,24 +25,22 @@ auto Plane::Collide(Ray const& ray) const -> std::optional<Collision>
   if (t <= 0.0) { return std::optional<Collision>{}; }
   auto collisionPoint = ray.Source() + ray.Direction() * t;
 
-  auto localU = globalU_ - center_;
-  auto localV = globalV_ - center_;
-  auto Q = center_ - (localU / 2.0) - (localV / 2.0);
+  auto Q = center_ - (localU_ / 2.0) - (localV_ / 2.0);
   if (width_ > 0.0) {
     // To find out if we hit within the plane area, we just shift
     // the plane collision point using collisionPoint - Q call this P. Then we
-    // take its dot product with localU, which is a vector representing the "side" of the plane.
-    // This dot product as all dot products represents projecting P onto localU and multiplying this
-    // vectors length by the length of localU. So if we divide the result by localU's length, we get the length
+    // take its dot product with localU_, which is a vector representing the "side" of the plane.
+    // This dot product as all dot products represents projecting P onto localU_ and multiplying this
+    // vectors length by the length of localU_. So if we divide the result by localU_'s length, we get the length
     // of the projection. Then it is easy to check if we are within the rectangle as the valid range is
-    // [0, |localU|]. Same is true with localV.
-    auto alpha = lina::dot(localU, collisionPoint - Q) / localU.Length();
-    if (0.0 > alpha || alpha > localU.Length()) { return std::optional<Collision>{}; }
+    // [0, |localU_|]. Same is true with localV.
+    auto alpha = lina::dot(localU_, collisionPoint - Q) / localU_.Length();
+    if (0.0 > alpha || alpha > localU_.Length()) { return std::optional<Collision>{}; }
   }
 
   if (depth_ > 0.0) {
-    auto beta = lina::dot(localV, collisionPoint - Q) / localV.Length();
-    if (0.0 > beta || beta > localV.Length()) { return std::optional<Collision>{}; }
+    auto beta = lina::dot(localV_, collisionPoint - Q) / localV_.Length();
+    if (0.0 > beta || beta > localV_.Length()) { return std::optional<Collision>{}; }
   }
 
   auto collision = Collision{};
@@ -52,12 +51,26 @@ auto Plane::Collide(Ray const& ray) const -> std::optional<Collision>
   return std::optional<Collision>{ std::move(collision) };
 }
 
-auto Plane::Transform(std::span<double const, 9> transformationMatrix) -> void
+auto toFourLong(lina::Vec3 vec, bool vector) -> std::array<double, 4>
 {
-  center_ = lina::Vec3{ lina::mul(transformationMatrix, center_.Components()) };
-  globalU_ = lina::Vec3{ lina::mul(transformationMatrix, globalU_.Components()) };
-  globalV_ = lina::Vec3{ lina::mul(transformationMatrix, globalV_.Components()) };
-  normal_ = lina::cross(globalU_, globalV_);// order!
+  auto fourLong = std::array<double, 4>{ vec[0], vec[1], vec[2], vector ? 0.0 : 1.0 };
+  return fourLong;
+}
+
+auto fourToVec3(std::array<double, 4> four) -> lina::Vec3 { return lina::Vec3{ four[0], four[1], four[2] }; }
+
+auto Plane::Transform(std::span<double const, 16> transformationMatrix) -> void
+{
+  // hacked for the time being
+  auto center4 = toFourLong(center_, false);
+  auto localU4 = toFourLong(localU_, true);
+  auto localV4 = toFourLong(localV_, true);
+
+  center_ = fourToVec3(lina::mul(transformationMatrix, center4));
+  localU_ = fourToVec3(lina::mul(transformationMatrix, localU4));
+  localV_ = fourToVec3(lina::mul(transformationMatrix, localV4));
+  normal_ = lina::unit(lina::cross(localU_, localV_));// order matters!
+  D_ = lina::dot(center_, normal_);
 }
 
 }// namespace trace

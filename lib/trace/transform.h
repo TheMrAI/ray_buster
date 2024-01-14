@@ -5,10 +5,12 @@
 #include <array>
 
 namespace trace {
-// auto translate(lina::Vec3 deltas) -> std::array<double, 9>;
-auto rotateAlongX(double radians) -> std::array<double, 9>;
-auto rotateAlongY(double radians) -> std::array<double, 9>;
-auto rotateAlongZ(double radians) -> std::array<double, 9>;
+
+auto translate(lina::Vec3 deltas) -> std::array<double, 16>;
+auto scale(lina::Vec3 scalar) -> std::array<double, 16>;
+auto rotateAlongX(double radians) -> std::array<double, 16>;
+auto rotateAlongY(double radians) -> std::array<double, 16>;
+auto rotateAlongZ(double radians) -> std::array<double, 16>;
 
 }// namespace trace
 
