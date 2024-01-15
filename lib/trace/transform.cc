@@ -47,4 +47,12 @@ auto rotateAlongZ(double radians) -> std::array<double, 16>
   };
 }
 
+auto extend3Dto4D(lina::Vec3 vec, bool direction) -> std::array<double, 4>
+{
+  auto fourD = std::array<double, 4>{ vec[0], vec[1], vec[2], direction ? 0.0 : 1.0 };
+  return fourD;
+}
+
+auto cut4Dto3D(std::array<double, 4> fourD) -> lina::Vec3 { return lina::Vec3{ fourD[0], fourD[1], fourD[2] }; }
+
 }// namespace trace

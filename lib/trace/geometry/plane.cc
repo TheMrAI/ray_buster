@@ -3,6 +3,7 @@
 #include "lib/lina/lina.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/ray.h"
+#include "lib/trace/transform.h"
 #include <optional>
 
 #include <iostream>
@@ -51,24 +52,16 @@ auto Plane::Collide(Ray const& ray) const -> std::optional<Collision>
   return std::optional<Collision>{ std::move(collision) };
 }
 
-auto toFourLong(lina::Vec3 vec, bool vector) -> std::array<double, 4>
-{
-  auto fourLong = std::array<double, 4>{ vec[0], vec[1], vec[2], vector ? 0.0 : 1.0 };
-  return fourLong;
-}
-
-auto fourToVec3(std::array<double, 4> four) -> lina::Vec3 { return lina::Vec3{ four[0], four[1], four[2] }; }
-
 auto Plane::Transform(std::span<double const, 16> transformationMatrix) -> void
 {
   // hacked for the time being
-  auto center4 = toFourLong(center_, false);
-  auto localU4 = toFourLong(localU_, true);
-  auto localV4 = toFourLong(localV_, true);
+  auto center4 = trace::extend3Dto4D(center_, false);
+  auto localU4 = trace::extend3Dto4D(localU_, true);
+  auto localV4 = trace::extend3Dto4D(localV_, true);
 
-  center_ = fourToVec3(lina::mul(transformationMatrix, center4));
-  localU_ = fourToVec3(lina::mul(transformationMatrix, localU4));
-  localV_ = fourToVec3(lina::mul(transformationMatrix, localV4));
+  center_ = trace::cut4Dto3D(lina::mul(transformationMatrix, center4));
+  localU_ = trace::cut4Dto3D(lina::mul(transformationMatrix, localU4));
+  localV_ = trace::cut4Dto3D(lina::mul(transformationMatrix, localV4));
   normal_ = lina::unit(lina::cross(localU_, localV_));// order matters!
   D_ = lina::dot(center_, normal_);
 }

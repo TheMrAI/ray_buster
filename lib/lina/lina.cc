@@ -51,13 +51,6 @@ auto lina::dot(std::span<double const, 3> const lhs, std::span<double const, 3> 
   return result;
 }
 
-auto lina::dot(std::span<double const, 4> const lhs, std::span<double const, 4> const rhs) -> double
-{
-  auto result = 0.0;
-  for (std::size_t i = 0; i < lhs.size(); ++i) { result += lhs[i] * rhs[i]; }
-  return result;
-}
-
 auto lina::unit(std::span<double const, 3> const vector) -> std::array<double, 3>
 {
   auto result = std::array<double, 3>{};
@@ -75,14 +68,10 @@ auto lina::lengthSquared(std::span<double const, 3> const vector) -> double
 
 auto lina::length(std::span<double const, 3> const vector) -> double { return std::sqrt(lengthSquared(vector)); }
 
-auto lina::mul(std::span<double const, 9> lhs, std::span<double const, 3> rhs) -> std::array<double, 3>
+auto lina::dot(std::span<double const, 4> const lhs, std::span<double const, 4> const rhs) -> double
 {
-  auto rowZero = std::span<double const, 3>(lhs.begin(), size_t{ 3 });
-  auto rowOne = std::span<double const, 3>(std::next(lhs.begin(), 3), size_t{ 3 });
-  auto rowTwo = std::span<double const, 3>(std::next(lhs.begin(), 6), size_t{ 3 });
-
-  auto result = std::array<double, 3>{ dot(rowZero, rhs), dot(rowOne, rhs), dot(rowTwo, rhs) };
-
+  auto result = 0.0;
+  for (std::size_t i = 0; i < lhs.size(); ++i) { result += lhs[i] * rhs[i]; }
   return result;
 }
 
