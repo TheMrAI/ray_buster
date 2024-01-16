@@ -6,6 +6,11 @@
 
 namespace trace {
 
+auto unitMatrix() -> std::array<double, 16>
+{
+  return std::array<double, 16>{ 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0 };
+}
+
 auto translate(lina::Vec3 deltas) -> std::array<double, 16>
 {
   return std::array<double, 16>{

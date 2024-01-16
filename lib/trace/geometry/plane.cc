@@ -4,6 +4,7 @@
 #include "lib/trace/collision.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
+#include "lib/trace/util.h"
 #include <optional>
 
 #include <iostream>
@@ -64,6 +65,40 @@ auto Plane::Transform(std::span<double const, 16> transformationMatrix) -> void
   localV_ = trace::cut4Dto3D(lina::mul(transformationMatrix, localV4));
   normal_ = lina::unit(lina::cross(localU_, localV_));// order matters!
   D_ = lina::dot(center_, normal_);
+}
+
+auto build(lina::Vec3 center, double width, double depth, Axis normalAxis, Orientation orientation)
+  -> std::optional<Plane>
+{
+  if (width < 0.0 || depth < 0.0) { return std::optional<Plane>{}; }
+
+  auto plane = std::optional<Plane>{ std::in_place, lina::Vec3{ 0.0, 0.0, 0.0 }, width, depth };
+  auto transformation = trace::unitMatrix();
+
+  auto degrees = 90.0;
+  switch (normalAxis) {
+  case Axis::X: {
+    if (orientation == Orientation::Aligned) { degrees *= -1.0; }
+    transformation = lina::mul(rotateAlongY(degreesToRadians(degrees)), transformation);
+    break;
+  }
+  case Axis::Y: {
+    if (orientation == Orientation::Reverse) { degrees *= -1.0; }
+    transformation = lina::mul(rotateAlongX(degreesToRadians(degrees)), transformation);
+    break;
+  }
+  case Axis::Z: {
+    if (orientation == Orientation::Aligned) { return plane; }
+    transformation = lina::mul(rotateAlongX(degreesToRadians(180.0)), transformation);
+    break;
+  }
+  default:
+    return std::optional<Plane>{};
+  }
+
+  transformation = lina::mul(translate(center), transformation);
+  plane->Transform(transformation);
+  return plane;
 }
 
 }// namespace trace

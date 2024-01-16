@@ -69,9 +69,9 @@ auto ray_color(trace::Ray const& ray,
               * ray_color(scattering.value().ray, sceneElements, randomGenerator, depth - 1));
   }
 
-  auto a = 0.5 * (ray.Direction()[1] + 1.0);
-  return (1.0 - a) * lina::Vec3{ 1.0, 1.0, 1.0 } + a * lina::Vec3{ 0.5, 0.7, 1.0 };
-  // return lina::Vec3{ 0.0, 0.0, 0.0 };
+  // auto a = 0.5 * (ray.Direction()[1] + 1.0);
+  // return (1.0 - a) * lina::Vec3{ 1.0, 1.0, 1.0 } + a * lina::Vec3{ 0.5, 0.7, 1.0 };
+  return lina::Vec3{ 0.0, 0.0, 0.0 };
 }
 
 // applying gamma correction to the colors
@@ -96,44 +96,42 @@ auto main() -> int
   // Camera
   auto camera = trace::Camera{ image_width,
     image_height,
-    lina::Vec3{ 0.0, -1.0, 1.0 },// camera center
-    lina::Vec3{ 0.0, 0.0, 0.0 },// look at
+    lina::Vec3{ 0.0, -100.0, 50.0 },// camera center
+    lina::Vec3{ 0.0, 0.0, 50.0 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
-    90.0,
+    70.0,
     0.0 };
 
   auto sceneElements = std::vector<SceneElement>{};
 
-  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 1.0, -100.5 }, 100),
-  //   std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// world
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(lina::Vec3{ 0.0, 0.0, 0.0 }, 1.5, 1.5),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));
+  auto bottom = trace::build(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
+  auto top = trace::build(lina::Vec3{ 0.0, 0.0, 100.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Reverse);
+  auto back = trace::build(lina::Vec3{ 0.0, 50.0, 50.0 }, 100.0, 100.0, trace::Axis::Y, trace::Orientation::Reverse);
+  auto left = trace::build(lina::Vec3{ -50.0, 0.0, 50.0 }, 100.0, 100.0, trace::Axis::X, trace::Orientation::Aligned);
+  auto right = trace::build(lina::Vec3{ 50.0, 0.0, 50.0 }, 100.0, 100.0, trace::Axis::X, trace::Orientation::Reverse);
 
-  auto rotationDegrees = 35.0;
-  auto inRadians = (rotationDegrees * std::numbers::pi) / 180.0;
-  // auto rotationMatrixX = trace::rotateAlongX(inRadians);
-  auto rotationMatrixZ = trace::rotateAlongZ(inRadians);
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(bottom.value())),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(top.value())),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(back.value())),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.0273, 0.0156, 0.2187 }));
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(left.value())),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.0, 0.8125, 0.3828 }));
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(right.value())),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.8203, 0.0156, 0.1757 }));
 
-  auto scalarMatrix = trace::scale(lina::Vec3{ 1.1, 0.7, 1.0 });
-  auto translate = trace::translate(lina::Vec3{ 0.0, 0.0, 0.0 });
+  auto light = trace::build(lina::Vec3{ 0.0, 0.0, 99.9 }, 15.0, 15.0, trace::Axis::Z, trace::Orientation::Reverse);
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(light.value())),
+    std::make_unique<trace::Emissive>(lina::Vec3{ 15.0, 15.0, 15.0 }));
 
-  sceneElements[sceneElements.size() - 1].component->Transform(
-    lina::mul(translate, lina::mul(rotationMatrixZ, scalarMatrix)));
-  // sceneElements[sceneElements.size() - 1].component->Transform(lina::mul(rotationMatrixZ, rotationMatrixX));
-
-  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 1.0, -100.5 }, 100),
-  //   std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// world
-  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 1.0, 1.0, 0.0 }, 0.5),
-  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.7, 0.5, 0.5 }));// pink sphere
-  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 0.0, 1.0, 0.0 }, 0.5),
-  //   std::make_unique<trace::Metal>(lina::Vec3{ 0.7, 0.8, 0.7 }, 0.3, 100));// sphere
-  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ -1.0, 1.0, 0.0 }, 0.5),
-  //   std::make_unique<trace::Dielectric>(1.4));// glass sphere
+  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 15.0, -10.0, 15.0 }, 15),
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.8203, 0.0156, 0.1757 }));// rando sphere
 
   auto randomDevice = std::random_device{};
   auto randomGenerator = std::mt19937{ randomDevice() };
 
-  auto sampleCount = size_t{ 10 };
+  auto sampleCount = size_t{ 200 };
   auto sampling_rays = camera.GenerateSamplingRays(randomGenerator, sampleCount);
 
   std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
@@ -143,7 +141,7 @@ auto main() -> int
       auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
       for (auto sample = size_t{ 0 }; sample < sampleCount; ++sample) {
         auto ray = sampling_rays[i][j][sample];
-        color += ray_color(ray, sceneElements, randomGenerator, 10);
+        color += ray_color(ray, sceneElements, randomGenerator, 50);
       }
       color /= sampleCount;
       write_color(color);
