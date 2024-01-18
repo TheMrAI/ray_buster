@@ -1,7 +1,9 @@
 #include <cmath>
+#include <future>
 #include <iostream>
 #include <memory>
 #include <random>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -51,7 +53,7 @@ auto closestCollision(trace::Ray const& ray, std::vector<SceneElement> const& sc
   return std::make_pair(closestCollision, elementIndex);
 }
 
-auto ray_color(trace::Ray const& ray,
+auto rayColor(trace::Ray const& ray,
   std::vector<SceneElement> const& sceneElements,
   std::mt19937& randomGenerator,
   std::size_t depth) -> lina::Vec3
@@ -66,7 +68,7 @@ auto ray_color(trace::Ray const& ray,
     if (!scattering) { return emission; }
     return emission
            + (scattering.value().attenuation
-              * ray_color(scattering.value().ray, sceneElements, randomGenerator, depth - 1));
+              * rayColor(scattering.value().ray, sceneElements, randomGenerator, depth - 1));
   }
 
   // auto a = 0.5 * (ray.Direction()[1] + 1.0);
@@ -77,7 +79,7 @@ auto ray_color(trace::Ray const& ray,
 // applying gamma correction to the colors
 auto linearToGamma(double LinearSpaceValue) -> double { return std::sqrt(LinearSpaceValue); }
 
-auto write_color(lina::Vec3 const& color)
+auto writeColor(lina::Vec3 const& color)
 {
   auto red = linearToGamma(color[0]);
   auto green = linearToGamma(color[1]);
@@ -90,12 +92,12 @@ auto write_color(lina::Vec3 const& color)
 
 auto main() -> int
 {
-  auto image_width = size_t{ 1024 };
-  auto image_height = size_t{ 768 };
+  auto imageWidth = size_t{ 1024 };
+  auto imageHeight = size_t{ 768 };
 
   // Camera
-  auto camera = trace::Camera{ image_width,
-    image_height,
+  auto camera = trace::Camera{ imageWidth,
+    imageHeight,
     lina::Vec3{ 0.0, -100.0, 50.0 },// camera center
     lina::Vec3{ 0.0, 0.0, 50.0 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
@@ -130,21 +132,72 @@ auto main() -> int
 
   auto randomDevice = std::random_device{};
   auto randomGenerator = std::mt19937{ randomDevice() };
+  constexpr auto sampleCount = size_t{ 300 };
+  auto samplingRays = camera.GenerateSamplingRays(randomGenerator, sampleCount);
+  constexpr auto rayDepth = size_t{ 50 };
 
-  auto sampleCount = size_t{ 200 };
-  auto sampling_rays = camera.GenerateSamplingRays(randomGenerator, sampleCount);
+  constexpr auto minNumberOfLinesPerThread = size_t{ 50 };
+  auto const maxThreads = (imageHeight + minNumberOfLinesPerThread - size_t{ 1 }) / minNumberOfLinesPerThread;
+  auto const hardwareThreads = size_t{ std::thread::hardware_concurrency() };
+  auto const numberOfThreads = std::min(hardwareThreads == size_t{ 0 } ? size_t{ 4 } : hardwareThreads, maxThreads);
+  auto const blockSize = (imageHeight + numberOfThreads - size_t{ 1 }) / numberOfThreads;
 
-  std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-  for (auto i = size_t{ 0 }; i < image_height; ++i) {
-    std::clog << "\rScan-lines remaining: " << (image_height - i - 1) << ' ' << std::flush;
-    for (auto j = size_t{ 0 }; j < image_width; ++j) {
-      auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
-      for (auto sample = size_t{ 0 }; sample < sampleCount; ++sample) {
-        auto ray = sampling_rays[i][j][sample];
-        color += ray_color(ray, sceneElements, randomGenerator, 50);
+  std::cerr << "Number of threads used: " << numberOfThreads << std::endl;
+
+  // reportProgress should only be true for one thread at a time
+  // capture sceneElements and samplingRays as const refs, because there should be nor circumstance where they need
+  // to be changed during rendering
+  auto renderChunk = [imageWidth,
+                       imageHeight,
+                       sampleCount,
+                       rayDepth,
+                       sceneElements = std::cref(sceneElements),
+                       samplingRays = std::cref(samplingRays)](uint from, uint until, bool reportProgress = false) {
+    auto distance = until - from;
+    auto pixelColors = std::vector<std::vector<lina::Vec3>>(distance, std::vector<lina::Vec3>(imageWidth));
+
+    auto randomDevice = std::random_device{};
+    auto randomGenerator = std::mt19937{ randomDevice() };
+
+    for (auto i = from; i < until; ++i) {
+      if (reportProgress) { std::clog << "\rScan-lines remaining: " << (until - i - 1) << ' ' << std::flush; }
+      for (auto j = size_t{ 0 }; j < imageWidth; ++j) {
+        auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
+        for (auto sample = size_t{ 0 }; sample < sampleCount; ++sample) {
+          auto const& ray = samplingRays.get()[i][j][sample];
+          color += rayColor(ray, sceneElements, randomGenerator, rayDepth);
+        }
+        color /= sampleCount;
+        pixelColors[i - from][j] = color;
       }
-      color /= sampleCount;
-      write_color(color);
+    }
+    return pixelColors;
+  };
+
+  auto renderChunkResults = std::vector<std::future<std::vector<std::vector<lina::Vec3>>>>();
+  renderChunkResults.reserve(numberOfThreads);
+
+  auto workingThreads = std::vector<std::jthread>{};
+  workingThreads.reserve(numberOfThreads - 1);
+
+  for (auto chunkIndex = 0u; chunkIndex < numberOfThreads; ++chunkIndex) {
+    auto renderTask = std::packaged_task<std::vector<std::vector<lina::Vec3>>(uint, uint, bool)>(renderChunk);
+    renderChunkResults.emplace_back(renderTask.get_future());
+
+    auto from = chunkIndex * blockSize;
+    auto until = from + blockSize;
+    if (chunkIndex < numberOfThreads - 1) {
+      workingThreads.emplace_back(std::move(renderTask), from, until, false);
+    } else {
+      renderTask(from, until, true);
+    }
+  }
+
+  // serialize render results
+  std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
+  for (auto& renderResults : renderChunkResults) {
+    for (auto const& line : renderResults.get()) {
+      for (auto const& color : line) { writeColor(color); }
     }
   }
 
