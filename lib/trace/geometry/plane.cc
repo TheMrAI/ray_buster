@@ -5,6 +5,7 @@
 #include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
 #include "lib/trace/util.h"
+#include <format>
 #include <optional>
 
 #include <iostream>
@@ -68,11 +69,13 @@ auto Plane::Transform(std::span<double const, 16> transformationMatrix) -> void
 }
 
 auto build(lina::Vec3 center, double width, double depth, Axis normalAxis, Orientation orientation)
-  -> std::optional<Plane>
+  -> std::expected<Plane, std::string>
 {
-  if (width < 0.0 || depth < 0.0) { return std::optional<Plane>{}; }
+  if (width < 0.0 || depth < 0.0) {
+    return std::unexpected(std::format("Width and depth must be bigger or equal to 0.0. Got: {}, {}", width, depth));
+  }
 
-  auto plane = std::optional<Plane>{ std::in_place, lina::Vec3{ 0.0, 0.0, 0.0 }, width, depth };
+  auto plane = Plane{ lina::Vec3{ 0.0, 0.0, 0.0 }, width, depth };
   auto transformation = trace::unitMatrix();
 
   auto degrees = 90.0;
@@ -93,11 +96,11 @@ auto build(lina::Vec3 center, double width, double depth, Axis normalAxis, Orien
     break;
   }
   default:
-    return std::optional<Plane>{};
+    return std::unexpected("Invalid Axis given.");
   }
 
   transformation = lina::mul(translate(center), transformation);
-  plane->Transform(transformation);
+  plane.Transform(transformation);
   return plane;
 }
 

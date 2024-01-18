@@ -48,3 +48,5 @@ These algorithms are very good for problems which don't have an analytical solut
 is not really feasible on a computer precisely, because it is an irrational number. Similarly, in our case path-tracing can't be calculated
 precisely, because (for the time being at least), we can't account for all effects of light particle movements, their quantum interference patterns, etc.
 Resources are limited, so we approximate.
+
+[Homogeneous Coordinates](https://www.tomdalling.com/blog/modern-opengl/explaining-homogenous-coordinates-and-projective-geometry/) 

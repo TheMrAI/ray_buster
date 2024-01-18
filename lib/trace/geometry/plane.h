@@ -4,7 +4,9 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/ray.h"
+#include <expected>
 #include <optional>
+#include <string>
 
 namespace trace {
 
@@ -27,7 +29,7 @@ public:
   auto Transform(std::span<double const, 16> transformationMatrix) -> void override;
 
   friend auto build(lina::Vec3, double width, double depth, Axis normalAxis, Orientation orientation)
-    -> std::optional<Plane>;
+    -> std::expected<Plane, std::string>;
 
 private:
   lina::Vec3 center_;
@@ -43,7 +45,7 @@ auto build(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 },
   double width = 0.0,
   double depth = 0.0,
   Axis normalAxis = Axis::Z,
-  Orientation orientation = Orientation::Aligned) -> std::optional<Plane>;
+  Orientation orientation = Orientation::Aligned) -> std::expected<Plane, std::string>;
 
 }// namespace trace
 
