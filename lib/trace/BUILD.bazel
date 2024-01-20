@@ -2,6 +2,7 @@
 cc_library(
     name = "trace",
     srcs = [
+            "geometry/cuboid.cc",
             "geometry/plane.cc",
             "geometry/sphere.cc",
             "material/dielectric.cc",
@@ -14,6 +15,7 @@ cc_library(
             "transform.cc",
             ],
     hdrs = [
+            "geometry/cuboid.h",
             "geometry/plane.h",
             "geometry/sphere.h",  
             "material/dielectric.h",

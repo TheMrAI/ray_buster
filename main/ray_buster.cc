@@ -1,4 +1,5 @@
 #include <cmath>
+#include <expected>
 #include <future>
 #include <iostream>
 #include <memory>
@@ -11,6 +12,7 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/camera.h"
 #include "lib/trace/collision.h"
+#include "lib/trace/geometry/cuboid.h"
 #include "lib/trace/geometry/plane.h"
 #include "lib/trace/geometry/sphere.h"
 #include "lib/trace/material/dielectric.h"
@@ -71,9 +73,9 @@ auto rayColor(trace::Ray const& ray,
               * rayColor(scattering.value().ray, sceneElements, randomGenerator, depth - 1));
   }
 
-  // auto a = 0.5 * (ray.Direction()[1] + 1.0);
-  // return (1.0 - a) * lina::Vec3{ 1.0, 1.0, 1.0 } + a * lina::Vec3{ 0.5, 0.7, 1.0 };
-  return lina::Vec3{ 0.0, 0.0, 0.0 };
+  auto a = 0.5 * (ray.Direction()[1] + 1.0);
+  return (1.0 - a) * lina::Vec3{ 1.0, 1.0, 1.0 } + a * lina::Vec3{ 0.5, 0.7, 1.0 };
+  // return lina::Vec3{ 0.0, 0.0, 0.0 };
 }
 
 // applying gamma correction to the colors
@@ -95,46 +97,65 @@ auto main() -> int
   auto imageWidth = size_t{ 1024 };
   auto imageHeight = size_t{ 768 };
 
-  // Camera
   auto camera = trace::Camera{ imageWidth,
     imageHeight,
-    lina::Vec3{ 0.0, -100.0, 50.0 },// camera center
-    lina::Vec3{ 0.0, 0.0, 50.0 },// look at
+    lina::Vec3{ 0.0, -3.0, 3.0 },// camera center
+    lina::Vec3{ 0.0, 0.0, 0.0 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
     70.0,
     0.0 };
 
   auto sceneElements = std::vector<SceneElement>{};
 
-  auto bottom = trace::build(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
-  auto top = trace::build(lina::Vec3{ 0.0, 0.0, 100.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Reverse);
-  auto back = trace::build(lina::Vec3{ 0.0, 50.0, 50.0 }, 100.0, 100.0, trace::Axis::Y, trace::Orientation::Reverse);
-  auto left = trace::build(lina::Vec3{ -50.0, 0.0, 50.0 }, 100.0, 100.0, trace::Axis::X, trace::Orientation::Aligned);
-  auto right = trace::build(lina::Vec3{ 50.0, 0.0, 50.0 }, 100.0, 100.0, trace::Axis::X, trace::Orientation::Reverse);
-
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(bottom.value())),
+  sceneElements.emplace_back(std::make_unique<trace::Cuboid>(lina::Vec3{ 0.0, 0.0, 0.0 }),
     std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(top.value())),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(back.value())),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.0273, 0.0156, 0.2187 }));
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(left.value())),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.0, 0.8125, 0.3828 }));
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(right.value())),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.8203, 0.0156, 0.1757 }));
 
-  auto light = trace::build(lina::Vec3{ 0.0, 0.0, 99.9 }, 15.0, 15.0, trace::Axis::Z, trace::Orientation::Reverse);
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(light.value())),
-    std::make_unique<trace::Emissive>(lina::Vec3{ 15.0, 15.0, 15.0 }));
+  auto rotateZ = trace::rotateAlongZ(trace::degreesToRadians(45));
+  auto scale = trace::scale(lina::Vec3{ 1.0, 5.0, 2.0 });
+  auto trans = trace::translate(lina::Vec3{ -1.0, 1.5, -1.0 });
+  sceneElements.back().component->Transform(lina::mul(trans, lina::mul(rotateZ, scale)));
 
-  sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 15.0, -10.0, 15.0 }, 15),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.8203, 0.0156, 0.1757 }));// rando sphere
+  // // Camera
+  // auto camera = trace::Camera{ imageWidth,
+  //   imageHeight,
+  //   lina::Vec3{ 0.0, -100.0, 50.0 },// camera center
+  //   lina::Vec3{ 0.0, 0.0, 50.0 },// look at
+  //   lina::Vec3{ 0.0, 0.0, 1.0 },
+  //   70.0,
+  //   0.0 };
+
+  // auto sceneElements = std::vector<SceneElement>{};
+
+  // auto bottom = trace::build(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
+  // auto top = trace::build(lina::Vec3{ 0.0, 0.0, 100.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Reverse);
+  // auto back = trace::build(lina::Vec3{ 0.0, 50.0, 50.0 }, 100.0, 100.0, trace::Axis::Y, trace::Orientation::Reverse);
+  // auto left = trace::build(lina::Vec3{ -50.0, 0.0, 50.0 }, 100.0, 100.0, trace::Axis::X,
+  // trace::Orientation::Aligned); auto right = trace::build(lina::Vec3{ 50.0, 0.0, 50.0 }, 100.0, 100.0,
+  // trace::Axis::X, trace::Orientation::Reverse);
+
+  // sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(bottom.value())),
+  // std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
+  // sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(top.value())),
+  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
+  // sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(back.value())),
+  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.0273, 0.0156, 0.2187 }));
+  // sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(left.value())),
+  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.0, 0.8125, 0.3828 }));
+  // sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(right.value())),
+  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.8203, 0.0156, 0.1757 }));
+
+  // auto light = trace::build(lina::Vec3{ 0.0, 0.0, 99.9 }, 15.0, 15.0, trace::Axis::Z, trace::Orientation::Reverse);
+  // sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(light.value())),
+  //   std::make_unique<trace::Emissive>(lina::Vec3{ 15.0, 15.0, 15.0 }));
+
+  // sceneElements.emplace_back(std::make_unique<trace::Sphere>(lina::Vec3{ 15.0, -10.0, 15.0 }, 15),
+  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.8203, 0.0156, 0.1757 }));// rando sphere
 
   auto randomDevice = std::random_device{};
   auto randomGenerator = std::mt19937{ randomDevice() };
-  constexpr auto sampleCount = size_t{ 300 };
+  constexpr auto sampleCount = size_t{ 30 };
   auto samplingRays = camera.GenerateSamplingRays(randomGenerator, sampleCount);
-  constexpr auto rayDepth = size_t{ 50 };
+  constexpr auto rayDepth = size_t{ 5 };
 
   constexpr auto minNumberOfLinesPerThread = size_t{ 50 };
   auto const maxThreads = (imageHeight + minNumberOfLinesPerThread - size_t{ 1 }) / minNumberOfLinesPerThread;
