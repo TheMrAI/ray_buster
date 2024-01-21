@@ -147,19 +147,18 @@ auto main() -> int
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(light.value())),
     std::make_unique<trace::Emissive>(lina::Vec3{ 15.0, 15.0, 15.0 }));
 
-  auto cuboidOne = std::make_unique<trace::Cuboid>(lina::Vec3{-6.0, 30.0, 29.0}, 28.0, 58.0, 28.0);
+  auto cuboidOne = std::make_unique<trace::Cuboid>(lina::Vec3{ -6.0, 30.0, 29.0 }, 28.0, 58.0, 28.0);
   cuboidOne->Transform(trace::rotateAlongZ(trace::degreesToRadians(30)));
-  sceneElements.emplace_back(std::move(cuboidOne), std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
-  
-  auto cuboidTwo = std::make_unique<trace::Cuboid>(lina::Vec3{22.0, -10.0, 12.5}, 25.0, 25.0, 25.0);
+  sceneElements.emplace_back(
+    std::move(cuboidOne), std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
+
+  auto cuboidTwo = std::make_unique<trace::Cuboid>(lina::Vec3{ 22.0, -10.0, 12.5 }, 25.0, 25.0, 25.0);
   cuboidTwo->Transform(trace::rotateAlongZ(trace::degreesToRadians(-8)));
-  // sceneElements.emplace_back(std::move(cuboidTwo), std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
+  // sceneElements.emplace_back(std::move(cuboidTwo), std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179,
+  // 0.8476 }));
   sceneElements.emplace_back(std::move(cuboidTwo), std::make_unique<trace::Dielectric>());
 
-  auto randomDevice = std::random_device{};
-  auto randomGenerator = std::mt19937{ randomDevice() };
-  constexpr auto sampleCount = size_t{ 1000 };
-  auto samplingRays = camera.GenerateSamplingRays(randomGenerator, sampleCount);
+  constexpr auto sampleCount = size_t{ 300 };
   constexpr auto rayDepth = size_t{ 50 };
 
   constexpr auto minNumberOfLinesPerThread = size_t{ 50 };
@@ -175,10 +174,10 @@ auto main() -> int
   // to be changed during rendering
   auto renderChunk = [imageWidth,
                        imageHeight,
+                       camera = std::cref(camera),
                        sampleCount,
                        rayDepth,
-                       sceneElements = std::cref(sceneElements),
-                       samplingRays = std::cref(samplingRays)](uint from, uint until, bool reportProgress = false) {
+                       sceneElements = std::cref(sceneElements)](uint from, uint until, bool reportProgress = false) {
     auto distance = until - from;
     auto pixelColors = std::vector<std::vector<lina::Vec3>>(distance, std::vector<lina::Vec3>(imageWidth));
 
@@ -190,8 +189,12 @@ auto main() -> int
       for (auto j = size_t{ 0 }; j < imageWidth; ++j) {
         auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
         for (auto sample = size_t{ 0 }; sample < sampleCount; ++sample) {
-          auto const& ray = samplingRays.get()[i][j][sample];
-          color += rayColor(ray, sceneElements, randomGenerator, rayDepth);
+          auto const ray = camera.get().GetSampleRayAt(i, j, randomGenerator, sampleCount > 1);
+          if (!ray) {
+            std::cerr << ray.error() << std::endl;
+            std::exit(1);
+          }
+          color += rayColor(ray.value(), sceneElements, randomGenerator, rayDepth);
         }
         color /= sampleCount;
         pixelColors[i - from][j] = color;

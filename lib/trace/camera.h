@@ -3,6 +3,7 @@
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/ray.h"
+#include <expected>
 #include <random>
 #include <vector>
 
@@ -23,8 +24,8 @@ public:
 
 
   // Generate a matrix of rays, with multisamplingCount number of rays per pixel
-  auto GenerateSamplingRays(std::mt19937& randomGenerator, std::size_t multisamplingCount = 1)
-    -> std::vector<std::vector<std::vector<trace::Ray>>>;
+  auto GetSampleRayAt(std::size_t i, std::size_t j, std::mt19937& randomGenerator, bool multiSampled = false) const
+    -> std::expected<trace::Ray, std::string>;
 
 private:
   std::size_t imageWidth_;

@@ -3,6 +3,7 @@
 #include "lib/trace/ray.h"
 #include "lib/trace/util.h"
 #include <cmath>
+#include <format>
 #include <numbers>
 #include <random>
 #include <vector>
@@ -48,29 +49,24 @@ Camera::Camera(std::size_t imageWidth,
   lenseV_ = baseV_ * lenseRadius_;
 }
 
-// Generate a matrix of rays, with multisamplingCount number of rays per pixel
-auto Camera::GenerateSamplingRays(std::mt19937& randomGenerator, std::size_t multisamplingCount)
-  -> std::vector<std::vector<std::vector<Ray>>>
+// Generate a sample ray at the given location
+// If out of range, returns an error.
+auto Camera::GetSampleRayAt(std::size_t i, std::size_t j, std::mt19937& randomGenerator, bool multiSampled) const
+  -> std::expected<Ray, std::string>
 {
-  auto samplingRays = std::vector<std::vector<std::vector<Ray>>>(imageHeight_);
-
-  for (auto i = size_t{ 0 }; i < imageHeight_; ++i) {
-    samplingRays[i] = std::vector<std::vector<Ray>>(imageWidth_);
-    for (auto j = size_t{ 0 }; j < imageWidth_; ++j) {
-      samplingRays[i][j] = std::vector<Ray>(multisamplingCount);
-      for (auto sample = size_t{ 0 }; sample < multisamplingCount; ++sample) {
-        auto pixelCenter = firstPixelPosition_ + (j * pixelDeltaU_) + (i * pixelDeltaV_);
-        auto pixelSample = pixelCenter + sampleInUnitSquare(randomGenerator, pixelDeltaU_, pixelDeltaV_);
-        // in case we want only a single sample it should go through the center of the pixel
-        if (multisamplingCount == 1) { pixelSample = pixelCenter; }
-
-        auto raySource = sampleInUnitDisk(randomGenerator, cameraCenter_, lenseU_, lenseV_);
-        auto rayDirection = lina::unit(pixelSample - raySource);
-        samplingRays[i][j][sample] = Ray{ raySource, rayDirection };
-      }
-    }
+  if (i >= imageHeight_ || j >= imageWidth_) {
+    return std::unexpected(
+      std::format("Index out of range, i: {} >= {}, j: {} >= {}", i, imageHeight_, j, imageWidth_));
   }
-  return samplingRays;
+
+  auto pixelCenter = firstPixelPosition_ + (j * pixelDeltaU_) + (i * pixelDeltaV_);
+  auto pixelSample = pixelCenter + sampleInUnitSquare(randomGenerator, pixelDeltaU_, pixelDeltaV_);
+  // in case we want only a single sample it should go through the center of the pixel
+  if (multiSampled) { pixelSample = pixelCenter; }
+
+  auto raySource = sampleInUnitDisk(randomGenerator, cameraCenter_, lenseU_, lenseV_);
+  auto rayDirection = lina::unit(pixelSample - raySource);
+  return Ray{ raySource, rayDirection };
 }
 
 auto sampleInUnitSquare(std::mt19937& randomGenerator, lina::Vec3 const& unitDeltaU, lina::Vec3 const& unitDeltaV)
