@@ -4,9 +4,7 @@
 #include "lib/trace/util.h"
 #include <cmath>
 #include <format>
-#include <numbers>
 #include <random>
-#include <vector>
 
 namespace trace {
 
@@ -18,7 +16,7 @@ Camera::Camera(std::size_t imageWidth,
   double degreesVerticalFOV,
   double defocusAngle,
   double focusDistance)
-  : imageWidth_{ imageWidth }, imageHeight_{ imageHeight }, cameraCenter_{ std::move(cameraCenter) }
+  : imageWidth_{ imageWidth }, imageHeight_{ imageHeight }, cameraCenter_{ cameraCenter }
 {
   auto theta = degreesToRadians(degreesVerticalFOV);
   auto h = std::tan(theta / 2.0);
@@ -35,8 +33,8 @@ Camera::Camera(std::size_t imageWidth,
   auto viewportU = viewportWidth * baseU_;
   auto viewportV = viewportHeight * -baseV_;
 
-  pixelDeltaU_ = viewportU / imageWidth;
-  pixelDeltaV_ = viewportV / imageHeight;
+  pixelDeltaU_ = viewportU / static_cast<double>(imageWidth);
+  pixelDeltaV_ = viewportV / static_cast<double>(imageHeight);
 
   auto viewportUpperLeft = cameraCenter_ - (focusDistance * baseW_) - (viewportU / 2.0) - (viewportV / 2.0);
   firstPixelPosition_ = viewportUpperLeft + 0.5 * (pixelDeltaU_ + pixelDeltaV_);
@@ -59,7 +57,8 @@ auto Camera::GetSampleRayAt(std::size_t i, std::size_t j, std::mt19937& randomGe
       std::format("Index out of range, i: {} >= {}, j: {} >= {}", i, imageHeight_, j, imageWidth_));
   }
 
-  auto pixelCenter = firstPixelPosition_ + (j * pixelDeltaU_) + (i * pixelDeltaV_);
+  auto pixelCenter =
+    firstPixelPosition_ + (static_cast<double>(j) * pixelDeltaU_) + (static_cast<double>(i) * pixelDeltaV_);
   auto pixelSample = pixelCenter + sampleInUnitSquare(randomGenerator, pixelDeltaU_, pixelDeltaV_);
   // in case we want only a single sample it should go through the center of the pixel
   if (multiSampled) { pixelSample = pixelCenter; }

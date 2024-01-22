@@ -1,4 +1,6 @@
 #include "dielectric.h"
+#include "lib/lina/lina.h"
+#include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/scattering.h"

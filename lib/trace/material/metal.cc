@@ -9,7 +9,7 @@
 
 namespace trace {
 
-Metal::Metal(lina::Vec3 albedo, double fuzz, size_t retryCount)
+Metal::Metal(lina::Vec3 albedo, double fuzz, std::size_t retryCount)
   : albedo_{ albedo }, fuzz_{ fuzz }, retryCount_{ retryCount }
 {}
 
@@ -22,7 +22,8 @@ auto Metal::Scatter(Ray const& ray, Collision const& collision, std::mt19937& ra
   auto fuzzedDirection = reflectedDirection + randomOnUnitSphere(randomGenerator) * fuzz_;
   // Should the fuzzedDirection point in a direction [orthogonal to normal, opposite to normal], then we just
   // regenerate the fuzzed direction. This way we can ensure that we always return a valid ray.
-  for (auto retryCount = size_t{ 0 }; retryCount < retryCount_ && lina::dot(fuzzedDirection, collision.normal) <= 0.0;
+  for (auto retryCount = std::size_t{ 0 };
+       retryCount < retryCount_ && lina::dot(fuzzedDirection, collision.normal) <= 0.0;
        ++retryCount) {
     fuzzedDirection = reflectedDirection + randomOnUnitSphere(randomGenerator) * fuzz_;
   }

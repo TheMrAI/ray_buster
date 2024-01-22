@@ -1,7 +1,6 @@
 #ifndef RAY_BUSTER_LIB_LINA_VEC3_H_
 #define RAY_BUSTER_LIB_LINA_VEC3_H_
 
-#include "lina.h"
 #include <array>
 
 namespace lina {
@@ -10,7 +9,7 @@ class Vec3
 {
 public:
   Vec3() : v_{ 0.0, 0.0, 0.0 } {}
-  explicit Vec3(std::array<double, 3> v) : v_{ std::move(v) } {}
+  explicit Vec3(std::array<double, 3> v) : v_{ v } {}
   Vec3(double x, double y, double z) : v_{ x, y, z } {}
 
   auto operator+=(Vec3 const& rhs) -> Vec3&;
@@ -18,10 +17,10 @@ public:
   auto operator*=(double scalar) -> Vec3&;
   auto operator/=(double scalar) -> Vec3&;
   auto operator-() const -> Vec3;
-  auto operator[](size_t i) const -> double;
+  auto operator[](std::size_t i) const -> double;
 
-  auto Length() const -> double;
-  auto Components() const -> std::array<double, 3> const&;
+  [[nodiscard]] auto Length() const -> double;
+  [[nodiscard]] auto Components() const -> std::array<double, 3> const&;
 
 private:
   std::array<double, 3> v_;

@@ -11,8 +11,8 @@ public:
   Ray();
   Ray(lina::Vec3 source, lina::Vec3 direction);
 
-  auto Source() const -> lina::Vec3 const&;
-  auto Direction() const -> lina::Vec3 const&;
+  [[nodiscard]] auto Source() const -> lina::Vec3 const&;
+  [[nodiscard]] auto Direction() const -> lina::Vec3 const&;
 
 private:
   lina::Vec3 source_;

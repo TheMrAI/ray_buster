@@ -17,7 +17,13 @@ bazelisk build -c opt //main:ray_buster
 Test:
 
 ```bash
-bazelisk test --cxxopt=-std=c++23 --test_output=all //lib/lina:lina_test
+bazelisk test --cxxopt=-std=c++2b --test_output=all //lib/lina:lina_test
+```
+
+Update hedron compile commands for Bazel (for clangd) extension:
+
+```bash
+bazelisk run @hedron_compile_commands//:refresh_all
 ```
 
 ## Inspired by

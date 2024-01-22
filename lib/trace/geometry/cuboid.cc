@@ -1,15 +1,14 @@
 #include "cuboid.h"
+#include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
 #include <array>
-#include <expected>
+#include <iterator>
 #include <optional>
-#include <string>
+#include <span>
 #include <utility>
-
-#include <iostream>
 
 namespace trace {
 
@@ -42,7 +41,7 @@ auto Cuboid::Collide(Ray const& ray) const -> std::optional<Collision>
 {
   auto closestCollisionData = std::optional<std::pair<Collision, double>>{};
   auto swapUV = false;
-  for (auto i = size_t{ 0 }; i <= triangleStrip1_.size() - 3; ++i) {
+  for (auto i = std::size_t{ 0 }; i <= triangleStrip1_.size() - 3; ++i) {
     auto triplet = std::span<lina::Vec3 const, 3>(std::next(triangleStrip1_.begin(), i), size_t{ 3 });
     auto collisionCandidateData = triangleCollision(ray, triplet, swapUV);
     if (collisionCandidateData) {
@@ -53,7 +52,7 @@ auto Cuboid::Collide(Ray const& ray) const -> std::optional<Collision>
     swapUV = !swapUV;
   }
   swapUV = false;
-  for (auto i = size_t{ 0 }; i <= triangleStrip2_.size() - 3; ++i) {
+  for (auto i = std::size_t{ 0 }; i <= triangleStrip2_.size() - 3; ++i) {
     auto triplet = std::span<lina::Vec3 const, 3>(std::next(triangleStrip2_.begin(), i), size_t{ 3 });
     auto collisionCandidateData = triangleCollision(ray, triplet, swapUV);
     if (collisionCandidateData) {
@@ -65,7 +64,7 @@ auto Cuboid::Collide(Ray const& ray) const -> std::optional<Collision>
   }
 
   if (!closestCollisionData) { return std::optional<Collision>{}; }
-  return std::optional<Collision>{ std::move(closestCollisionData->first) };
+  return std::optional<Collision>{ closestCollisionData->first };
 }
 
 auto Cuboid::Transform(std::span<double const, 16> transformationMatrix) -> void
@@ -117,7 +116,7 @@ auto Cuboid::triangleCollision(Ray const& ray, std::span<lina::Vec3 const, 3> tr
   collision.normal = normal;
   collision.frontFace = lina::dot(normal, ray.Direction()) < 0.0;
 
-  return std::optional<std::pair<Collision, double>>({ std::move(collision), t });
+  return std::optional<std::pair<Collision, double>>({ collision, t });
 }
 
 }// namespace trace

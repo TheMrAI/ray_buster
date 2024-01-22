@@ -36,6 +36,7 @@ build/*
 
 # Bazel
 bazel-*
+compile_commands.json
 
 # VsCode
 .vscode/*

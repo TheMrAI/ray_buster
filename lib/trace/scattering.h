@@ -18,13 +18,21 @@ struct Scattering
 class Material
 {
 public:
-  virtual auto Scatter(Ray const& ray, Collision const& collision, std::mt19937& randomGenerator)
-    -> std::optional<Scattering>
+  Material() = default;
+  Material(Material const&) = default;
+  Material(Material&&) = default;
+  auto operator=(Material const&) -> Material& = default;
+  auto operator=(Material&&) -> Material& = default;
+  virtual ~Material() = default;
+
+  [[nodiscard]] virtual auto Scatter(Ray const& /*ray*/,
+    Collision const& /*collision*/,
+    std::mt19937& /*randomGenerator*/) -> std::optional<Scattering>
   {
     return std::optional<Scattering>{};
   };
 
-  virtual auto Emit() const -> lina::Vec3 { return lina::Vec3{ 0.0, 0.0, 0.0 }; }
+  [[nodiscard]] virtual auto Emit() const -> lina::Vec3 { return lina::Vec3{ 0.0, 0.0, 0.0 }; }
 };
 
 }// namespace trace

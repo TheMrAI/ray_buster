@@ -5,6 +5,7 @@
 #include "lib/trace/collision.h"
 #include "lib/trace/ray.h"
 #include <optional>
+#include <span>
 
 namespace trace {
 
@@ -14,7 +15,7 @@ public:
   Sphere();
   Sphere(lina::Vec3 center, double radius);
 
-  auto Collide(Ray const& ray) const -> std::optional<Collision> override;
+  [[nodiscard]] auto Collide(Ray const& ray) const -> std::optional<Collision> override;
   auto Transform(std::span<double const, 16> transformationMatrix) -> void override;
 
 private:

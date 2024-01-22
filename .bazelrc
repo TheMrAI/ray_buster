@@ -1,4 +1,4 @@
 # Have no idea, why this hoopla is needed, but configuring toolchains
 # https://bazel.build/tutorials/ccp-toolchain-config seems excessive just for
 # setting the CPP version. Well it will work as a start.
-build --action_env=BAZEL_CXXOPTS="-std=c++23"
+build --action_env=BAZEL_CXXOPTS="-std=c++2b"

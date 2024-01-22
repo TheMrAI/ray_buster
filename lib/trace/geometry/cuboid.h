@@ -5,10 +5,8 @@
 #include "lib/trace/collision.h"
 #include "lib/trace/ray.h"
 #include <array>
-#include <expected>
 #include <optional>
 #include <span>
-#include <string>
 #include <utility>
 
 namespace trace {

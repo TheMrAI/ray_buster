@@ -4,7 +4,7 @@
 
 namespace trace {
 
-Emissive::Emissive(lina::Vec3 color) : color_{ std::move(color) } {}
+Emissive::Emissive(lina::Vec3 color) : color_{ color } {}
 
 auto Emissive::Emit() const -> lina::Vec3 { return color_; }
 

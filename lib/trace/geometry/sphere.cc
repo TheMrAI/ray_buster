@@ -5,6 +5,7 @@
 #include "lib/trace/ray.h"
 #include <cmath>
 #include <optional>
+#include <span>
 
 namespace trace {
 
@@ -28,7 +29,7 @@ auto Sphere::Collide(Ray const& ray) const -> std::optional<Collision>
   collision.normal = lina::unit(collision.point - center_);
   collision.frontFace = lina::dot(ray.Direction(), collision.normal) < 0.0;
 
-  return std::optional<Collision>{ std::move(collision) };
+  return std::optional<Collision>{ collision };
 }
 
 auto Sphere::Transform(std::span<double const, 16> transformationMatrix) -> void

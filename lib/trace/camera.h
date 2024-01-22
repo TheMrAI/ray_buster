@@ -5,7 +5,6 @@
 #include "lib/trace/ray.h"
 #include <expected>
 #include <random>
-#include <vector>
 
 namespace trace {
 

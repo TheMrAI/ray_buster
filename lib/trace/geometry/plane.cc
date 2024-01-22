@@ -1,14 +1,16 @@
 #include "plane.h"
 
 #include "lib/lina/lina.h"
+#include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
 #include "lib/trace/util.h"
+#include <expected>
 #include <format>
 #include <optional>
-
-#include <iostream>
+#include <span>
+#include <utility>
 
 namespace trace {
 
@@ -51,7 +53,7 @@ auto Plane::Collide(Ray const& ray) const -> std::optional<Collision>
   collision.normal = normal_;
   collision.frontFace = lina::dot(normal_, ray.Direction()) < 0.0;
 
-  return std::optional<Collision>{ std::move(collision) };
+  return std::optional<Collision>{ collision };
 }
 
 auto Plane::Transform(std::span<double const, 16> transformationMatrix) -> void
