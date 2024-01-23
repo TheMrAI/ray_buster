@@ -3,6 +3,7 @@
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
+#include "lib/trace/material.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/scattering.h"
 #include <optional>

@@ -37,7 +37,7 @@ Camera::Camera(std::size_t imageWidth,
   pixelDeltaV_ = viewportV / static_cast<double>(imageHeight);
 
   auto viewportUpperLeft = cameraCenter_ - (focusDistance * baseW_) - (viewportU / 2.0) - (viewportV / 2.0);
-  firstPixelPosition_ = viewportUpperLeft + 0.5 * (pixelDeltaU_ + pixelDeltaV_);
+  firstPixelPosition_ = viewportUpperLeft + 0.5 * (pixelDeltaU_ + pixelDeltaV_);// NOLINT
 
   // Calculate defocus lense properties
   // On defocusAngle 0.0 the vectors will be null vectors and

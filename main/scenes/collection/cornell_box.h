@@ -3,7 +3,7 @@
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/camera.h"
-#include "lib/trace/collision.h"
+#include "lib/trace/component.h"
 #include "lib/trace/geometry/cuboid.h"
 #include "lib/trace/geometry/plane.h"
 #include "lib/trace/material/emissive.h"

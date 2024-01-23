@@ -2,6 +2,8 @@
 #define RAY_BUSTER_LIB_TRACE_MATERIAL_DIELECTRIC_H_
 
 #include "lib/trace/collision.h"
+#include "lib/trace/component.h"
+#include "lib/trace/material.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/scattering.h"
 

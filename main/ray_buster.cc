@@ -14,8 +14,9 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/camera.h"
 #include "lib/trace/collision.h"
+#include "lib/trace/component.h"
+#include "lib/trace/material.h"
 #include "lib/trace/ray.h"
-#include "lib/trace/scattering.h"
 #include "main/scenes/collection/cornell_box.h"
 #include "main/scenes/scene.h"
 
