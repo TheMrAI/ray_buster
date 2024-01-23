@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
-#include <expected>
 #include <functional>
 #include <future>
 #include <iostream>
@@ -15,23 +14,12 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/camera.h"
 #include "lib/trace/collision.h"
-#include "lib/trace/geometry/cuboid.h"
-#include "lib/trace/geometry/plane.h"
-#include "lib/trace/material/dielectric.h"
-#include "lib/trace/material/emissive.h"
-#include "lib/trace/material/lambertian.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/scattering.h"
-#include "lib/trace/transform.h"
-#include "lib/trace/util.h"
+#include "main/scenes/collection/cornell_box.h"
+#include "main/scenes/scene.h"
 
-struct SceneElement
-{
-  std::unique_ptr<trace::Component> component;
-  std::unique_ptr<trace::Material> material;
-};
-
-auto closestCollision(trace::Ray const& ray, std::vector<SceneElement> const& sceneElements)
+auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& sceneElements)
   -> std::pair<std::optional<trace::Collision>, std::size_t>
 {
   auto closestCollision = std::optional<trace::Collision>{};
@@ -57,7 +45,7 @@ auto closestCollision(trace::Ray const& ray, std::vector<SceneElement> const& sc
 }
 
 auto rayColor(trace::Ray const& ray,
-  std::vector<SceneElement> const& sceneElements,
+  std::vector<scene::Element> const& sceneElements,
   std::mt19937& randomGenerator,
   std::size_t depth) -> lina::Vec3
 {
@@ -90,77 +78,14 @@ auto writeColor(lina::Vec3 const& color)
 
   // we can get close to 256, but not above, granted the input comes in between [0.0, 1.0)
   std::cout << static_cast<int>(255.9999 * red) << " " << static_cast<int>(255.9999 * green) << " "
-            << static_cast<int>(255.9999 * blue) << std::endl;
+            << static_cast<int>(255.9999 * blue) << '\n';
 }
 
 auto main() -> int
 {
-  auto imageWidth = std::size_t{ 1024 };
-  auto imageHeight = std::size_t{ 768 };
-
-  // auto camera = trace::Camera{ imageWidth,
-  //   imageHeight,
-  //   lina::Vec3{ 0.0, -3.0, 3.0 },// camera center
-  //   lina::Vec3{ 0.0, 0.0, 0.0 },// look at
-  //   lina::Vec3{ 0.0, 0.0, 1.0 },
-  //   70.0,
-  //   0.0 };
-
-  // auto sceneElements = std::vector<SceneElement>{};
-
-  // sceneElements.emplace_back(std::make_unique<trace::Cuboid>(lina::Vec3{ 0.0, 0.0, 0.0 }),
-  //   std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
-
-  // auto rotateZ = trace::rotateAlongZ(trace::degreesToRadians(45));
-  // auto scale = trace::scale(lina::Vec3{ 1.0, 5.0, 2.0 });
-  // auto trans = trace::translate(lina::Vec3{ -1.0, 1.5, -1.0 });
-  // sceneElements.back().component->Transform(lina::mul(trans, lina::mul(rotateZ, scale)));
-
-  // Camera
-  auto camera = trace::Camera{ imageWidth,
-    imageHeight,
-    lina::Vec3{ 0.0, -100.0, 50.0 },// camera center
-    lina::Vec3{ 0.0, 0.0, 50.0 },// look at
-    lina::Vec3{ 0.0, 0.0, 1.0 },
-    70.0,
-    0.0 };
-
-  auto sceneElements = std::vector<SceneElement>{};
-
-  auto bottom = trace::build(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
-  auto top = trace::build(lina::Vec3{ 0.0, 0.0, 100.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Reverse);
-  auto back = trace::build(lina::Vec3{ 0.0, 50.0, 50.0 }, 100.0, 100.0, trace::Axis::Y, trace::Orientation::Reverse);
-  auto left = trace::build(lina::Vec3{ -50.0, 0.0, 50.0 }, 100.0, 100.0, trace::Axis::X, trace::Orientation::Aligned);
-  auto right = trace::build(lina::Vec3{ 50.0, 0.0, 50.0 }, 100.0, 100.0, trace::Axis::X, trace::Orientation::Reverse);
-
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(bottom.value())),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(top.value())),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(back.value())),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.0273, 0.0156, 0.2187 }));
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(left.value())),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.0, 0.8125, 0.3828 }));
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(right.value())),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.8203, 0.0156, 0.1757 }));
-
-  auto light = trace::build(lina::Vec3{ 0.0, 0.0, 99.9 }, 15.0, 15.0, trace::Axis::Z, trace::Orientation::Reverse);
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(light.value())),
-    std::make_unique<trace::Emissive>(lina::Vec3{ 15.0, 15.0, 15.0 }));
-
-  auto cuboidOne = std::make_unique<trace::Cuboid>(lina::Vec3{ -6.0, 30.0, 29.0 }, 28.0, 58.0, 28.0);
-  cuboidOne->Transform(trace::rotateAlongZ(trace::degreesToRadians(30)));
-  sceneElements.emplace_back(
-    std::move(cuboidOne), std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
-
-  auto cuboidTwo = std::make_unique<trace::Cuboid>(lina::Vec3{ 22.0, -10.0, 12.5 }, 25.0, 25.0, 25.0);
-  cuboidTwo->Transform(trace::rotateAlongZ(trace::degreesToRadians(-8)));
-  // sceneElements.emplace_back(std::move(cuboidTwo), std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179,
-  // 0.8476 }));
-  sceneElements.emplace_back(std::move(cuboidTwo), std::make_unique<trace::Dielectric>());
-
-  constexpr auto sampleCount = std::size_t{ 300 };
-  constexpr auto rayDepth = std::size_t{ 50 };
+  auto [camera, sampleCount, rayDepth, sceneElements] = scene::cornell_box();
+  auto imageWidth = camera.ImageWidth();
+  auto imageHeight = camera.ImageHeight();
 
   constexpr auto minNumberOfLinesPerThread = std::size_t{ 50 };
   auto const maxThreads = (imageHeight + minNumberOfLinesPerThread - std::size_t{ 1 }) / minNumberOfLinesPerThread;
@@ -195,7 +120,7 @@ auto main() -> int
             }
             color += rayColor(ray.value(), sceneElements, randomGenerator, rayDepth);
           }
-          color /= sampleCount;
+          color /= static_cast<double>(sampleCount);
           pixelColors[i - from][j] = color;
         }
       }

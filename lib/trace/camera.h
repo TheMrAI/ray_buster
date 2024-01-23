@@ -21,10 +21,13 @@ public:
     double defocusAngle = 0.0,
     double focusDistance = 1.0);
 
-
   // Generate a matrix of rays, with multisamplingCount number of rays per pixel
-  auto GetSampleRayAt(std::size_t i, std::size_t j, std::mt19937& randomGenerator, bool multiSampled = false) const
+  [[nodiscard]] auto
+    GetSampleRayAt(std::size_t i, std::size_t j, std::mt19937& randomGenerator, bool multiSampled = false) const
     -> std::expected<trace::Ray, std::string>;
+
+  [[nodiscard]] auto ImageWidth() const -> std::size_t;
+  [[nodiscard]] auto ImageHeight() const -> std::size_t;
 
 private:
   std::size_t imageWidth_;

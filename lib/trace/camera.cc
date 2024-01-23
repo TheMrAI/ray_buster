@@ -68,6 +68,10 @@ auto Camera::GetSampleRayAt(std::size_t i, std::size_t j, std::mt19937& randomGe
   return Ray{ raySource, rayDirection };
 }
 
+auto Camera::ImageWidth() const -> std::size_t { return imageWidth_; }
+
+auto Camera::ImageHeight() const -> std::size_t { return imageHeight_; }
+
 auto sampleInUnitSquare(std::mt19937& randomGenerator, lina::Vec3 const& unitDeltaU, lina::Vec3 const& unitDeltaV)
   -> lina::Vec3
 {

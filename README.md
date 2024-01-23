@@ -20,11 +20,13 @@ Test:
 bazelisk test --cxxopt=-std=c++2b --test_output=all //lib/lina:lina_test
 ```
 
-Update hedron compile commands for Bazel (for clangd) extension:
+Generate compile_commands.json from Bazel using hedron:
 
 ```bash
 bazelisk run @hedron_compile_commands//:refresh_all
 ```
+
+After this one can use clang-tidy.
 
 ## Inspired by
 

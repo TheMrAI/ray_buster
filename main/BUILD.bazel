@@ -1,5 +1,14 @@
 cc_binary(
     name = "ray_buster",
     srcs = ["ray_buster.cc"],
-    deps = ["//lib/lina:lina", "//lib/trace:trace"],
+    deps = ["//lib/lina:lina", "//lib/trace:trace", ":scenes"],
+)
+
+cc_library(
+    name = "scenes",
+    srcs = [],
+    hdrs = [
+            "scenes/scene.h",
+            "scenes/collection/cornell_box.h",
+            ],
 )
