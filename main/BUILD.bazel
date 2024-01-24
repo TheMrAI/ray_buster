@@ -6,9 +6,13 @@ cc_binary(
 
 cc_library(
     name = "scenes",
-    srcs = [],
+    srcs = [
+            "scenes/test/cuboid.cc",
+    ],
     hdrs = [
             "scenes/scene.h",
             "scenes/collection/cornell_box.h",
-            ],
+            "scenes/test/cuboid.h",
+    ],
+    deps = ["//lib/lina:lina", "//lib/trace:trace"],
 )

@@ -8,9 +8,9 @@ namespace lina {
 class Vec3
 {
 public:
-  Vec3() : v_{ 0.0, 0.0, 0.0 } {}
-  explicit Vec3(std::array<double, 3> v) : v_{ v } {}
-  Vec3(double x, double y, double z) : v_{ x, y, z } {}
+  constexpr Vec3() : v_{ 0.0, 0.0, 0.0 } {}
+  constexpr explicit Vec3(std::array<double, 3> v) : v_{ v } {}
+  constexpr Vec3(double x, double y, double z) : v_{ x, y, z } {}
 
   auto operator+=(Vec3 const& rhs) -> Vec3&;
   auto operator-=(Vec3 const& rhs) -> Vec3&;

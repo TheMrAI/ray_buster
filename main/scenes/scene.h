@@ -21,6 +21,7 @@ struct Composition
   std::size_t sampleCount;
   std::size_t rayDepth;
   std::vector<Element> sceneElements;
+  bool useSkybox;
 };
 
 }// namespace scene

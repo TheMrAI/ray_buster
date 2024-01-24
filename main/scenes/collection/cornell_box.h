@@ -65,7 +65,7 @@ auto cornell_box() -> Composition
   sceneElements.emplace_back(
     std::move(cuboidTwo), std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements) };
+  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), false };
 }
 
 }// namespace scene

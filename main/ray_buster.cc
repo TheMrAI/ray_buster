@@ -19,6 +19,7 @@
 #include "lib/trace/ray.h"
 #include "main/scenes/collection/cornell_box.h"
 #include "main/scenes/scene.h"
+#include "main/scenes/test/cuboid.h"
 
 auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& sceneElements)
   -> std::pair<std::optional<trace::Collision>, std::size_t>
@@ -48,7 +49,8 @@ auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& 
 auto rayColor(trace::Ray const& ray,
   std::vector<scene::Element> const& sceneElements,
   std::mt19937& randomGenerator,
-  std::size_t depth) -> lina::Vec3
+  std::size_t depth,
+  bool useSkybox) -> lina::Vec3
 {
   if (depth == 0) { return lina::Vec3{ 0.0, 0.0, 0.0 }; }
 
@@ -60,11 +62,13 @@ auto rayColor(trace::Ray const& ray,
     if (!scattering) { return emission; }
     return emission
            + (scattering.value().attenuation
-              * rayColor(scattering.value().ray, sceneElements, randomGenerator, depth - 1));
+              * rayColor(scattering.value().ray, sceneElements, randomGenerator, depth - 1, useSkybox));
   }
 
-  // auto a = 0.5 * (ray.Direction()[1] + 1.0);
-  // return (1.0 - a) * lina::Vec3{ 1.0, 1.0, 1.0 } + a * lina::Vec3{ 0.5, 0.7, 1.0 };
+  if (useSkybox) {
+    auto a = 0.5 * (ray.Direction()[1] + 1.0);
+    return (1.0 - a) * lina::Vec3{ 1.0, 1.0, 1.0 } + a * lina::Vec3{ 0.5, 0.7, 1.0 };
+  }
   return lina::Vec3{ 0.0, 0.0, 0.0 };
 }
 
@@ -84,7 +88,7 @@ auto writeColor(lina::Vec3 const& color)
 
 auto main() -> int
 {
-  auto [camera, sampleCount, rayDepth, sceneElements] = scene::cornell_box();
+  auto [camera, sampleCount, rayDepth, sceneElements, useSkybox] = scene::test::cuboid_emissive();
   auto imageWidth = camera.ImageWidth();
   auto imageHeight = camera.ImageHeight();
 
@@ -100,33 +104,36 @@ auto main() -> int
   // reportProgress should only be true for one thread at a time
   // capture sceneElements and samplingRays as const refs, because there should be nor circumstance where they need
   // to be changed during rendering
-  auto renderChunk =
-    [imageWidth, camera = std::cref(camera), sampleCount, rayDepth, sceneElements = std::cref(sceneElements)](
-      std::size_t from, std::size_t until, bool reportProgress = false) {
-      auto distance = until - from;
-      auto pixelColors = std::vector<std::vector<lina::Vec3>>(distance, std::vector<lina::Vec3>(imageWidth));
+  auto renderChunk = [imageWidth,
+                       camera = std::cref(camera),
+                       sampleCount,
+                       rayDepth,
+                       sceneElements = std::cref(sceneElements),
+                       useSkybox](std::size_t from, std::size_t until, bool reportProgress = false) {
+    auto distance = until - from;
+    auto pixelColors = std::vector<std::vector<lina::Vec3>>(distance, std::vector<lina::Vec3>(imageWidth));
 
-      auto randomDevice = std::random_device{};
-      auto randomGenerator = std::mt19937{ randomDevice() };
+    auto randomDevice = std::random_device{};
+    auto randomGenerator = std::mt19937{ randomDevice() };
 
-      for (auto i = from; i < until; ++i) {
-        if (reportProgress) { std::clog << "\rScan-lines remaining: " << (until - i - 1) << ' ' << std::flush; }
-        for (auto j = std::size_t{ 0 }; j < imageWidth; ++j) {
-          auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
-          for (auto sample = std::size_t{ 0 }; sample < sampleCount; ++sample) {
-            auto const ray = camera.get().GetSampleRayAt(i, j, randomGenerator, sampleCount > 1);
-            if (!ray) {
-              std::cerr << ray.error() << std::endl;
-              std::exit(1);
-            }
-            color += rayColor(ray.value(), sceneElements, randomGenerator, rayDepth);
+    for (auto i = from; i < until; ++i) {
+      if (reportProgress) { std::clog << "\rScan-lines remaining: " << (until - i - 1) << ' ' << std::flush; }
+      for (auto j = std::size_t{ 0 }; j < imageWidth; ++j) {
+        auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
+        for (auto sample = std::size_t{ 0 }; sample < sampleCount; ++sample) {
+          auto const ray = camera.get().GetSampleRayAt(i, j, randomGenerator, sampleCount > 1);
+          if (!ray) {
+            std::cerr << ray.error() << std::endl;
+            std::exit(1);
           }
-          color /= static_cast<double>(sampleCount);
-          pixelColors[i - from][j] = color;
+          color += rayColor(ray.value(), sceneElements, randomGenerator, rayDepth, useSkybox);
         }
+        color /= static_cast<double>(sampleCount);
+        pixelColors[i - from][j] = color;
       }
-      return pixelColors;
-    };
+    }
+    return pixelColors;
+  };
 
   auto renderChunkResults = std::vector<std::future<std::vector<std::vector<lina::Vec3>>>>();
   renderChunkResults.reserve(numberOfThreads);
