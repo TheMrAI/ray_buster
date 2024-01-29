@@ -11,8 +11,9 @@ namespace trace {
 
 Lambertian::Lambertian(lina::Vec3 albedo) : albedo_{ albedo } {}
 
-auto Lambertian::Scatter(Ray const& /*ray*/, Collision const& collision, std::mt19937& randomGenerator)
-  -> std::optional<Scattering>
+auto Lambertian::Scatter(Ray const& /*ray*/,
+  Collision const& collision,
+  std::mt19937& randomGenerator) -> std::optional<Scattering>
 {
   auto adjustedCollisionPoint = collision.point + collision.normal * 0.00001;
   // Make the normal a smidgen longer than unit length, so that even if the randomUnit would point

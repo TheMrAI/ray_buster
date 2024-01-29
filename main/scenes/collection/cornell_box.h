@@ -16,7 +16,7 @@
 
 namespace scene {
 
-auto cornell_box() -> Composition
+auto cornellBox() -> Composition
 {
   constexpr auto imageWidth = std::size_t{ 1024 };
   constexpr auto imageHeight = std::size_t{ 768 };

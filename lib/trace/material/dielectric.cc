@@ -15,8 +15,9 @@ Dielectric::Dielectric(double indexOfRefraction) : indexOfRefraction_{ indexOfRe
 
 // As a rule of thumb, you know that your refraction calculations are correct, when you make dielectric
 // sphere using indexOfRefraction of 1.0, and it becomes imperceptible.
-auto Dielectric::Scatter(Ray const& ray, Collision const& collision, std::mt19937& randomGenerator)
-  -> std::optional<Scattering>
+auto Dielectric::Scatter(Ray const& ray,
+  Collision const& collision,
+  std::mt19937& randomGenerator) -> std::optional<Scattering>
 {
   // In these calculations we assume that we only ever transition between air and a given material.
   // I.e. => no compound materials will work with this.

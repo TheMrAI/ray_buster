@@ -4,8 +4,8 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/camera.h"
 #include "lib/trace/component.h"
-#include "lib/trace/geometry/sphere.h"
 #include "lib/trace/geometry/plane.h"
+#include "lib/trace/geometry/sphere.h"
 #include "lib/trace/material/dielectric.h"
 #include "lib/trace/material/emissive.h"
 #include "lib/trace/material/lambertian.h"
@@ -35,7 +35,7 @@ const auto camera = trace::Camera{ imageWidth,
 constexpr auto planeColor = lina::Vec3{ 0.75, 0.75, 0.75 };
 constexpr auto sphereColor = lina::Vec3{ 0.9296, 0.9179, 0.8476 };
 
-auto sphere_material() -> Composition
+auto sphereMaterial() -> Composition
 {
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -59,7 +59,7 @@ auto sphere_material() -> Composition
   return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), true };
 }
 
-auto sphere_emissive() -> Composition
+auto sphereEmissive() -> Composition
 {
   // Have to override the sampleCount, otherwise there isn't enough
   // detail to see the light pattern.
@@ -87,4 +87,4 @@ auto sphere_emissive() -> Composition
   return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), false };
 }
 
-} // namespace scene::test
+}// namespace scene::test

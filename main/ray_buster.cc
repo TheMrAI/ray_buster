@@ -22,8 +22,8 @@
 #include "main/scenes/test/cuboid.h"
 #include "main/scenes/test/sphere.h"
 
-auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& sceneElements)
-  -> std::pair<std::optional<trace::Collision>, std::size_t>
+auto closestCollision(trace::Ray const& ray,
+  std::vector<scene::Element> const& sceneElements) -> std::pair<std::optional<trace::Collision>, std::size_t>
 {
   auto closestCollision = std::optional<trace::Collision>{};
   auto elementIndex = std::size_t{ 0 };
@@ -89,7 +89,7 @@ auto writeColor(lina::Vec3 const& color)
 
 auto main() -> int
 {
-  auto [camera, sampleCount, rayDepth, sceneElements, useSkybox] = scene::test::sphere_emissive();
+  auto [camera, sampleCount, rayDepth, sceneElements, useSkybox] = scene::test::sphereEmissive();
   auto imageWidth = camera.ImageWidth();
   auto imageHeight = camera.ImageHeight();
 

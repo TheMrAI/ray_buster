@@ -13,8 +13,9 @@ Metal::Metal(lina::Vec3 albedo, double fuzz, std::size_t retryCount)
   : albedo_{ albedo }, fuzz_{ fuzz }, retryCount_{ retryCount }
 {}
 
-auto Metal::Scatter(Ray const& ray, Collision const& collision, std::mt19937& randomGenerator)
-  -> std::optional<Scattering>
+auto Metal::Scatter(Ray const& ray,
+  Collision const& collision,
+  std::mt19937& randomGenerator) -> std::optional<Scattering>
 {
   auto adjustedCollisionPoint = collision.point + collision.normal * 0.00001;
   auto reflectedDirection = ray.Direction() - (2.0 * lina::dot(ray.Direction(), collision.normal) * collision.normal);

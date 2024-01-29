@@ -22,8 +22,9 @@ public:
 
   // As a rule of thumb, you know that your refraction calculations are correct, when you make dielectric
   // sphere using indexOfRefraction of 1.0, and it becomes imperceptible.
-  auto Scatter(Ray const& ray, Collision const& collision, std::mt19937& randomGenerator)
-    -> std::optional<Scattering> override;
+  auto Scatter(Ray const& ray,
+    Collision const& collision,
+    std::mt19937& randomGenerator) -> std::optional<Scattering> override;
 
 private:
   double indexOfRefraction_;

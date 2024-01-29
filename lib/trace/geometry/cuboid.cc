@@ -83,8 +83,9 @@ auto Cuboid::Transform(std::span<double const, 16> transformationMatrix) -> void
   }
 }
 
-auto Cuboid::triangleCollision(Ray const& ray, std::span<lina::Vec3 const, 3> triplet, bool swapUV) const
-  -> std::optional<std::pair<Collision, double>>
+auto Cuboid::triangleCollision(Ray const& ray,
+  std::span<lina::Vec3 const, 3> triplet,
+  bool swapUV) const -> std::optional<std::pair<Collision, double>>
 {
   auto localizedTriplet = std::array<lina::Vec3, 3>{ triplet[0] + center_, triplet[1] + center_, triplet[2] + center_ };
   auto u = localizedTriplet[2] - localizedTriplet[0];

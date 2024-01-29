@@ -35,7 +35,7 @@ const auto camera = trace::Camera{ imageWidth,
 constexpr auto planeColor = lina::Vec3{ 0.75, 0.75, 0.75 };
 constexpr auto cuboidColor = lina::Vec3{ 0.9296, 0.9179, 0.8476 };
 
-auto cuboid_material() -> Composition
+auto cuboidMaterial() -> Composition
 {
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -59,7 +59,7 @@ auto cuboid_material() -> Composition
   return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), true };
 }
 
-auto cuboid_scale() -> Composition
+auto cuboidScale() -> Composition
 {
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -96,7 +96,7 @@ auto cuboid_scale() -> Composition
   return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), true };
 }
 
-auto cuboid_rotate() -> Composition
+auto cuboidRotate() -> Composition
 {
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -135,7 +135,7 @@ auto cuboid_rotate() -> Composition
   return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), true };
 }
 
-auto cuboid_emissive() -> Composition
+auto cuboidEmissive() -> Composition
 {
   // Have to override the sampleCount, otherwise there isn't enough
   // detail to see the light pattern.

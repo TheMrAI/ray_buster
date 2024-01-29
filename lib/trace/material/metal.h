@@ -22,8 +22,9 @@ public:
   // very unlikely circumstances.
   Metal(lina::Vec3 albedo, double fuzz = 0.01, std::size_t retryCount = 3);
 
-  auto Scatter(Ray const& ray, Collision const& collision, std::mt19937& randomGenerator)
-    -> std::optional<Scattering> override;
+  auto Scatter(Ray const& ray,
+    Collision const& collision,
+    std::mt19937& randomGenerator) -> std::optional<Scattering> override;
 
 private:
   lina::Vec3 albedo_;

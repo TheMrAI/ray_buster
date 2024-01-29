@@ -22,9 +22,10 @@ public:
     double focusDistance = 1.0);
 
   // Generate a matrix of rays, with multisamplingCount number of rays per pixel
-  [[nodiscard]] auto
-    GetSampleRayAt(std::size_t i, std::size_t j, std::mt19937& randomGenerator, bool multiSampled = false) const
-    -> std::expected<trace::Ray, std::string>;
+  [[nodiscard]] auto GetSampleRayAt(std::size_t i,
+    std::size_t j,
+    std::mt19937& randomGenerator,
+    bool multiSampled = false) const -> std::expected<trace::Ray, std::string>;
 
   [[nodiscard]] auto ImageWidth() const -> std::size_t;
   [[nodiscard]] auto ImageHeight() const -> std::size_t;
@@ -45,8 +46,9 @@ private:
   lina::Vec3 lenseV_;
 };
 
-auto sampleInUnitSquare(std::mt19937& randomGenerator, lina::Vec3 const& unitDeltaU, lina::Vec3 const& unitDeltaV)
-  -> lina::Vec3;
+auto sampleInUnitSquare(std::mt19937& randomGenerator,
+  lina::Vec3 const& unitDeltaU,
+  lina::Vec3 const& unitDeltaV) -> lina::Vec3;
 
 auto sampleInUnitDisk(std::mt19937& randomGenerator,
   lina::Vec3 const& center,

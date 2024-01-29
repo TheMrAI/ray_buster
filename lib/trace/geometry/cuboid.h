@@ -21,8 +21,9 @@ public:
   auto Transform(std::span<double const, 16> transformationMatrix) -> void override;
 
 private:
-  auto triangleCollision(Ray const& ray, std::span<lina::Vec3 const, 3> triplet, bool swapUV) const
-    -> std::optional<std::pair<Collision, double>>;
+  auto triangleCollision(Ray const& ray,
+    std::span<lina::Vec3 const, 3> triplet,
+    bool swapUV) const -> std::optional<std::pair<Collision, double>>;
 
 private:
   lina::Vec3 center_;
