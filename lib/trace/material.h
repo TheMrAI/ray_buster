@@ -27,7 +27,10 @@ public:
     return std::optional<Scattering>{};
   };
 
-  [[nodiscard]] virtual auto Emit() const -> lina::Vec3 { return lina::Vec3{ 0.0, 0.0, 0.0 }; }
+  [[nodiscard]] virtual auto Emit(Collision const& /*collision*/) const -> lina::Vec3
+  {
+    return lina::Vec3{ 0.0, 0.0, 0.0 };
+  }
 };
 
 }// namespace trace

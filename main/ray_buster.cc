@@ -19,8 +19,7 @@
 #include "lib/trace/ray.h"
 #include "main/scenes/collection/cornell_box.h"
 #include "main/scenes/scene.h"
-#include "main/scenes/test/cuboid.h"
-#include "main/scenes/test/sphere.h"
+#include "main/scenes/test/plane.h"
 
 auto closestCollision(trace::Ray const& ray,
   std::vector<scene::Element> const& sceneElements) -> std::pair<std::optional<trace::Collision>, std::size_t>
@@ -58,7 +57,7 @@ auto rayColor(trace::Ray const& ray,
   auto [collision, elementIndex] = closestCollision(ray, sceneElements);
   if (collision) {
     auto const& material = sceneElements[elementIndex].material;
-    auto const emission = material->Emit();
+    auto const emission = material->Emit(collision.value());
     auto scattering = material->Scatter(ray, collision.value(), randomGenerator);
     if (!scattering) { return emission; }
     return emission
@@ -89,7 +88,7 @@ auto writeColor(lina::Vec3 const& color)
 
 auto main() -> int
 {
-  auto [camera, sampleCount, rayDepth, sceneElements, useSkybox] = scene::test::sphereEmissive();
+  auto [camera, sampleCount, rayDepth, sceneElements, useSkybox] = scene::cornellBox();
   auto imageWidth = camera.ImageWidth();
   auto imageHeight = camera.ImageHeight();
 

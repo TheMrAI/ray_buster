@@ -52,7 +52,7 @@ auto cornellBox() -> Composition
 
   auto light = trace::build(lina::Vec3{ 0.0, 0.0, 99.9 }, 15.0, 15.0, trace::Axis::Z, trace::Orientation::Reverse);
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(light.value())),
-    std::make_unique<trace::Emissive>(lina::Vec3{ 15.0, 15.0, 15.0 }));
+    std::make_unique<trace::Emissive>(lina::Vec3{ 15.0, 15.0, 15.0 }, true));
 
   auto cuboidOne = std::make_unique<trace::Cuboid>(lina::Vec3{ -6.0, 30.0, 29.0 }, 28.0, 58.0, 28.0);
   cuboidOne->Transform(trace::rotateAlongZ(trace::degreesToRadians(30)));
