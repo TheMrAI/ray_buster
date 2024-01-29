@@ -20,6 +20,7 @@
 #include "main/scenes/collection/cornell_box.h"
 #include "main/scenes/scene.h"
 #include "main/scenes/test/cuboid.h"
+#include "main/scenes/test/sphere.h"
 
 auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& sceneElements)
   -> std::pair<std::optional<trace::Collision>, std::size_t>
@@ -88,7 +89,7 @@ auto writeColor(lina::Vec3 const& color)
 
 auto main() -> int
 {
-  auto [camera, sampleCount, rayDepth, sceneElements, useSkybox] = scene::test::cuboid_emissive();
+  auto [camera, sampleCount, rayDepth, sceneElements, useSkybox] = scene::test::sphere_emissive();
   auto imageWidth = camera.ImageWidth();
   auto imageHeight = camera.ImageHeight();
 

@@ -8,11 +8,13 @@ cc_library(
     name = "scenes",
     srcs = [
             "scenes/test/cuboid.cc",
+            "scenes/test/sphere.cc",
     ],
     hdrs = [
             "scenes/scene.h",
             "scenes/collection/cornell_box.h",
             "scenes/test/cuboid.h",
+            "scenes/test/sphere.h",
     ],
     deps = ["//lib/lina:lina", "//lib/trace:trace"],
 )
