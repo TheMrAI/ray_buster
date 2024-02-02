@@ -51,7 +51,7 @@ auto Dielectric::Scatter(Ray const& ray,
 
   auto scattering = Scattering{};
   scattering.attenuation = lina::Vec3{ 1.0, 1.0, 1.0 };// no attenuation
-  scattering.ray = resultRay;
+  scattering.type = resultRay;
 
   return std::optional<Scattering>{ scattering };
 }

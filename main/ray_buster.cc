@@ -9,6 +9,7 @@
 #include <random>
 #include <thread>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "lib/lina/vec3.h"
@@ -19,7 +20,8 @@
 #include "lib/trace/ray.h"
 #include "main/scenes/collection/cornell_box.h"
 #include "main/scenes/scene.h"
-#include "main/scenes/test/plane.h"
+#include "main/scenes/test/cuboid.h"
+#include "main/scenes/test/sphere.h"
 
 auto closestCollision(trace::Ray const& ray,
   std::vector<scene::Element> const& sceneElements) -> std::pair<std::optional<trace::Collision>, std::size_t>
@@ -60,9 +62,28 @@ auto rayColor(trace::Ray const& ray,
     auto const emission = material->Emit(collision.value());
     auto scattering = material->Scatter(ray, collision.value(), randomGenerator);
     if (!scattering) { return emission; }
-    return emission
-           + (scattering.value().attenuation
-              * rayColor(scattering.value().ray, sceneElements, randomGenerator, depth - 1, useSkybox));
+
+    auto scatterColor = lina::Vec3{};
+    if (std::holds_alternative<trace::Ray>(scattering.value().type)) {
+      auto scatteredRay = std::get<trace::Ray>(scattering.value().type);
+      scatterColor =
+        scattering.value().attenuation * rayColor(scatteredRay, sceneElements, randomGenerator, depth - 1, useSkybox);
+    } else if (std::holds_alternative<trace::PDF>(scattering.value().type)) {
+      auto materialPdf = std::get<trace::PDF>(scattering.value().type);
+      auto scatteredRay =
+        trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), materialPdf.GenerateSample() };
+      auto scatteringPdfValue = materialPdf.Evaluate(scatteredRay.Direction());
+      auto pdf = scatteringPdfValue;
+
+      scatterColor = (scattering.value().attenuation * scatteringPdfValue
+                       * rayColor(scatteredRay, sceneElements, randomGenerator, depth - 1, useSkybox))
+                     / pdf;
+    }
+    else {
+      throw std::logic_error("Unhandled scattering type.");
+    }
+
+    return emission + scatterColor;
   }
 
   if (useSkybox) {

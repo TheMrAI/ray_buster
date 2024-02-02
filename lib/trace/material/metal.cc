@@ -31,7 +31,7 @@ auto Metal::Scatter(Ray const& ray,
 
   auto scattering = Scattering{};
   scattering.attenuation = albedo_;
-  scattering.ray = Ray{ adjustedCollisionPoint, fuzzedDirection };
+  scattering.type = Ray{ adjustedCollisionPoint, fuzzedDirection };
 
   return std::optional<Scattering>{ scattering };
 }

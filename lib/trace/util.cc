@@ -38,6 +38,8 @@ auto randomOnUnitSphere(std::mt19937& generator) -> lina::Vec3
   return lina::Vec3{ x, y, z };
 }
 
+// Given a normal vector it will generate random vectors on a hemisphere whose axis aligns with the
+// given normal.
 auto randomOnUnitHemisphere(std::mt19937& generator, lina::Vec3 const& normal) -> lina::Vec3
 {
   auto onHemisphere = lina::Vec3{};
@@ -52,6 +54,17 @@ auto randomOnUnitHemisphere(std::mt19937& generator, lina::Vec3 const& normal) -
   return onHemisphere;
 }
 
+auto randomCosineDirection(std::mt19937& generator) -> lina::Vec3
+{
+  auto r1 = randomUniformDouble(generator, 0.0, 1.0);
+  auto r2 = randomUniformDouble(generator, 0.0, 1.0);
+  auto phi = 2.0 * std::numbers::pi * r1;
+  auto x = std::cos(phi) * std::sqrt(r2);
+  auto y = std::sin(phi) * std::sqrt(r2);
+  auto z = std::sqrt(1.0 - r2);
+  return lina::Vec3{ x, y, z };
+}
+
 // source: https://mathworld.wolfram.com/DiskPointPicking.html
 auto randomOnUnitDisk(std::mt19937& generator) -> lina::Vec3
 {
@@ -62,5 +75,16 @@ auto randomOnUnitDisk(std::mt19937& generator) -> lina::Vec3
 }
 
 auto degreesToRadians(double degrees) -> double { return degrees * (std::numbers::pi / 180.0); }
+
+Onb::Onb(lina::Vec3 const& direction)
+{
+  w_ = lina::unit(direction);
+  auto a = (std::fabs(w_[0]) > 0.9) ? lina::Vec3{ 0.0, 1.0, 0.0 } : lina::Vec3{ 1.0, 0.0, 0.0 };
+  v_ = lina::unit(lina::cross(w_, a));
+  u_ = lina::cross(w_, v_);
+}
+
+
+auto Onb::Transform(lina::Vec3 const& vec) const -> lina::Vec3 { return vec[0] * u_ + vec[1] * v_ + vec[2] * w_; }
 
 }// namespace trace

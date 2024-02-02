@@ -18,10 +18,10 @@ namespace scene {
 
 auto cornellBox() -> Composition
 {
-  constexpr auto imageWidth = std::size_t{ 1024 };
-  constexpr auto imageHeight = std::size_t{ 768 };
+  constexpr auto imageWidth = std::size_t{ 800 };
+  constexpr auto imageHeight = std::size_t{ 800 };
   constexpr auto sampleCount = std::size_t{ 300 };
-  constexpr auto rayDepth = std::size_t{ 50 };
+  constexpr auto rayDepth = std::size_t{ 30 };
 
   auto camera = trace::Camera{ imageWidth,
     imageHeight,
@@ -59,9 +59,8 @@ auto cornellBox() -> Composition
   sceneElements.emplace_back(
     std::move(cuboidOne), std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
 
-  auto cuboidTwo = std::make_unique<trace::Cuboid>(lina::Vec3{ 22.0, -10.0, 12.5 }, 25.0, 25.0, 25.0);
+  auto cuboidTwo = std::make_unique<trace::Cuboid>(lina::Vec3{ 22.0, -8.0, 12.5 }, 25.0, 25.0, 25.0);
   cuboidTwo->Transform(trace::rotateAlongZ(trace::degreesToRadians(-8)));
-
   sceneElements.emplace_back(
     std::move(cuboidTwo), std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
 
