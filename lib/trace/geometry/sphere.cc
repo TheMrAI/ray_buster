@@ -2,9 +2,11 @@
 #include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
+#include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include <cmath>
 #include <optional>
+#include <random>
 #include <span>
 
 namespace trace {
@@ -36,5 +38,7 @@ auto Sphere::Transform(std::span<double const, 16> transformationMatrix) -> void
 {
   // No-op for now
 }
+
+auto Sphere::SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF { return PDF{}; }
 
 }// namespace trace

@@ -4,9 +4,11 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/component.h"
+#include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include <expected>
 #include <optional>
+#include <random>
 #include <string>
 
 namespace trace {
@@ -26,8 +28,9 @@ public:
   // Specifying 0.0 or smaller width/depth means that tha plane is infinite in that direction.
   Plane(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 }, double width = 0.0, double depth = 0.0);
 
-  auto Collide(Ray const& ray) const -> std::optional<Collision> override;
+  [[nodiscard]] auto Collide(Ray const& ray) const -> std::optional<Collision> override;
   auto Transform(std::span<double const, 16> transformationMatrix) -> void override;
+  [[nodiscard]] auto SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF override;
 
   friend auto build(lina::Vec3, double width, double depth, Axis normalAxis, Orientation orientation)
     -> std::expected<Plane, std::string>;

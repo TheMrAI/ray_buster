@@ -69,17 +69,59 @@ auto rayColor(trace::Ray const& ray,
       scatterColor =
         scattering.value().attenuation * rayColor(scatteredRay, sceneElements, randomGenerator, depth - 1, useSkybox);
     } else if (std::holds_alternative<trace::PDF>(scattering.value().type)) {
-      auto materialPdf = std::get<trace::PDF>(scattering.value().type);
+      // auto materialPdf = std::get<trace::PDF>(scattering.value().type);
+      // auto scatteredRay =
+      //   trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), materialPdf.GenerateSample() };
+      // auto scatteringPdfValue = materialPdf.Evaluate(scatteredRay.Direction());
+      // auto pdf = scatteringPdfValue;
+
+      // scatterColor = (scattering.value().attenuation * scatteringPdfValue
+      //                  * rayColor(scatteredRay, sceneElements, randomGenerator, depth - 1, useSkybox))
+      //                / pdf;
+
+      // combined
+      // auto light = std::find_if(sceneElements.cbegin(), sceneElements.cend(), [](auto const& entry){
+      //   return dynamic_cast<trace::Emissive*>(entry.material.get()) != nullptr;
+      // });
+
+      // auto lightPDF = light->component->SamplingPDF(randomGenerator, collision.value().point);
+      // auto materialPdf = std::get<trace::PDF>(scattering.value().type);
+      // auto chosenPdf = lightPDF;
+      // auto sample = lightPDF.GenerateSample();
+      // if (trace::randomUniformDouble(randomGenerator, 0.0, 1.0) >= 0.5) {
+      //   sample = materialPdf.GenerateSample();
+      //   chosenPdf = materialPdf;
+      // }
+
+      // auto scatteredRay =
+      //   trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), chosenPdf.GenerateSample() };
+
+      // auto samplingPdf = (0.5 * lightPDF.Evaluate(scatteredRay.Direction())) + (0.5 *
+      // materialPdf.Evaluate(scatteredRay.Direction()));
+
+      // auto scatteringPdfValue = materialPdf.Evaluate(scatteredRay.Direction());
+
+      // scatterColor = (scattering.value().attenuation * scatteringPdfValue
+      //                  * rayColor(scatteredRay, sceneElements, randomGenerator, depth - 1, useSkybox))
+      //                / samplingPdf;
+
+      // direct sampling
+      auto light = std::find_if(sceneElements.cbegin(), sceneElements.cend(), [](auto const& entry) {
+        return dynamic_cast<trace::Emissive*>(entry.material.get()) != nullptr;
+      });
+
+      auto lightPDF = light->component->SamplingPDF(randomGenerator, collision.value().point);
       auto scatteredRay =
-        trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), materialPdf.GenerateSample() };
+        trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), lightPDF.GenerateSample() };
+      auto pdf = lightPDF.Evaluate(scatteredRay.Direction());
+
+      auto materialPdf = std::get<trace::PDF>(scattering.value().type);
       auto scatteringPdfValue = materialPdf.Evaluate(scatteredRay.Direction());
-      auto pdf = scatteringPdfValue;
 
       scatterColor = (scattering.value().attenuation * scatteringPdfValue
                        * rayColor(scatteredRay, sceneElements, randomGenerator, depth - 1, useSkybox))
                      / pdf;
-    }
-    else {
+    } else {
       throw std::logic_error("Unhandled scattering type.");
     }
 

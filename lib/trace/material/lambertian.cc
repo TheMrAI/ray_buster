@@ -23,7 +23,7 @@ auto Lambertian::Scatter(Ray const& /*ray*/,
                           auto cos_theta = lina::dot(normal, lina::unit(rayDirection));
                           return cos_theta < 0.0 ? 0.0 : cos_theta / std::numbers::pi;
                         },
-    [normal = collision.normal, &randomGenerator]() {
+    [normal = collision.normal, &randomGenerator]() -> lina::Vec3 {
       auto onb = Onb{ normal };
       return onb.Transform(randomCosineDirection(randomGenerator));
     } };

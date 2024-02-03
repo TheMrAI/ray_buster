@@ -20,8 +20,8 @@ auto cornellBox() -> Composition
 {
   constexpr auto imageWidth = std::size_t{ 800 };
   constexpr auto imageHeight = std::size_t{ 800 };
-  constexpr auto sampleCount = std::size_t{ 300 };
-  constexpr auto rayDepth = std::size_t{ 30 };
+  constexpr auto sampleCount = std::size_t{ 10 };
+  constexpr auto rayDepth = std::size_t{ 2 };
 
   auto camera = trace::Camera{ imageWidth,
     imageHeight,

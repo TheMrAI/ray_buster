@@ -2,11 +2,13 @@
 #include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
+#include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
 #include <array>
 #include <iterator>
 #include <optional>
+#include <random>
 #include <span>
 #include <utility>
 
@@ -119,5 +121,7 @@ auto Cuboid::triangleCollision(Ray const& ray,
 
   return std::optional<std::pair<Collision, double>>({ collision, t });
 }
+
+auto Cuboid::SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF { return PDF{}; }
 
 }// namespace trace

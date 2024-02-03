@@ -4,11 +4,14 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/component.h"
+#include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include <array>
 #include <optional>
+#include <random>
 #include <span>
 #include <utility>
+
 
 namespace trace {
 
@@ -17,8 +20,9 @@ class Cuboid : public Component
 public:
   Cuboid(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 }, double width = 1.0, double height = 1.0, double depth = 1.0);
 
-  auto Collide(Ray const& ray) const -> std::optional<Collision> override;
+  [[nodiscard]] auto Collide(Ray const& ray) const -> std::optional<Collision> override;
   auto Transform(std::span<double const, 16> transformationMatrix) -> void override;
+  [[nodiscard]] auto SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF override;
 
 private:
   auto triangleCollision(Ray const& ray,

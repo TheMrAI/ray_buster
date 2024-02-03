@@ -3,8 +3,10 @@
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
+#include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include <optional>
+#include <random>
 #include <span>
 
 namespace trace {
@@ -23,6 +25,8 @@ public:
 
   // Apply the linear transformation matrix to the object.
   virtual auto Transform(std::span<double const, 16> transformationMatrix) -> void = 0;
+
+  [[nodiscard]] virtual auto SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF = 0;
 };
 
 }// namespace trace

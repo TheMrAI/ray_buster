@@ -3,14 +3,18 @@
 #include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
+#include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
 #include "lib/trace/util.h"
 #include <expected>
 #include <format>
 #include <optional>
+#include <random>
 #include <span>
 #include <utility>
+
+#include <iostream>
 
 namespace trace {
 
@@ -104,6 +108,35 @@ auto build(lina::Vec3 center, double width, double depth, Axis normalAxis, Orien
   transformation = lina::mul(translate(center), transformation);
   plane.Transform(transformation);
   return plane;
+}
+
+auto Plane::SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF
+{
+  auto samplingPDF = PDF{};
+  samplingPDF.Evaluate = [this, from](lina::Vec3 const& rayDirection) -> double {
+    auto collision = this->Collide(Ray{ from, rayDirection });
+    if (!collision) { return 0.0; }
+
+    auto denominator = lina::dot(this->normal_, rayDirection);
+    auto t = (this->D_ - lina::dot(this->normal_, from)) / denominator;
+
+    // auto delta = collision.value().point - from;
+    // It is really unclear to me why this is the distance squared and not the square of what I have above as delta.
+    auto distanceSquared = lina::lengthSquared(rayDirection.Components()) * t * t;
+    auto cosine = std::fabs(lina::dot(rayDirection, collision.value().normal) / rayDirection.Length());
+
+    auto area = this->width_ * this->depth_;
+    return distanceSquared / (cosine * area);
+  };
+
+  samplingPDF.GenerateSample = [&randomGenerator, this, from]() -> lina::Vec3 {
+    auto Q = this->center_ - (this->localU_ / 2.0) - (this->localV_ / 2.0);
+
+    auto onPlane = Q + (randomUniformDouble(randomGenerator, 0.0, 1.0) * this->localU_)
+                   + (randomUniformDouble(randomGenerator, 0.0, 1.0) * this->localV_);
+    return lina::unit(onPlane - from);
+  };
+  return samplingPDF;
 }
 
 }// namespace trace
