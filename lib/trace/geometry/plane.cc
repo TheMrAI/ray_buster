@@ -117,13 +117,9 @@ auto Plane::SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) c
     auto collision = this->Collide(Ray{ from, rayDirection });
     if (!collision) { return 0.0; }
 
-    auto denominator = lina::dot(this->normal_, rayDirection);
-    auto t = (this->D_ - lina::dot(this->normal_, from)) / denominator;
-
-    // auto delta = collision.value().point - from;
-    // It is really unclear to me why this is the distance squared and not the square of what I have above as delta.
-    auto distanceSquared = lina::lengthSquared(rayDirection.Components()) * t * t;
-    auto cosine = std::fabs(lina::dot(rayDirection, collision.value().normal) / rayDirection.Length());
+    auto delta = collision.value().point - from;
+    auto distanceSquared = lina::lengthSquared(delta.Components());
+    auto cosine = std::fabs(lina::dot(rayDirection, collision.value().normal));
 
     auto area = this->width_ * this->depth_;
     return distanceSquared / (cosine * area);
