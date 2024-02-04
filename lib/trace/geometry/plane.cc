@@ -71,7 +71,7 @@ auto Plane::SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) c
   return samplingPDF;
 }
 
-auto build(lina::Vec3 center, double width, double depth, Axis normalAxis, Orientation orientation) -> Plane
+auto buildPlane(lina::Vec3 center, double width, double depth, Axis normalAxis, Orientation orientation) -> Plane
 {
   width = std::fabs(width);
   depth = std::fabs(depth);

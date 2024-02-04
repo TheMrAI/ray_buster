@@ -33,11 +33,16 @@ auto cornellBox() -> Composition
 
   auto sceneElements = std::vector<scene::Element>{};
 
-  auto bottom = trace::build(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
-  auto top = trace::build(lina::Vec3{ 0.0, 0.0, 100.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Reverse);
-  auto back = trace::build(lina::Vec3{ 0.0, 50.0, 50.0 }, 100.0, 100.0, trace::Axis::Y, trace::Orientation::Reverse);
-  auto left = trace::build(lina::Vec3{ -50.0, 0.0, 50.0 }, 100.0, 100.0, trace::Axis::X, trace::Orientation::Aligned);
-  auto right = trace::build(lina::Vec3{ 50.0, 0.0, 50.0 }, 100.0, 100.0, trace::Axis::X, trace::Orientation::Reverse);
+  auto bottom =
+    trace::buildPlane(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
+  auto top =
+    trace::buildPlane(lina::Vec3{ 0.0, 0.0, 100.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Reverse);
+  auto back =
+    trace::buildPlane(lina::Vec3{ 0.0, 50.0, 50.0 }, 100.0, 100.0, trace::Axis::Y, trace::Orientation::Reverse);
+  auto left =
+    trace::buildPlane(lina::Vec3{ -50.0, 0.0, 50.0 }, 100.0, 100.0, trace::Axis::X, trace::Orientation::Aligned);
+  auto right =
+    trace::buildPlane(lina::Vec3{ 50.0, 0.0, 50.0 }, 100.0, 100.0, trace::Axis::X, trace::Orientation::Reverse);
 
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(bottom)),
     std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
@@ -50,7 +55,7 @@ auto cornellBox() -> Composition
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(right)),
     std::make_unique<trace::Lambertian>(lina::Vec3{ 0.8203, 0.0156, 0.1757 }));
 
-  auto light = trace::build(lina::Vec3{ 0.0, 0.0, 99.9 }, 15.0, 15.0, trace::Axis::Z, trace::Orientation::Reverse);
+  auto light = trace::buildPlane(lina::Vec3{ 0.0, 0.0, 99.9 }, 15.0, 15.0, trace::Axis::Z, trace::Orientation::Reverse);
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(light)),
     std::make_unique<trace::Emissive>(lina::Vec3{ 15.0, 15.0, 15.0 }, true));
 

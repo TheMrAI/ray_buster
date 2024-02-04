@@ -39,7 +39,8 @@ auto sphereMaterial() -> Composition
 {
   auto sceneElements = std::vector<scene::Element>{};
 
-  auto bottom = trace::build(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
+  auto bottom =
+    trace::buildPlane(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
   sceneElements.emplace_back(
     std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
@@ -76,7 +77,8 @@ auto sphereEmissive() -> Composition
 
   auto sceneElements = std::vector<scene::Element>{};
 
-  auto bottom = trace::build(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
+  auto bottom =
+    trace::buildPlane(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
   sceneElements.emplace_back(
     std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 

@@ -20,11 +20,11 @@ enum class Orientation { Aligned, Reverse };
 // z axis pointing in its positive direction. The reason behind these constraints is that for the time
 // being I see no other practical way of defining a plane.
 // This way the initialization is simple and we can still have all possible plane orientations by allowing
-// its transformation. A feature not yet implemented.
+// its transformation.
 class Plane : public Component
 {
 public:
-  // The absolute value of width and depth will be used. A value of close to zero is an error though.
+  // The plane constructed plane will always have a size of 1.0 * 1.0.
   Plane(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 });
 
   [[nodiscard]] auto Collide(Ray const& ray) const -> std::optional<Collision> override;
@@ -36,7 +36,8 @@ private:
   std::array<lina::Vec3, 4> triangleStrip_;
 };
 
-auto build(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 },
+// Build a plane conveniently oriented along any of the major axis.
+auto buildPlane(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 },
   double width = 0.0,
   double depth = 0.0,
   Axis normalAxis = Axis::Z,
