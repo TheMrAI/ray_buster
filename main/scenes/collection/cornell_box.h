@@ -20,7 +20,7 @@ auto cornellBox() -> Composition
 {
   constexpr auto imageWidth = std::size_t{ 800 };
   constexpr auto imageHeight = std::size_t{ 800 };
-  constexpr auto sampleCount = std::size_t{ 10 };
+  constexpr auto sampleCount = std::size_t{ 30 };
   constexpr auto rayDepth = std::size_t{ 2 };
 
   auto camera = trace::Camera{ imageWidth,
@@ -39,19 +39,19 @@ auto cornellBox() -> Composition
   auto left = trace::build(lina::Vec3{ -50.0, 0.0, 50.0 }, 100.0, 100.0, trace::Axis::X, trace::Orientation::Aligned);
   auto right = trace::build(lina::Vec3{ 50.0, 0.0, 50.0 }, 100.0, 100.0, trace::Axis::X, trace::Orientation::Reverse);
 
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(bottom.value())),
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(bottom)),
     std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(top.value())),
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(top)),
     std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(back.value())),
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(back)),
     std::make_unique<trace::Lambertian>(lina::Vec3{ 0.0273, 0.0156, 0.2187 }));
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(left.value())),
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(left)),
     std::make_unique<trace::Lambertian>(lina::Vec3{ 0.0, 0.8125, 0.3828 }));
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(right.value())),
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(right)),
     std::make_unique<trace::Lambertian>(lina::Vec3{ 0.8203, 0.0156, 0.1757 }));
 
   auto light = trace::build(lina::Vec3{ 0.0, 0.0, 99.9 }, 15.0, 15.0, trace::Axis::Z, trace::Orientation::Reverse);
-  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(light.value())),
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(light)),
     std::make_unique<trace::Emissive>(lina::Vec3{ 15.0, 15.0, 15.0 }, true));
 
   auto cuboidOne = std::make_unique<trace::Cuboid>(lina::Vec3{ -6.0, 30.0, 29.0 }, 28.0, 58.0, 28.0);

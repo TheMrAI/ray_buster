@@ -41,7 +41,7 @@ auto cuboidMaterial() -> Composition
 
   auto bottom = trace::build(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
   sceneElements.emplace_back(
-    std::make_unique<trace::Plane>(std::move(bottom.value())), std::make_unique<trace::Lambertian>(planeColor));
+    std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto cuboidOneCenter = lina::Vec3{ -2.0, 0.75, 0.75 };
   auto cuboidOne = std::make_unique<trace::Cuboid>(cuboidOneCenter, 1.5, 1.5, 1.5);
@@ -65,7 +65,7 @@ auto cuboidScale() -> Composition
 
   auto bottom = trace::build(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
   sceneElements.emplace_back(
-    std::make_unique<trace::Plane>(std::move(bottom.value())), std::make_unique<trace::Lambertian>(planeColor));
+    std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto cuboidOneCenter = lina::Vec3{ -2.0, 1.0, 0.5 };
   auto cuboidOne = std::make_unique<trace::Cuboid>(cuboidOneCenter, 1.0, 1.0, 1.0);
@@ -102,7 +102,7 @@ auto cuboidRotate() -> Composition
 
   auto bottom = trace::build(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
   sceneElements.emplace_back(
-    std::make_unique<trace::Plane>(std::move(bottom.value())), std::make_unique<trace::Lambertian>(planeColor));
+    std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto cuboidOneCenter = lina::Vec3{ -2.0, 0.5, 0.5 };
   auto cuboidOne = std::make_unique<trace::Cuboid>(cuboidOneCenter, 1.0, 1.0, 1.0);
@@ -154,7 +154,7 @@ auto cuboidEmissive() -> Composition
 
   auto bottom = trace::build(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
   sceneElements.emplace_back(
-    std::make_unique<trace::Plane>(std::move(bottom.value())), std::make_unique<trace::Lambertian>(planeColor));
+    std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto cuboidOneCenter = lina::Vec3{ 0.0, 1.5, 1.5 };
   auto cuboidOne = std::make_unique<trace::Cuboid>(cuboidOneCenter, 1.5, 1.5, 1.5);

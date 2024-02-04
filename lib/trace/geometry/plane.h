@@ -6,7 +6,6 @@
 #include "lib/trace/component.h"
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
-#include <expected>
 #include <optional>
 #include <random>
 #include <string>
@@ -25,31 +24,27 @@ enum class Orientation { Aligned, Reverse };
 class Plane : public Component
 {
 public:
-  // Specifying 0.0 or smaller width/depth means that tha plane is infinite in that direction.
-  Plane(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 }, double width = 0.0, double depth = 0.0);
+  // The absolute value of width and depth will be used. A value of close to zero is an error though.
+  Plane(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 },
+    double width = 1.0,
+    double depth = 1.0,
+    Axis normalAxis = Axis::Z,
+    Orientation orientation = Orientation::Aligned);
 
   [[nodiscard]] auto Collide(Ray const& ray) const -> std::optional<Collision> override;
   auto Transform(std::span<double const, 16> transformationMatrix) -> void override;
   [[nodiscard]] auto SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF override;
 
-  friend auto build(lina::Vec3, double width, double depth, Axis normalAxis, Orientation orientation)
-    -> std::expected<Plane, std::string>;
-
 private:
   lina::Vec3 center_;
-  lina::Vec3 normal_;
-  double width_;
-  double depth_;
-  lina::Vec3 localU_;// localU is on the x axis and represents the width of the plane
-  lina::Vec3 localV_;// localV is on the y axis and represents the depth of the plane
-  double D_;
+  std::array<lina::Vec3, 4> triangleStrip_;
 };
 
 auto build(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 },
   double width = 0.0,
   double depth = 0.0,
   Axis normalAxis = Axis::Z,
-  Orientation orientation = Orientation::Aligned) -> std::expected<Plane, std::string>;
+  Orientation orientation = Orientation::Aligned) -> Plane;
 
 }// namespace trace
 

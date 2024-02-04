@@ -41,7 +41,7 @@ auto sphereMaterial() -> Composition
 
   auto bottom = trace::build(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
   sceneElements.emplace_back(
-    std::make_unique<trace::Plane>(std::move(bottom.value())), std::make_unique<trace::Lambertian>(planeColor));
+    std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto sphereOneCenter = lina::Vec3{ -2.0, 0.75, 0.75 };
   auto sphereOne = std::make_unique<trace::Sphere>(sphereOneCenter, 0.75);
@@ -78,7 +78,7 @@ auto sphereEmissive() -> Composition
 
   auto bottom = trace::build(lina::Vec3{ 0.0, 0.0, 0.0 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);
   sceneElements.emplace_back(
-    std::make_unique<trace::Plane>(std::move(bottom.value())), std::make_unique<trace::Lambertian>(planeColor));
+    std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto sphereOneCenter = lina::Vec3{ 0.0, 1.5, 1.5 };
   auto sphereOne = std::make_unique<trace::Sphere>(sphereOneCenter, 0.75);

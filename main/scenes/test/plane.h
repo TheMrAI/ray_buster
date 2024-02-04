@@ -5,7 +5,9 @@
 
 namespace scene::test {
 
-// auto planeMaterial() -> Composition;
+auto planeMaterial() -> Composition;
+auto planeScale() -> Composition;
+auto planeRotate() -> Composition;
 auto planeEmissive() -> Composition;
 
 }// namespace scene::test
