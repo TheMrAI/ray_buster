@@ -70,6 +70,6 @@ auto Cuboid::Transform(std::span<double const, 16> transformationMatrix) -> void
   }
 }
 
-auto Cuboid::SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF { return PDF{}; }
+auto Cuboid::SamplingPDF(std::mt19937& /*randomGenerator*/, lina::Vec3 const& /*from*/) const -> PDF { return PDF{}; }
 
 }// namespace trace

@@ -17,12 +17,15 @@
 #include "lib/trace/collision.h"
 #include "lib/trace/component.h"
 #include "lib/trace/material.h"
+#include "lib/trace/material/emissive.h"
+#include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include "main/scenes/collection/cornell_box.h"
 #include "main/scenes/scene.h"
 #include "main/scenes/test/cuboid.h"
 #include "main/scenes/test/plane.h"
 #include "main/scenes/test/sphere.h"
+#include <stdexcept>
 
 auto closestCollision(trace::Ray const& ray,
   std::vector<scene::Element> const& sceneElements) -> std::pair<std::optional<trace::Collision>, std::size_t>

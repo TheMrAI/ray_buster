@@ -15,7 +15,7 @@
 
 namespace trace {
 
-Plane::Plane(lina::Vec3 center, double width, double depth, Axis normalAxis, Orientation orientation)
+Plane::Plane(lina::Vec3 center)
   : center_{ center }, triangleStrip_{ lina::Vec3{ -0.5, -0.5, 0.0 },
       lina::Vec3{ -0.5, 0.5, 0.0 },
       lina::Vec3{ 0.5, -0.5, 0.0 },
@@ -78,7 +78,7 @@ auto build(lina::Vec3 center, double width, double depth, Axis normalAxis, Orien
   if (width < 0.00001 || depth < 0.00001) {
     throw std::logic_error(std::format("Width and depth must be bigger than 0.0. Got: {}, {}", width, depth));
   }
-  auto plane = Plane{ lina::Vec3{}, width, depth, normalAxis, orientation };
+  auto plane = Plane{ lina::Vec3{} };
 
   auto transformation = trace::scale(lina::Vec3{ width, depth, 0.0 });
   auto radians = trace::degreesToRadians(90.0);

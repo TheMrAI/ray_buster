@@ -25,11 +25,7 @@ class Plane : public Component
 {
 public:
   // The absolute value of width and depth will be used. A value of close to zero is an error though.
-  Plane(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 },
-    double width = 1.0,
-    double depth = 1.0,
-    Axis normalAxis = Axis::Z,
-    Orientation orientation = Orientation::Aligned);
+  Plane(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 });
 
   [[nodiscard]] auto Collide(Ray const& ray) const -> std::optional<Collision> override;
   auto Transform(std::span<double const, 16> transformationMatrix) -> void override;

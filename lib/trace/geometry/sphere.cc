@@ -39,6 +39,6 @@ auto Sphere::Transform(std::span<double const, 16> transformationMatrix) -> void
   // No-op for now
 }
 
-auto Sphere::SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF { return PDF{}; }
+auto Sphere::SamplingPDF(std::mt19937& /*randomGenerator*/, lina::Vec3 const& /*from*/) const -> PDF { return PDF{}; }
 
 }// namespace trace
