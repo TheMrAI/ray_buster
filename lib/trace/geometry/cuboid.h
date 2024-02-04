@@ -25,11 +25,6 @@ public:
   [[nodiscard]] auto SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF override;
 
 private:
-  auto triangleCollision(Ray const& ray,
-    std::span<lina::Vec3 const, 3> triplet,
-    bool swapUV) const -> std::optional<std::pair<Collision, double>>;
-
-private:
   lina::Vec3 center_;
   std::array<lina::Vec3, 8> triangleStrip1_;
   std::array<lina::Vec3, 8> triangleStrip2_;

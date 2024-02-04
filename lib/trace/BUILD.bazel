@@ -5,6 +5,7 @@ cc_library(
             "geometry/cuboid.cc",
             "geometry/plane.cc",
             "geometry/sphere.cc",
+            "geometry/triangle.cc",
             "material/dielectric.cc",
             "material/emissive.cc",
             "material/lambertian.cc",
@@ -17,7 +18,8 @@ cc_library(
     hdrs = [
             "geometry/cuboid.h",
             "geometry/plane.h",
-            "geometry/sphere.h",  
+            "geometry/sphere.h",
+            "geometry/triangle.h",
             "material/dielectric.h",
             "material/emissive.h",
             "material/lambertian.h", 
