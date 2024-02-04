@@ -21,6 +21,8 @@ struct Composition
   std::size_t sampleCount;
   std::size_t rayDepth;
   std::vector<Element> sceneElements;
+  int masterLightIndex;// index of the light source that has been designated for PDF sampling, -1 means there is no
+                       // designate master light
   bool useSkybox;
 };
 

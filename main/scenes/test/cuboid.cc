@@ -57,7 +57,7 @@ auto cuboidMaterial() -> Composition
   auto cuboidThree = std::make_unique<trace::Cuboid>(cuboidThreeCenter, 1.5, 1.5, 1.5);
   sceneElements.emplace_back(std::move(cuboidThree), std::make_unique<trace::Metal>(cuboidColor, 0.01, 3));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), true };
+  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
 }
 
 auto cuboidScale() -> Composition
@@ -95,7 +95,7 @@ auto cuboidScale() -> Composition
     lina::mul(trace::scale(lina::Vec3{ 1.5, 1.5, 1.5 }), trace::translate(-cuboidFourCenter))));
   sceneElements.emplace_back(std::move(cuboidFour), std::make_unique<trace::Lambertian>(cuboidColor));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), true };
+  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
 }
 
 auto cuboidRotate() -> Composition
@@ -135,7 +135,7 @@ auto cuboidRotate() -> Composition
     lina::mul(trace::translate(cuboidFourCenter), lina::mul(multiRotation, trace::translate(-cuboidFourCenter))));
   sceneElements.emplace_back(std::move(cuboidFour), std::make_unique<trace::Lambertian>(cuboidColor));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), true };
+  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
 }
 
 auto cuboidEmissive() -> Composition
@@ -164,7 +164,7 @@ auto cuboidEmissive() -> Composition
   auto cuboidOne = std::make_unique<trace::Cuboid>(cuboidOneCenter, 1.5, 1.5, 1.5);
   sceneElements.emplace_back(std::move(cuboidOne), std::make_unique<trace::Emissive>(lina::Vec3{ 3.0, 3.0, 3.0 }));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), false };
+  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, false };
 }
 
 }// namespace scene::test

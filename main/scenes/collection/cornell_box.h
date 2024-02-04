@@ -21,7 +21,7 @@ auto cornellBox() -> Composition
   constexpr auto imageWidth = std::size_t{ 800 };
   constexpr auto imageHeight = std::size_t{ 800 };
   constexpr auto sampleCount = std::size_t{ 30 };
-  constexpr auto rayDepth = std::size_t{ 2 };
+  constexpr auto rayDepth = std::size_t{ 7 };
 
   auto camera = trace::Camera{ imageWidth,
     imageHeight,
@@ -58,6 +58,7 @@ auto cornellBox() -> Composition
   auto light = trace::buildPlane(lina::Vec3{ 0.0, 0.0, 99.9 }, 15.0, 15.0, trace::Axis::Z, trace::Orientation::Reverse);
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(light)),
     std::make_unique<trace::Emissive>(lina::Vec3{ 15.0, 15.0, 15.0 }, true));
+  auto masterLightIndex = static_cast<int>(sceneElements.size() - 1);
 
   auto cuboidOne = std::make_unique<trace::Cuboid>(lina::Vec3{ -6.0, 30.0, 29.0 }, 28.0, 58.0, 28.0);
   cuboidOne->Transform(trace::rotateAlongZ(trace::degreesToRadians(30)));
@@ -69,7 +70,7 @@ auto cornellBox() -> Composition
   sceneElements.emplace_back(
     std::move(cuboidTwo), std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), false };
+  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), masterLightIndex, false };
 }
 
 }// namespace scene

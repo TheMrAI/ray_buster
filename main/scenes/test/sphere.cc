@@ -57,7 +57,7 @@ auto sphereMaterial() -> Composition
   auto sphereThree = std::make_unique<trace::Sphere>(sphereThreeCenter, 0.75);
   sceneElements.emplace_back(std::move(sphereThree), std::make_unique<trace::Metal>(sphereColor, 0.01, 3));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), true };
+  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
 }
 
 auto sphereEmissive() -> Composition
@@ -86,7 +86,7 @@ auto sphereEmissive() -> Composition
   auto sphereOne = std::make_unique<trace::Sphere>(sphereOneCenter, 0.75);
   sceneElements.emplace_back(std::move(sphereOne), std::make_unique<trace::Emissive>(lina::Vec3{ 3.0, 3.0, 3.0 }));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), false };
+  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, false };
 }
 
 }// namespace scene::test

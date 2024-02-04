@@ -52,7 +52,7 @@ auto planeMaterial() -> Composition
   sceneElements.emplace_back(
     std::make_unique<trace::Plane>(std::move(planeThree)), std::make_unique<trace::Metal>(planeColor, 0.01, 3));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), true };
+  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
 }
 
 auto planeScale() -> Composition
@@ -68,7 +68,7 @@ auto planeScale() -> Composition
   auto planeThree = std::make_unique<trace::Plane>(trace::buildPlane(lina::Vec3{ 2.0, 0.75, 0.5 }, 1.5, 1.5));
   sceneElements.emplace_back(std::move(planeThree), std::make_unique<trace::Lambertian>(planeColor));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), true };
+  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
 }
 
 auto planeRotate() -> Composition
@@ -102,7 +102,7 @@ auto planeRotate() -> Composition
     lina::mul(trace::translate(planeFourCenter), lina::mul(multiRotation, trace::translate(-planeFourCenter))));
   sceneElements.emplace_back(std::move(planeFour), std::make_unique<trace::Lambertian>(planeColor));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), true };
+  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
 }
 
 auto planeEmissive() -> Composition
@@ -130,6 +130,7 @@ auto planeEmissive() -> Composition
   auto planeOne = trace::buildPlane(lina::Vec3{ 0.0, 1.0, 1.5 }, 3.0, 3.0, trace::Axis::X, trace::Orientation::Aligned);
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(planeOne)),
     std::make_unique<trace::Emissive>(lina::Vec3{ 3.0, 3.0, 3.0 }, false));
+  auto masterLightIndex = static_cast<int>(sceneElements.size() - 1);
 
   auto planeTwo = trace::buildPlane(lina::Vec3{ 0.0, 5.0, 1.5 }, 3.0, 3.0, trace::Axis::X, trace::Orientation::Aligned);
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(planeTwo)),
@@ -140,7 +141,7 @@ auto planeEmissive() -> Composition
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(planeThree)),
     std::make_unique<trace::Emissive>(lina::Vec3{ 3.0, 3.0, 3.0 }, true));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), false };
+  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), masterLightIndex, false };
 }
 
 }// namespace scene::test

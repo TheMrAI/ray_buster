@@ -54,6 +54,7 @@ auto closestCollision(trace::Ray const& ray,
 
 auto rayColor(trace::Ray const& ray,
   std::vector<scene::Element> const& sceneElements,
+  int masterLightIndex,
   std::mt19937& randomGenerator,
   std::size_t depth,
   bool useSkybox) -> lina::Vec3
@@ -70,61 +71,43 @@ auto rayColor(trace::Ray const& ray,
     auto scatterColor = lina::Vec3{};
     if (std::holds_alternative<trace::Ray>(scattering.value().type)) {
       auto scatteredRay = std::get<trace::Ray>(scattering.value().type);
-      scatterColor =
-        scattering.value().attenuation * rayColor(scatteredRay, sceneElements, randomGenerator, depth - 1, useSkybox);
+      scatterColor = scattering.value().attenuation
+                     * rayColor(scatteredRay, sceneElements, masterLightIndex, randomGenerator, depth - 1, useSkybox);
     } else if (std::holds_alternative<trace::PDF>(scattering.value().type)) {
-      // auto materialPdf = std::get<trace::PDF>(scattering.value().type);
-      // auto scatteredRay =
-      //   trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), materialPdf.GenerateSample() };
-      // auto scatteringPdfValue = materialPdf.Evaluate(scatteredRay.Direction());
-      // auto pdf = scatteringPdfValue;
-
-      // scatterColor = (scattering.value().attenuation * scatteringPdfValue
-      //                  * rayColor(scatteredRay, sceneElements, randomGenerator, depth - 1, useSkybox))
-      //                / pdf;
-
       // combined
-      // auto light = std::find_if(sceneElements.cbegin(), sceneElements.cend(), [](auto const& entry){
-      //   return dynamic_cast<trace::Emissive*>(entry.material.get()) != nullptr;
-      // });
+      if (masterLightIndex > -1 && masterLightIndex < static_cast<int>(sceneElements.size())) {
+        auto lightPDF =
+          sceneElements[masterLightIndex].component->SamplingPDF(randomGenerator, collision.value().point);
+        auto materialPDF = std::get<trace::PDF>(scattering.value().type);
+        auto* chosenPdf = &lightPDF;
+        if (trace::randomUniformDouble(randomGenerator, 0.0, 1.0) < 0.5) { chosenPdf = &materialPDF; }
 
-      // auto lightPDF = light->component->SamplingPDF(randomGenerator, collision.value().point);
-      // auto materialPdf = std::get<trace::PDF>(scattering.value().type);
-      // auto chosenPdf = lightPDF;
-      // auto sample = lightPDF.GenerateSample();
-      // if (trace::randomUniformDouble(randomGenerator, 0.0, 1.0) >= 0.5) {
-      //   sample = materialPdf.GenerateSample();
-      //   chosenPdf = materialPdf;
-      // }
+        auto scatteredRay =
+          trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), chosenPdf->GenerateSample() };
 
-      // auto scatteredRay =
-      //   trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), chosenPdf.GenerateSample() };
+        auto samplingPDFValue =
+          (0.5 * lightPDF.Evaluate(scatteredRay.Direction())) + (0.5 * materialPDF.Evaluate(scatteredRay.Direction()));
 
-      // auto samplingPdf = (0.5 * lightPDF.Evaluate(scatteredRay.Direction())) + (0.5 *
-      // materialPdf.Evaluate(scatteredRay.Direction()));
+        auto scatteringPDFValue = materialPDF.Evaluate(scatteredRay.Direction());
 
-      // auto scatteringPdfValue = materialPdf.Evaluate(scatteredRay.Direction());
+        scatterColor =
+          (scattering.value().attenuation * scatteringPDFValue
+            * rayColor(scatteredRay, sceneElements, masterLightIndex, randomGenerator, depth - 1, useSkybox))
+          / samplingPDFValue;
+      } else {
+        // normal sampling
+        auto materialPDF = std::get<trace::PDF>(scattering.value().type);
+        auto scatteredRay =
+          trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), materialPDF.GenerateSample() };
 
-      // scatterColor = (scattering.value().attenuation * scatteringPdfValue
-      //                  * rayColor(scatteredRay, sceneElements, randomGenerator, depth - 1, useSkybox))
-      //                / samplingPdf;
+        auto scatteringPDFValue = materialPDF.Evaluate(scatteredRay.Direction());
+        auto pdfValue = scatteringPDFValue;
 
-      // direct sampling
-      auto light = std::find_if(sceneElements.cbegin(), sceneElements.cend(), [](auto const& entry) {
-        return dynamic_cast<trace::Emissive*>(entry.material.get()) != nullptr;
-      });
-
-      auto lightPDF = light->component->SamplingPDF(randomGenerator, collision.value().point);
-      auto scatteredRay =
-        trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), lightPDF.GenerateSample() };
-      auto pdf = lightPDF.Evaluate(scatteredRay.Direction());
-
-      auto materialPdf = std::get<trace::PDF>(scattering.value().type);
-      auto scatteringPdfValue = materialPdf.Evaluate(scatteredRay.Direction());
-
-      scatterColor = (scattering.value().attenuation * scatteringPdfValue
-                       * rayColor(scatteredRay, sceneElements, randomGenerator, depth - 1, useSkybox))
-                     / pdf;
+        scatterColor =
+          (scattering.value().attenuation * scatteringPDFValue
+            * rayColor(scatteredRay, sceneElements, masterLightIndex, randomGenerator, depth - 1, useSkybox))
+          / pdfValue;
+      }
     } else {
       throw std::logic_error("Unhandled scattering type.");
     }
@@ -144,9 +127,9 @@ auto linearToGamma(double LinearSpaceValue) -> double { return std::sqrt(LinearS
 
 auto writeColor(lina::Vec3 const& color)
 {
-  auto red = linearToGamma(color[0]);
-  auto green = linearToGamma(color[1]);
-  auto blue = linearToGamma(color[2]);
+  auto red = std::min(1.0, linearToGamma(color[0]));
+  auto green = std::min(1.0, linearToGamma(color[1]));
+  auto blue = std::min(1.0, linearToGamma(color[2]));
 
   // we can get close to 256, but not above, granted the input comes in between [0.0, 1.0)
   std::cout << static_cast<int>(255.9999 * red) << " " << static_cast<int>(255.9999 * green) << " "
@@ -155,7 +138,7 @@ auto writeColor(lina::Vec3 const& color)
 
 auto main() -> int
 {
-  auto [camera, sampleCount, rayDepth, sceneElements, useSkybox] = scene::cornellBox();
+  auto [camera, sampleCount, rayDepth, sceneElements, masterLightIndex, useSkybox] = scene::cornellBox();
   auto imageWidth = camera.ImageWidth();
   auto imageHeight = camera.ImageHeight();
 
@@ -176,6 +159,7 @@ auto main() -> int
                        sampleCount,
                        rayDepth,
                        sceneElements = std::cref(sceneElements),
+                       masterLightIndex,
                        useSkybox](std::size_t from, std::size_t until, bool reportProgress = false) {
     auto distance = until - from;
     auto pixelColors = std::vector<std::vector<lina::Vec3>>(distance, std::vector<lina::Vec3>(imageWidth));
@@ -193,7 +177,7 @@ auto main() -> int
             std::cerr << ray.error() << std::endl;
             std::exit(1);
           }
-          color += rayColor(ray.value(), sceneElements, randomGenerator, rayDepth, useSkybox);
+          color += rayColor(ray.value(), sceneElements, masterLightIndex, randomGenerator, rayDepth, useSkybox);
         }
         color /= static_cast<double>(sampleCount);
         pixelColors[i - from][j] = color;
