@@ -63,7 +63,7 @@ auto Camera::GetSampleRayAt(std::size_t i,
     firstPixelPosition_ + (static_cast<double>(j) * pixelDeltaU_) + (static_cast<double>(i) * pixelDeltaV_);
   auto pixelSample = pixelCenter + sampleInUnitSquare(randomGenerator, pixelDeltaU_, pixelDeltaV_);
   // in case we want only a single sample it should go through the center of the pixel
-  if (multiSampled) { pixelSample = pixelCenter; }
+  if (!multiSampled) { pixelSample = pixelCenter; }
 
   auto raySource = sampleInUnitDisk(randomGenerator, cameraCenter_, lenseU_, lenseV_);
   auto rayDirection = lina::unit(pixelSample - raySource);
