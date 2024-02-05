@@ -2,6 +2,7 @@
 #include "lina.h"
 #include <array>
 #include <cmath>
+#include <cstddef>
 
 namespace lina {
 
@@ -31,7 +32,7 @@ auto Vec3::operator/=(double scalar) -> Vec3&
 
 auto Vec3::operator-() const -> Vec3 { return Vec3{ -v_[0], -v_[1], -v_[2] }; }
 
-auto Vec3::operator[](std::size_t i) const -> double { return v_[i]; }
+auto Vec3::operator[](std::size_t i) const -> double { return v_.at(i); }
 
 auto Vec3::Length() const -> double { return lina::length(v_); }
 

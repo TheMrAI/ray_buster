@@ -2,6 +2,7 @@
 #include "lib/trace/camera.h"
 #include "lib/trace/component.h"
 #include "lib/trace/material.h"
+#include <cstddef>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -18,7 +19,7 @@ Composition::Composition(trace::Camera inputCamera,
   std::vector<Element>&& inputSceneElements,
   int inputMasterLightIndex,
   bool inputUseSkybox)
-  : camera{ std::move(inputCamera) }, sampleCount{ inputSampleCount }, rayDepth{ inputRayDepth },
+  : camera{ inputCamera }, sampleCount{ inputSampleCount }, rayDepth{ inputRayDepth },
     sceneElements{ std::move(inputSceneElements) }, masterLightIndex{ inputMasterLightIndex },
     useSkybox{ inputUseSkybox }
 {}

@@ -7,7 +7,6 @@
 #include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
 #include <array>
-#include <iterator>
 #include <optional>
 #include <random>
 #include <span>

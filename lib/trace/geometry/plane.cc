@@ -8,10 +8,12 @@
 #include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
 #include "lib/trace/util.h"
+#include <cmath>
 #include <format>
 #include <optional>
 #include <random>
 #include <span>
+#include <stdexcept>
 
 namespace trace {
 

@@ -3,8 +3,10 @@
 #include "lib/trace/ray.h"
 #include "lib/trace/util.h"
 #include <cmath>
+#include <cstddef>
 #include <format>
 #include <random>
+#include <stdexcept>
 
 namespace trace {
 
@@ -16,7 +18,8 @@ Camera::Camera(std::size_t imageWidth,
   double degreesVerticalFOV,
   double defocusAngle,
   double focusDistance)
-  : imageWidth_{ imageWidth }, imageHeight_{ imageHeight }, cameraCenter_{ cameraCenter }
+  : imageWidth_{ imageWidth }, imageHeight_{ imageHeight }, cameraCenter_{ cameraCenter },
+    lenseRadius_{ focusDistance * std::tan(degreesToRadians(defocusAngle / 2.0)) }
 {
   auto theta = degreesToRadians(degreesVerticalFOV);
   auto h = std::tan(theta / 2.0);
@@ -42,7 +45,6 @@ Camera::Camera(std::size_t imageWidth,
   // Calculate defocus lense properties
   // On defocusAngle 0.0 the vectors will be null vectors and
   // no blurring should occur.
-  lenseRadius_ = focusDistance * std::tan(degreesToRadians(defocusAngle / 2.0));
   lenseU_ = baseU_ * lenseRadius_;
   lenseV_ = baseV_ * lenseRadius_;
 }

@@ -17,7 +17,7 @@ auto triangleStripCollide(Ray const& ray,
 {
   auto closestCollisionData = std::optional<std::pair<Collision, double>>{};
   auto swapUV = false;
-  for (auto i = std::size_t{ 0 }; i <= triangleStrip.size() - 3; ++i) {
+  for (auto i = 0; i <= static_cast<int>(triangleStrip.size()) - 3; ++i) {
     auto triplet = std::span<lina::Vec3 const, 3>(std::next(triangleStrip.begin(), i), size_t{ 3 });
     auto collisionCandidateData = triangleCollide(ray, center, triplet, swapUV);
     if (collisionCandidateData) {
@@ -65,7 +65,7 @@ auto triangleCollide(Ray const& ray,
   collision.normal = normal;
   collision.frontFace = lina::dot(normal, ray.Direction()) < 0.0;
 
-  return std::optional<std::pair<Collision, double>>({ collision, t });
+  return std::pair<Collision, double>({ collision, t });
 }
 
 }// namespace trace

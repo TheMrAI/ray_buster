@@ -1,33 +1,35 @@
 #include "lina.h"
 #include <array>
 #include <cmath>
+#include <cstddef>
+#include <iterator>
 #include <span>
 
 auto lina::add(std::span<double const, 3> const lhs, std::span<double const, 3> const rhs) -> std::array<double, 3>
 {
   auto result = std::array<double, 3>{};
-  for (std::size_t i = 0; i < lhs.size(); ++i) { result[i] = lhs[i] + rhs[i]; }
+  for (std::size_t i = 0; i < lhs.size(); ++i) { result.at(i) = lhs[i] + rhs[i]; }
   return result;
 }
 
 auto lina::sub(std::span<double const, 3> const lhs, std::span<double const, 3> const rhs) -> std::array<double, 3>
 {
   auto result = std::array<double, 3>{};
-  for (std::size_t i = 0; i < lhs.size(); ++i) { result[i] = lhs[i] - rhs[i]; }
+  for (std::size_t i = 0; i < lhs.size(); ++i) { result.at(i) = lhs[i] - rhs[i]; }
   return result;
 }
 
 auto lina::mul(std::span<double const, 3> const lhs, std::span<double const, 3> const rhs) -> std::array<double, 3>
 {
   auto result = std::array<double, 3>{};
-  for (std::size_t i = 0; i < lhs.size(); ++i) { result[i] = lhs[i] * rhs[i]; }
+  for (std::size_t i = 0; i < lhs.size(); ++i) { result.at(i) = lhs[i] * rhs[i]; }
   return result;
 }
 
 auto lina::scale(double scalar, std::span<double const, 3> const vector) -> std::array<double, 3>
 {
   auto result = std::array<double, 3>{};
-  for (std::size_t i = 0; i < vector.size(); ++i) { result[i] = vector[i] * scalar; }
+  for (std::size_t i = 0; i < vector.size(); ++i) { result.at(i) = vector[i] * scalar; }
   return result;
 }
 
@@ -55,7 +57,7 @@ auto lina::unit(std::span<double const, 3> const vector) -> std::array<double, 3
 {
   auto result = std::array<double, 3>{};
   auto length = lina::length(vector);
-  for (std::size_t i = 0; i < vector.size(); i++) { result[i] = vector[i] / length; }
+  for (std::size_t i = 0; i < vector.size(); i++) { result.at(i) = vector[i] / length; }
   return result;
 }
 
