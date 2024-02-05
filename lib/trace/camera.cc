@@ -49,14 +49,11 @@ Camera::Camera(std::size_t imageWidth,
 
 // Generate a sample ray at the given location
 // If out of range, returns an error.
-auto Camera::GetSampleRayAt(std::size_t i,
-  std::size_t j,
-  std::mt19937& randomGenerator,
-  bool multiSampled) const -> std::expected<Ray, std::string>
+auto Camera::GetSampleRayAt(std::size_t i, std::size_t j, std::mt19937& randomGenerator, bool multiSampled) const -> Ray
 {
   if (i >= imageHeight_ || j >= imageWidth_) {
-    return std::unexpected(
-      std::format("Index out of range, i: {} >= {}, j: {} >= {}", i, imageHeight_, j, imageWidth_));
+    throw std::logic_error(std::format(
+      "Requested pixel position invalid. Image size {}x{}, requested: {},{}", imageWidth_, imageHeight_, j, i));
   }
 
   auto pixelCenter =

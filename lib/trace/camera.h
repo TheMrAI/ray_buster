@@ -3,7 +3,6 @@
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/ray.h"
-#include <expected>
 #include <random>
 
 namespace trace {
@@ -25,7 +24,7 @@ public:
   [[nodiscard]] auto GetSampleRayAt(std::size_t i,
     std::size_t j,
     std::mt19937& randomGenerator,
-    bool multiSampled = false) const -> std::expected<trace::Ray, std::string>;
+    bool multiSampled = false) const -> trace::Ray;
 
   [[nodiscard]] auto ImageWidth() const -> std::size_t;
   [[nodiscard]] auto ImageHeight() const -> std::size_t;

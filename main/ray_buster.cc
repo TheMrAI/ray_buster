@@ -176,11 +176,7 @@ auto main() -> int
         auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
         for (auto sample = std::size_t{ 0 }; sample < sampleCount; ++sample) {
           auto const ray = camera.get().GetSampleRayAt(i, j, randomGenerator, sampleCount > 1);
-          if (!ray) {
-            std::cerr << ray.error() << std::endl;
-            std::exit(1);
-          }
-          color += rayColor(ray.value(), sceneElements, masterLightIndex, randomGenerator, rayDepth, useSkybox);
+          color += rayColor(ray, sceneElements, masterLightIndex, randomGenerator, rayDepth, useSkybox);
         }
         color /= static_cast<double>(sampleCount);
         pixelColors[i - from][j] = color;
