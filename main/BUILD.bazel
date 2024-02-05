@@ -1,12 +1,23 @@
 cc_binary(
     name = "ray_buster",
     srcs = ["ray_buster.cc"],
-    deps = ["//lib/lina:lina", "//lib/trace:trace", ":scenes"],
+    deps = [":scenes", ":render"],
+)
+
+cc_library(
+    name = "render",
+    srcs = [
+    ],
+    hdrs = [
+            "render/linear_partition.h",
+    ],
+    deps = ["//lib/lina:lina", "//lib/trace:trace"],
 )
 
 cc_library(
     name = "scenes",
     srcs = [
+            "scenes/scene.cc",
             "scenes/test/cuboid.cc",
             "scenes/test/plane.cc",
             "scenes/test/sphere.cc",
