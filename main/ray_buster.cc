@@ -79,21 +79,24 @@ auto rayColor(trace::Ray const& ray,
         auto lightPDF =
           sceneElements[masterLightIndex].component->SamplingPDF(randomGenerator, collision.value().point);
         auto materialPDF = std::get<trace::PDF>(scattering.value().type);
-        auto* chosenPdf = &lightPDF;
-        if (trace::randomUniformDouble(randomGenerator, 0.0, 1.0) < 0.5) { chosenPdf = &materialPDF; }
+        auto sampleDirection = lina::Vec3{};
+        if (trace::randomUniformDouble(randomGenerator, 0.0, 1.0) < 0.5) {
+          sampleDirection = lightPDF.GenerateSample();
+        } else {
+          sampleDirection = materialPDF.GenerateSample();
+        }
 
         auto scatteredRay =
-          trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), chosenPdf->GenerateSample() };
+          trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), sampleDirection };
 
         auto samplingPDFValue =
           (0.5 * lightPDF.Evaluate(scatteredRay.Direction())) + (0.5 * materialPDF.Evaluate(scatteredRay.Direction()));
 
         auto scatteringPDFValue = materialPDF.Evaluate(scatteredRay.Direction());
 
-        scatterColor =
-          (scattering.value().attenuation * scatteringPDFValue
-            * rayColor(scatteredRay, sceneElements, masterLightIndex, randomGenerator, depth - 1, useSkybox))
-          / samplingPDFValue;
+        auto incomingColor =
+          rayColor(scatteredRay, sceneElements, masterLightIndex, randomGenerator, depth - 1, useSkybox);
+        scatterColor = (scattering.value().attenuation * scatteringPDFValue * incomingColor) / samplingPDFValue;
       } else {
         // normal sampling
         auto materialPDF = std::get<trace::PDF>(scattering.value().type);

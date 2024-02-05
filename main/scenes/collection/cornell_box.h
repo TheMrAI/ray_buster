@@ -20,8 +20,8 @@ auto cornellBox() -> Composition
 {
   constexpr auto imageWidth = std::size_t{ 800 };
   constexpr auto imageHeight = std::size_t{ 800 };
-  constexpr auto sampleCount = std::size_t{ 30 };
-  constexpr auto rayDepth = std::size_t{ 7 };
+  constexpr auto sampleCount = std::size_t{ 100 };
+  constexpr auto rayDepth = std::size_t{ 10 };
 
   auto camera = trace::Camera{ imageWidth,
     imageHeight,
@@ -49,13 +49,13 @@ auto cornellBox() -> Composition
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(top)),
     std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(back)),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.0273, 0.0156, 0.2187 }));
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.07, 0.039, 0.5586 }));
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(left)),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.0, 0.8125, 0.3828 }));
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.12, 0.45, 0.15 }));
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(right)),
-    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.8203, 0.0156, 0.1757 }));
+    std::make_unique<trace::Lambertian>(lina::Vec3{ 0.65, 0.05, 0.05 }));
 
-  auto light = trace::buildPlane(lina::Vec3{ 0.0, 0.0, 99.9 }, 15.0, 15.0, trace::Axis::Z, trace::Orientation::Reverse);
+  auto light = trace::buildPlane(lina::Vec3{ 0.0, 0.0, 99.9 }, 20.0, 20.0, trace::Axis::Z, trace::Orientation::Reverse);
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(light)),
     std::make_unique<trace::Emissive>(lina::Vec3{ 15.0, 15.0, 15.0 }, true));
   auto masterLightIndex = static_cast<int>(sceneElements.size() - 1);
