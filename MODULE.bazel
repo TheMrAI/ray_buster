@@ -7,7 +7,7 @@
 
 module(name = "ray_buster", version = "0.0.1")
 
-bazel_dep(name = "googletest", version = "1.14.0")
+bazel_dep(name = "googletest", version = "1.14.0", dev_dependency= True)
 
 # Hedron's Compile Commands Extractor for Bazel
 # https://github.com/hedronvision/bazel-compile-commands-extractor
