@@ -9,31 +9,25 @@
 #include "lib/trace/material/lambertian.h"
 #include "lib/trace/material/metal.h"
 #include "main/scenes/scene.h"
-#include <cstddef>
 #include <memory>
 #include <utility>
 #include <vector>
 
 namespace scene::test {
 
-constexpr auto imageWidth = std::size_t{ 1024 };
-constexpr auto imageHeight = std::size_t{ 768 };
-constexpr auto sampleCount = std::size_t{ 10 };
-constexpr auto rayDepth = std::size_t{ 10 };
-
 constexpr auto planeColor = lina::Vec3{ 0.75, 0.75, 0.75 };
 constexpr auto sphereColor = lina::Vec3{ 0.9296, 0.9179, 0.8476 };
 
-auto sphereMaterial() -> Composition
+auto sphereMaterial(RenderSettings const& settings) -> Composition
 {
-  auto const camera = trace::Camera{ imageWidth,
-    imageHeight,
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
     lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
     lina::Vec3{ 0.0, 0.0, 1.5 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
-    70.0,
-    0.0,
-    1.0 };
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
 
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -55,23 +49,19 @@ auto sphereMaterial() -> Composition
   auto sphereThree = std::make_unique<trace::Sphere>(sphereThreeCenter, 0.75);
   sceneElements.emplace_back(std::move(sphereThree), std::make_unique<trace::Metal>(sphereColor, 0.01, 3));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
+  return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
 }
 
-auto sphereEmissive() -> Composition
+auto sphereEmissive(RenderSettings const& settings) -> Composition
 {
-  // Have to override the sampleCount, otherwise there isn't enough
-  // detail to see the light pattern.
-  auto sampleCount = std::size_t{ 300 };
-
-  auto camera = trace::Camera{ imageWidth,
-    imageHeight,
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
     lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
     lina::Vec3{ 0.0, 0.0, 1.5 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
-    70.0,
-    0.0,
-    1.0 };
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
 
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -84,7 +74,7 @@ auto sphereEmissive() -> Composition
   auto sphereOne = std::make_unique<trace::Sphere>(sphereOneCenter, 0.75);
   sceneElements.emplace_back(std::move(sphereOne), std::make_unique<trace::Emissive>(lina::Vec3{ 3.0, 3.0, 3.0 }));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, false };
+  return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, false };
 }
 
 }// namespace scene::test

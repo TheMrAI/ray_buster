@@ -5,10 +5,10 @@
 
 namespace scene::test {
 
-auto planeMaterial() -> Composition;
-auto planeScale() -> Composition;
-auto planeRotate() -> Composition;
-auto planeEmissive() -> Composition;
+auto planeMaterial(RenderSettings const& settings) -> Composition;
+auto planeScale(RenderSettings const& settings) -> Composition;
+auto planeRotate(RenderSettings const& settings) -> Composition;
+auto planeEmissive(RenderSettings const& settings) -> Composition;
 
 }// namespace scene::test
 

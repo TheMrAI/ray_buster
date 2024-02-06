@@ -1,6 +1,8 @@
 cc_binary(
     name = "ray_buster",
-    srcs = ["ray_buster.cc"],
+    srcs = [
+            "ray_buster.cc",
+    ],
     deps = [":scenes", ":render"],
 )
 
@@ -17,14 +19,17 @@ cc_library(
 cc_library(
     name = "scenes",
     srcs = [
+            "scenes/collection/cornell_box.cc",
             "scenes/scene.cc",
+            "scenes/scene_settings.cc",
             "scenes/test/cuboid.cc",
             "scenes/test/plane.cc",
             "scenes/test/sphere.cc",
     ],
     hdrs = [
-            "scenes/scene.h",
             "scenes/collection/cornell_box.h",
+            "scenes/scene.h",
+            "scenes/scene_settings.h",
             "scenes/test/cuboid.h",
             "scenes/test/plane.h",
             "scenes/test/sphere.h",

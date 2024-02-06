@@ -12,30 +12,25 @@
 #include "lib/trace/transform.h"
 #include "lib/trace/util.h"
 #include "main/scenes/scene.h"
-#include <cstddef>
 #include <memory>
 #include <utility>
 #include <vector>
 
 namespace scene::test {
 
-constexpr auto imageWidth = std::size_t{ 1024 };
-constexpr auto imageHeight = std::size_t{ 768 };
-constexpr auto sampleCount = std::size_t{ 10 };
-constexpr auto rayDepth = std::size_t{ 10 };
 constexpr auto planeColor = lina::Vec3{ 0.75, 0.75, 0.75 };
 constexpr auto cuboidColor = lina::Vec3{ 0.9296, 0.9179, 0.8476 };
 
-auto cuboidMaterial() -> Composition
+auto cuboidMaterial(RenderSettings const& settings) -> Composition
 {
-  auto const camera = trace::Camera{ imageWidth,
-    imageHeight,
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
     lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
     lina::Vec3{ 0.0, 0.0, 1.5 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
-    70.0,
-    0.0,
-    1.0 };
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
 
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -52,24 +47,23 @@ auto cuboidMaterial() -> Composition
   auto cuboidTwo = std::make_unique<trace::Cuboid>(cuboidTwoCenter, 1.5, 1.5, 1.5);
   sceneElements.emplace_back(std::move(cuboidTwo), std::make_unique<trace::Dielectric>(1.4));
 
-
   auto cuboidThreeCenter = lina::Vec3{ 2.0, 0.75, 0.75 };
   auto cuboidThree = std::make_unique<trace::Cuboid>(cuboidThreeCenter, 1.5, 1.5, 1.5);
   sceneElements.emplace_back(std::move(cuboidThree), std::make_unique<trace::Metal>(cuboidColor, 0.01, 3));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
+  return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
 }
 
-auto cuboidScale() -> Composition
+auto cuboidScale(RenderSettings const& settings) -> Composition
 {
-  auto const camera = trace::Camera{ imageWidth,
-    imageHeight,
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
     lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
     lina::Vec3{ 0.0, 0.0, 1.5 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
-    70.0,
-    0.0,
-    1.0 };
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
 
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -90,13 +84,11 @@ auto cuboidScale() -> Composition
     lina::mul(trace::scale(lina::Vec3{ 2.0, 1.0, 1.0 }), trace::translate(-cuboidTwoCenter))));
   sceneElements.emplace_back(std::move(cuboidTwo), std::make_unique<trace::Lambertian>(cuboidColor));
 
-
   auto cuboidThreeCenter = lina::Vec3{ 2.0, 0.5, 1.0 };
   auto cuboidThree = std::make_unique<trace::Cuboid>(cuboidThreeCenter, 1.0, 1.0, 1.0);
   cuboidThree->Transform(lina::mul(trace::translate(cuboidThreeCenter),
     lina::mul(trace::scale(lina::Vec3{ 1.0, 1.0, 2.0 }), trace::translate(-cuboidThreeCenter))));
   sceneElements.emplace_back(std::move(cuboidThree), std::make_unique<trace::Lambertian>(cuboidColor));
-
 
   auto cuboidFourCenter = lina::Vec3{ -1.75, 0.75, 2.0 };
   auto cuboidFour = std::make_unique<trace::Cuboid>(cuboidFourCenter, 1.0, 1.0, 1.0);
@@ -104,19 +96,19 @@ auto cuboidScale() -> Composition
     lina::mul(trace::scale(lina::Vec3{ 1.5, 1.5, 1.5 }), trace::translate(-cuboidFourCenter))));
   sceneElements.emplace_back(std::move(cuboidFour), std::make_unique<trace::Lambertian>(cuboidColor));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
+  return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
 }
 
-auto cuboidRotate() -> Composition
+auto cuboidRotate(RenderSettings const& settings) -> Composition
 {
-  auto const camera = trace::Camera{ imageWidth,
-    imageHeight,
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
     lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
     lina::Vec3{ 0.0, 0.0, 1.5 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
-    70.0,
-    0.0,
-    1.0 };
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
 
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -137,13 +129,11 @@ auto cuboidRotate() -> Composition
     lina::mul(trace::rotateAlongY(trace::degreesToRadians(30)), trace::translate(-cuboidTwoCenter))));
   sceneElements.emplace_back(std::move(cuboidTwo), std::make_unique<trace::Lambertian>(cuboidColor));
 
-
   auto cuboidThreeCenter = lina::Vec3{ 2.0, 0.5, 0.7 };
   auto cuboidThree = std::make_unique<trace::Cuboid>(cuboidThreeCenter, 1.0, 1.0, 1.0);
   cuboidThree->Transform(lina::mul(trace::translate(cuboidThreeCenter),
     lina::mul(trace::rotateAlongX(trace::degreesToRadians(30)), trace::translate(-cuboidThreeCenter))));
   sceneElements.emplace_back(std::move(cuboidThree), std::make_unique<trace::Lambertian>(cuboidColor));
-
 
   auto cuboidFourCenter = lina::Vec3{ -1.75, 0.75, 2.0 };
   auto cuboidFour = std::make_unique<trace::Cuboid>(cuboidFourCenter, 1.0, 1.0, 1.0);
@@ -153,23 +143,19 @@ auto cuboidRotate() -> Composition
     lina::mul(trace::translate(cuboidFourCenter), lina::mul(multiRotation, trace::translate(-cuboidFourCenter))));
   sceneElements.emplace_back(std::move(cuboidFour), std::make_unique<trace::Lambertian>(cuboidColor));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
+  return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
 }
 
-auto cuboidEmissive() -> Composition
+auto cuboidEmissive(RenderSettings const& settings) -> Composition
 {
-  // Have to override the sampleCount, otherwise there isn't enough
-  // detail to see the light pattern.
-  auto sampleCount = std::size_t{ 300 };
-
-  auto const camera = trace::Camera{ imageWidth,
-    imageHeight,
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
     lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
     lina::Vec3{ 0.0, 0.0, 1.5 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
-    70.0,
-    0.0,
-    1.0 };
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
 
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -182,7 +168,7 @@ auto cuboidEmissive() -> Composition
   auto cuboidOne = std::make_unique<trace::Cuboid>(cuboidOneCenter, 1.5, 1.5, 1.5);
   sceneElements.emplace_back(std::move(cuboidOne), std::make_unique<trace::Emissive>(lina::Vec3{ 3.0, 3.0, 3.0 }));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, false };
+  return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, false };
 }
 
 }// namespace scene::test

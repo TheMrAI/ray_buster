@@ -5,10 +5,10 @@
 
 namespace scene::test {
 
-auto cuboidMaterial() -> Composition;
-auto cuboidScale() -> Composition;
-auto cuboidRotate() -> Composition;
-auto cuboidEmissive() -> Composition;
+auto cuboidMaterial(RenderSettings const& settings) -> Composition;
+auto cuboidScale(RenderSettings const& settings) -> Composition;
+auto cuboidRotate(RenderSettings const& settings) -> Composition;
+auto cuboidEmissive(RenderSettings const& settings) -> Composition;
 
 }// namespace scene::test
 

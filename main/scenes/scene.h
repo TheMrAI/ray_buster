@@ -5,6 +5,7 @@
 #include "lib/trace/component.h"
 #include "lib/trace/material.h"
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace scene {
@@ -45,6 +46,18 @@ public:
   Composition& operator=(Composition const&) = delete;
   Composition& operator=(Composition&&) = default;
   ~Composition() = default;
+};
+
+struct RenderSettings
+{
+  std::size_t imageWidth;
+  std::size_t imageHeight;
+  std::size_t sampleCount;
+  std::size_t rayDepth;
+  std::string output;
+  double degreesVerticalFOV;
+  double defocusAngle;
+  double focusDistance;
 };
 
 }// namespace scene

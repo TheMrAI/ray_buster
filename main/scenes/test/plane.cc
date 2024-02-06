@@ -11,30 +11,24 @@
 #include "lib/trace/transform.h"
 #include "lib/trace/util.h"
 #include "main/scenes/scene.h"
-#include <cstddef>
 #include <memory>
 #include <utility>
 #include <vector>
 
 namespace scene::test {
 
-constexpr auto imageWidth = std::size_t{ 1024 };
-constexpr auto imageHeight = std::size_t{ 768 };
-constexpr auto sampleCount = std::size_t{ 10 };
-constexpr auto rayDepth = std::size_t{ 10 };
-
 constexpr auto planeColor = lina::Vec3{ 0.75, 0.75, 0.75 };
 
-auto planeMaterial() -> Composition
+auto planeMaterial(RenderSettings const& settings) -> Composition
 {
-  auto const camera = trace::Camera{ imageWidth,
-    imageHeight,
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
     lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
     lina::Vec3{ 0.0, 0.0, 1.5 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
-    70.0,
-    0.0,
-    1.0 };
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
 
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -53,19 +47,19 @@ auto planeMaterial() -> Composition
   sceneElements.emplace_back(
     std::make_unique<trace::Plane>(std::move(planeThree)), std::make_unique<trace::Metal>(planeColor, 0.01, 3));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
+  return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
 }
 
-auto planeScale() -> Composition
+auto planeScale(RenderSettings const& settings) -> Composition
 {
-  auto const camera = trace::Camera{ imageWidth,
-    imageHeight,
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
     lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
     lina::Vec3{ 0.0, 0.0, 1.5 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
-    70.0,
-    0.0,
-    1.0 };
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
 
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -78,19 +72,19 @@ auto planeScale() -> Composition
   auto planeThree = std::make_unique<trace::Plane>(trace::buildPlane(lina::Vec3{ 2.0, 0.75, 0.5 }, 1.5, 1.5));
   sceneElements.emplace_back(std::move(planeThree), std::make_unique<trace::Lambertian>(planeColor));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
+  return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
 }
 
-auto planeRotate() -> Composition
+auto planeRotate(RenderSettings const& settings) -> Composition
 {
-  auto const camera = trace::Camera{ imageWidth,
-    imageHeight,
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
     lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
     lina::Vec3{ 0.0, 0.0, 1.5 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
-    70.0,
-    0.0,
-    1.0 };
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
 
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -121,23 +115,19 @@ auto planeRotate() -> Composition
     lina::mul(trace::translate(planeFourCenter), lina::mul(multiRotation, trace::translate(-planeFourCenter))));
   sceneElements.emplace_back(std::move(planeFour), std::make_unique<trace::Lambertian>(planeColor));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), -1, true };
+  return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
 }
 
-auto planeEmissive() -> Composition
+auto planeEmissive(RenderSettings const& settings) -> Composition
 {
-  // Have to override the sampleCount, otherwise there isn't enough
-  // detail to see the light pattern.
-  auto sampleCount = std::size_t{ 300 };
-
-  auto camera = trace::Camera{ imageWidth,
-    imageHeight,
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
     lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
     lina::Vec3{ 0.0, 0.0, 1.5 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
-    70.0,
-    0.0,
-    1.0 };
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
 
   auto sceneElements = std::vector<scene::Element>{};
 
@@ -160,7 +150,9 @@ auto planeEmissive() -> Composition
   sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(planeThree)),
     std::make_unique<trace::Emissive>(lina::Vec3{ 3.0, 3.0, 3.0 }, true));
 
-  return Composition{ camera, sampleCount, rayDepth, std::move(sceneElements), masterLightIndex, false };
+  return Composition{
+    camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), masterLightIndex, false
+  };
 }
 
 }// namespace scene::test
