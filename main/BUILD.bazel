@@ -9,11 +9,12 @@ cc_binary(
 cc_library(
     name = "render",
     srcs = [
+            "render/linear_partition.cc",
     ],
     hdrs = [
             "render/linear_partition.h",
     ],
-    deps = ["//lib/lina:lina", "//lib/trace:trace"],
+    deps = ["//lib/lina:lina", "//lib/trace:trace", ":scenes"],
 )
 
 cc_library(

@@ -5,6 +5,7 @@
 #include <cstring>
 #include <exception>
 #include <format>
+// clang-tidy doesn't recognize usage of this header
 #include <getopt.h>//NOLINT
 #include <iostream>
 #include <map>
