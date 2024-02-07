@@ -1,13 +1,13 @@
 
 # The project
 
-The goal is to make a path tracer that is sped up by Monte Carlo randomized algorithm approach.
+The goal is to make a path tracer that is sped up by Monte Carlo randomized sampling.
 It should run on the CPU, which should be maximally utilized, using multithreading.
 The tool is not intended for any commercial use, but more of an exploration on what it takes to build a basic path tracer.
-This is why having a GUI is not in the scope, the output will be a simple PNG file.
+This is why having a GUI is not in the scope, the output will be a simple PPM file.
 
 The path tracer will be a command line tool, on which the user can select from a number of prebuilt scenes, and reconfigure the
-camera position and rendering settings.
+and rendering settings. Moving the camera, rendering movement, or dynamically loading scenes/assets is out of scope.
 The tool should allow the user to generate quick snapshots for each pre-backed scene, so they have an easier time selecting one of interest.
 
 At all times, the code should focus on simplicity, so the final result may be documented and explained in reasonable detail, helping anybody
@@ -17,6 +17,7 @@ Similarly, the scope of supported material types is constrained to lambertian, m
 
 Each object has to be able to be moved, rotated, scaled. These operations should be implemented using simple linear algebra.
 Rotation doesn't have to use quaternions or geometric algebra. The simplest linear transformations are satisfactory.
+We are ignoring the issue of gimbal locks in this project.
 
 For a consistent an easy mental model we should assume that for every vector the coordinates are x, y, z.
 The scene space follows the right-hand orientation. Which means, on your right hand your index finger represents the x axis,
@@ -49,4 +50,7 @@ is not really feasible on a computer precisely, because it is an irrational numb
 precisely, because (for the time being at least), we can't account for all effects of light particle movements, their quantum interference patterns, etc.
 Resources are limited, so we approximate.
 
-[Homogeneous Coordinates](https://www.tomdalling.com/blog/modern-opengl/explaining-homogenous-coordinates-and-projective-geometry/) 
+[Homogeneous Coordinates](https://www.tomdalling.com/blog/modern-opengl/explaining-homogenous-coordinates-and-projective-geometry/)
+
+[Gimbal lock](https://www.youtube.com/watch?v=zc8b2Jo7mno) - A phenomenon where the combination of successive rotations for a single linear transformation matrix
+would lose dimensions for the transformation.
