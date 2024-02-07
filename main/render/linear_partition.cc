@@ -121,7 +121,7 @@ auto rayColor(trace::Ray const& ray,
   }
 
   if (useSkybox) {
-    auto a = 0.5 * (ray.Direction()[1] + 1.0);
+    auto a = 0.5 * (ray.Direction()[2] + 1.0);
     return (1.0 - a) * lina::Vec3{ 1.0, 1.0, 1.0 } + a * lina::Vec3{ 0.5, 0.7, 1.0 };
   }
   return lina::Vec3{ 0.0, 0.0, 0.0 };
