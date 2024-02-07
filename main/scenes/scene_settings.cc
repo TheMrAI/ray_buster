@@ -5,6 +5,7 @@
 #include "main/scenes/test/plane.h"
 #include "main/scenes/test/sphere.h"
 #include <cstddef>
+#include <format>
 #include <map>
 #include <string>
 
@@ -23,7 +24,7 @@ auto configurations() -> std::map<std::string, Configuration>
     1.0,
   };
 
-  return std::map<std::string, Configuration>{
+  auto defaultConfigurations = std::map<std::string, Configuration>{
     { "cornell-box",
       Configuration{ "Standard cornell box. One overhead light in an enclosed cube, with two slightly rotated cuboids.",
         [](scene::RenderSettings const& settings) -> scene::Composition { return scene::cornellBox(settings); },
@@ -94,6 +95,13 @@ auto configurations() -> std::map<std::string, Configuration>
         },
         defaultRenderSettings } },
   };
+
+  // fill in the default output targets
+  for (auto& config : defaultConfigurations) {
+    config.second.settings.outputFile = std::format("./{}.ppm", config.first);
+  }
+
+  return defaultConfigurations;
 }
 
 }// namespace scene

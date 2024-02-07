@@ -6,6 +6,7 @@
 #include <exception>
 #include <format>
 // clang-tidy doesn't recognize usage of this header
+#include <fstream>
 #include <getopt.h>//NOLINT
 #include <iostream>
 #include <map>
@@ -21,7 +22,7 @@ auto asShortArguments(scene::RenderSettings const& settings) -> std::string
     settings.imageHeight,
     settings.sampleCount,
     settings.rayDepth,
-    settings.output,
+    settings.outputFile,
     settings.degreesVerticalFOV,
     settings.defocusAngle,
     settings.focusDistance);
@@ -31,7 +32,7 @@ auto help() -> std::string
 {
   return "ray_buster is a simple CPU based path tracing application, with a number of built in scenes.\n"
          "The tool will aim to utilize all available CPU cores.\n\n"
-         "Usage: ray_buster --scene cornell-box [OPTIONS] > cornell-box.ppm\n"
+         "Usage: ray_buster --scene cornell-box [OPTIONS]\n"
          "Commands:\n"
          "\t--scene\t\tRender the selected scene with its built in default configuration.\n"
          "\t--list\t\tList all available scenes with their default settings displayed as ready to paste arguments for "
@@ -40,11 +41,13 @@ auto help() -> std::string
          "\t\t\tExample:\n"
          "\t\t\t\t-r 800x800 -s 100 -d 10 -o  -f 70 -a 0 -m 1\n"
          "\t-h --help\tPrint out the help message.\n\n"
-         "For the scene command it is possible to a number of the rendering settings, which are as follow:\n"
+         "For the scene command it is possible to override a number of optional the rendering settings, which are as "
+         "follow:\n"
          "\t-r <width>x<height>\t- the rendering resolution. Example 1024x768\n"
          "\t-s <value>\t\t- sampling value. This controls how many sub pixel samples to take at each ray bounce.\n"
-         "\t-d <value>\t\t- ray depth. How many times can a ray bounce are simulated.\n"
-         "\t-o <value>\t\t- output file. Currently not in use.\n"
+         "\t-d <value>\t\t- ray depth. How many ray bounces are simulated. After 20, it only gives diminishing "
+         "returns.\n"
+         "\t-o <value>\t\t- output file. The result will always use the PPM image format.\n"
          "\t-f <value>\t\t- vertical FOV in degrees.\n"
          "\t-a <value>\t\t- defocus angle. An angle for simulating camera focusing artifacts. A 0.0 disables the "
          "features.\n"
@@ -75,13 +78,12 @@ auto list(std::map<std::string, scene::Configuration> const& scenes) -> std::str
 auto main(int argc, char* argv[]) -> int
 {
   try {
-
     auto selectedScene = std::string();
     auto imageWidth = std::optional<std::size_t>{};
     auto imageHeight = std::optional<std::size_t>{};
     auto sampleCount = std::optional<std::size_t>{};
     auto rayDepth = std::optional<std::size_t>{};
-    auto output = std::optional<std::string>{};
+    auto outputFile = std::optional<std::string>{};
     auto degreesVerticalFOV = std::optional<double>{};
     auto defocusAngle = std::optional<double>{};
     auto focusDistance = std::optional<double>{};
@@ -157,7 +159,7 @@ auto main(int argc, char* argv[]) -> int
         break;
       }
       case 'o': {
-        output = std::string{ optarg };
+        outputFile = std::string{ optarg };
         break;
       }
       case 'f': {
@@ -208,18 +210,23 @@ auto main(int argc, char* argv[]) -> int
     }
 
     auto consolidatedSettings = selected->second.settings;
-    if (imageWidth) {
+    if (imageWidth && imageHeight) {
       consolidatedSettings.imageWidth = imageWidth.value();
       consolidatedSettings.imageHeight = imageHeight.value();
     }
     if (sampleCount) { consolidatedSettings.sampleCount = sampleCount.value(); }
     if (rayDepth) { consolidatedSettings.rayDepth = rayDepth.value(); }
-    if (output) { consolidatedSettings.output = output.value(); }
+    if (outputFile) { consolidatedSettings.outputFile = outputFile.value(); }
     if (degreesVerticalFOV) { consolidatedSettings.degreesVerticalFOV = degreesVerticalFOV.value(); }
     if (defocusAngle) { consolidatedSettings.defocusAngle = defocusAngle.value(); }
     if (focusDistance) { consolidatedSettings.focusDistance = focusDistance.value(); }
 
-    render::linearPartition(selected->second.sceneLoader(consolidatedSettings));
+    auto renderResult = std::ofstream{ consolidatedSettings.outputFile, std::ios_base::out | std::ios_base::trunc };
+    if (!renderResult.is_open()) {
+      std::cerr << std::format("Failed to open file: '{}'", consolidatedSettings.outputFile);
+      return 1;
+    }
+    render::linearPartition(selected->second.sceneLoader(consolidatedSettings), renderResult);
   } catch (std::exception const& e) {
     std::cerr << std::format("Unhandled exception:\n{}", e.what()) << '\n';
     return 1;

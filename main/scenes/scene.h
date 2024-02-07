@@ -54,7 +54,7 @@ struct RenderSettings
   std::size_t imageHeight;
   std::size_t sampleCount;
   std::size_t rayDepth;
-  std::string output;
+  std::string outputFile;
   double degreesVerticalFOV;
   double defocusAngle;
   double focusDistance;

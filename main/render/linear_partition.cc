@@ -7,6 +7,7 @@
 #include <iostream>
 #include <memory>
 #include <optional>
+#include <ostream>
 #include <random>
 #include <stdexcept>
 #include <thread>
@@ -128,18 +129,18 @@ auto rayColor(trace::Ray const& ray,
 // applying gamma correction to the colors
 auto linearToGamma(double LinearSpaceValue) -> double { return std::sqrt(LinearSpaceValue); }
 
-auto writeColor(lina::Vec3 const& color) -> void
+auto writeColor(lina::Vec3 const& color, std::ostream& outputStream) -> void
 {
   auto red = std::min(1.0, linearToGamma(color[0]));
   auto green = std::min(1.0, linearToGamma(color[1]));
   auto blue = std::min(1.0, linearToGamma(color[2]));
 
   // we can get close to 256, but not above, granted the input comes in between [0.0, 1.0)
-  std::cout << static_cast<int>(255.9999 * red) << " " << static_cast<int>(255.9999 * green) << " "
-            << static_cast<int>(255.9999 * blue) << '\n';
+  outputStream << static_cast<int>(255.9999 * red) << " " << static_cast<int>(255.9999 * green) << " "
+               << static_cast<int>(255.9999 * blue) << '\n';
 }
 
-auto linearPartition(scene::Composition sceneComposition) -> void
+auto linearPartition(scene::Composition sceneComposition, std::ostream& outputStream) -> void
 {
   auto [camera, sampleCount, rayDepth, sceneElements, masterLightIndex, useSkybox] = std::move(sceneComposition);
   auto imageWidth = camera.ImageWidth();
@@ -171,7 +172,7 @@ auto linearPartition(scene::Composition sceneComposition) -> void
     auto randomGenerator = std::mt19937{ randomDevice() };
 
     for (auto i = from; i < until; ++i) {
-      if (reportProgress) { std::clog << "\rScan-lines remaining: " << (until - i - 1) << ' ' << std::flush; }
+      if (reportProgress) { std::cout << "\rScan-lines remaining: " << (until - i - 1) << ' ' << std::flush; }
       for (auto j = std::size_t{ 0 }; j < imageWidth; ++j) {
         auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
         for (auto sample = std::size_t{ 0 }; sample < sampleCount; ++sample) {
@@ -182,6 +183,7 @@ auto linearPartition(scene::Composition sceneComposition) -> void
         pixelColors[i - from][j] = color;
       }
     }
+    if (reportProgress) { std::cout << '\n'; }
     return pixelColors;
   };
 
@@ -206,10 +208,10 @@ auto linearPartition(scene::Composition sceneComposition) -> void
   }
 
   // serialize render results
-  std::cout << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
+  outputStream << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
   for (auto& renderResults : renderChunkResults) {
     for (auto const& line : renderResults.get()) {
-      for (auto const& color : line) { writeColor(color); }
+      for (auto const& color : line) { writeColor(color, outputStream); }
     }
   }
 }

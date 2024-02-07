@@ -2,6 +2,7 @@
 #define RAY_BUSTER_MAIN_RENDER_H
 
 #include <optional>
+#include <ostream>
 #include <random>
 #include <thread>
 #include <utility>
@@ -26,9 +27,9 @@ auto rayColor(trace::Ray const& ray,
 // applying gamma correction to the colors
 auto linearToGamma(double LinearSpaceValue) -> double;
 
-auto writeColor(lina::Vec3 const& color) -> void;
+auto writeColor(lina::Vec3 const& color, std::ostream& outputStream) -> void;
 
-auto linearPartition(scene::Composition sceneComposition) -> void;
+auto linearPartition(scene::Composition sceneComposition, std::ostream& outputStream) -> void;
 
 }// namespace render
 
