@@ -2,6 +2,7 @@
 #define RAY_BUSTER_LIB_TRACE_PDF_H_
 
 #include "lib/lina/vec3.h"
+
 #include <functional>
 
 namespace trace {

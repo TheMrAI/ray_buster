@@ -4,6 +4,7 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/ray.h"
+
 #include <optional>
 #include <span>
 #include <utility>

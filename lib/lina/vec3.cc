@@ -1,5 +1,7 @@
 #include "vec3.h"
+
 #include "lina.h"
+
 #include <array>
 #include <cmath>
 #include <cstddef>

@@ -4,6 +4,7 @@
 #include "lib/trace/camera.h"
 #include "lib/trace/component.h"
 #include "lib/trace/material.h"
+
 #include <memory>
 #include <string>
 #include <vector>

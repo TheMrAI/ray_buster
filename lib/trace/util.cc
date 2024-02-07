@@ -1,5 +1,7 @@
 #include "util.h"
+
 #include "lib/lina/vec3.h"
+
 #include <cmath>
 #include <numbers>
 #include <random>

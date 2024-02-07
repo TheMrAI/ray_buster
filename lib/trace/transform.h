@@ -2,6 +2,7 @@
 #define RAY_BUSTER_LIB_TRACE_TRANSFORM_H_
 
 #include "lib/lina/vec3.h"
+
 #include <array>
 
 namespace trace {

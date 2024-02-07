@@ -1,16 +1,16 @@
 #ifndef RAY_BUSTER_MAIN_RENDER_H
 #define RAY_BUSTER_MAIN_RENDER_H
 
+#include "lib/lina/vec3.h"
+#include "lib/trace/collision.h"
+#include "main/scenes/scene.h"
+
 #include <optional>
 #include <ostream>
 #include <random>
 #include <thread>
 #include <utility>
 #include <vector>
-
-#include "lib/lina/vec3.h"
-#include "lib/trace/collision.h"
-#include "main/scenes/scene.h"
 
 namespace render {
 

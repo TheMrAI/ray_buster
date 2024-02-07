@@ -1,7 +1,9 @@
 #include "lib/trace/geometry/triangle.h"
+
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/ray.h"
+
 #include <array>
 #include <cstddef>
 #include <iterator>

@@ -1,9 +1,11 @@
 #include "sphere.h"
+
 #include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
+
 #include <cmath>
 #include <optional>
 #include <random>

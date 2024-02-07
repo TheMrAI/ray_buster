@@ -1,10 +1,12 @@
 #include "lambertian.h"
+
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/scattering.h"
 #include "lib/trace/util.h"
+
 #include <numbers>
 #include <optional>
 #include <random>

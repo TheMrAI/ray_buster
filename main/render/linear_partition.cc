@@ -1,4 +1,16 @@
 
+#include "main/render/linear_partition.h"
+
+#include "lib/lina/vec3.h"
+#include "lib/trace/camera.h"
+#include "lib/trace/collision.h"
+#include "lib/trace/component.h"
+#include "lib/trace/material.h"
+#include "lib/trace/pdf.h"
+#include "lib/trace/ray.h"
+#include "lib/trace/util.h"
+#include "main/scenes/scene.h"
+
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -14,17 +26,6 @@
 #include <utility>
 #include <variant>
 #include <vector>
-
-#include "lib/lina/vec3.h"
-#include "lib/trace/camera.h"
-#include "lib/trace/collision.h"
-#include "lib/trace/component.h"
-#include "lib/trace/material.h"
-#include "lib/trace/pdf.h"
-#include "lib/trace/ray.h"
-#include "lib/trace/util.h"
-#include "main/render/linear_partition.h"
-#include "main/scenes/scene.h"
 
 namespace render {
 

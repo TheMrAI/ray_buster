@@ -5,6 +5,7 @@
 #include "lib/trace/collision.h"
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
+
 #include <optional>
 #include <random>
 #include <span>

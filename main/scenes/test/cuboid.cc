@@ -12,6 +12,7 @@
 #include "lib/trace/transform.h"
 #include "lib/trace/util.h"
 #include "main/scenes/scene.h"
+
 #include <memory>
 #include <utility>
 #include <vector>

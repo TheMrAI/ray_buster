@@ -1,4 +1,5 @@
 #include "ray.h"
+
 #include "lib/lina/vec3.h"
 
 namespace trace {

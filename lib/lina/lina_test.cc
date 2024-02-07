@@ -1,8 +1,8 @@
-#include <gtest/gtest.h>
-
 #include "lib/lina/lina.h"
+
 #include <array>
 #include <cstddef>
+#include <gtest/gtest.h>
 #include <span>
 
 auto checkEquality(std::span<double, 3> result, std::span<double, 3> expected)

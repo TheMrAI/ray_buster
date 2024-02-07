@@ -1,7 +1,9 @@
 #include "camera.h"
+
 #include "lib/lina/vec3.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/util.h"
+
 #include <cmath>
 #include <cstddef>
 #include <format>

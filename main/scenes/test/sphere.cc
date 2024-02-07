@@ -9,6 +9,7 @@
 #include "lib/trace/material/lambertian.h"
 #include "lib/trace/material/metal.h"
 #include "main/scenes/scene.h"
+
 #include <memory>
 #include <utility>
 #include <vector>

@@ -1,9 +1,11 @@
 #include "main/scenes/scene_settings.h"
+
 #include "main/scenes/collection/cornell_box.h"
 #include "main/scenes/scene.h"
 #include "main/scenes/test/cuboid.h"
 #include "main/scenes/test/plane.h"
 #include "main/scenes/test/sphere.h"
+
 #include <cstddef>
 #include <format>
 #include <map>

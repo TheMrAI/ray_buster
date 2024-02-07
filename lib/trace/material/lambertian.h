@@ -6,6 +6,7 @@
 #include "lib/trace/material.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/scattering.h"
+
 #include <optional>
 #include <random>
 
