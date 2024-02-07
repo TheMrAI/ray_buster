@@ -74,150 +74,156 @@ auto list(std::map<std::string, scene::Configuration> const& scenes) -> std::str
 // NOLINTBEGIN(readability-function-cognitive-complexity)
 auto main(int argc, char* argv[]) -> int
 {
-  auto selectedScene = std::string();
-  auto imageWidth = std::optional<std::size_t>{};
-  auto imageHeight = std::optional<std::size_t>{};
-  auto sampleCount = std::optional<std::size_t>{};
-  auto rayDepth = std::optional<std::size_t>{};
-  auto output = std::optional<std::string>{};
-  auto degreesVerticalFOV = std::optional<double>{};
-  auto defocusAngle = std::optional<double>{};
-  auto focusDistance = std::optional<double>{};
+  try {
 
-  auto const resolutionRegex = std::regex{ R"((\d+)x(\d+))" };
+    auto selectedScene = std::string();
+    auto imageWidth = std::optional<std::size_t>{};
+    auto imageHeight = std::optional<std::size_t>{};
+    auto sampleCount = std::optional<std::size_t>{};
+    auto rayDepth = std::optional<std::size_t>{};
+    auto output = std::optional<std::string>{};
+    auto degreesVerticalFOV = std::optional<double>{};
+    auto defocusAngle = std::optional<double>{};
+    auto focusDistance = std::optional<double>{};
 
-  while (true) {
-    auto optionIndex = 0;
-    // option, optarg and getopt_long for some reason is not seen by the linter
-    // NOLINTBEGIN(misc-include-cleaner)
-    static auto const longOptions = std::array<struct option const, 4>({ { "scene", required_argument, nullptr, 0 },
-      { "list", no_argument, nullptr, 0 },
-      { "help", no_argument, nullptr, 0 },
-      { nullptr, no_argument, nullptr, 0 } });
+    auto const resolutionRegex = std::regex{ R"((\d+)x(\d+))" };
 
-    auto charCode = getopt_long(argc, argv, "hr:s:d:o:f:a:m", longOptions.data(), &optionIndex);
+    while (true) {
+      auto optionIndex = 0;
+      // option, optarg and getopt_long for some reason is not seen by the linter
+      // NOLINTBEGIN(misc-include-cleaner)
+      static auto const longOptions = std::array<struct option const, 4>({ { "scene", required_argument, nullptr, 0 },
+        { "list", no_argument, nullptr, 0 },
+        { "help", no_argument, nullptr, 0 },
+        { nullptr, no_argument, nullptr, 0 } });
 
-    if (charCode == -1) { break; };
-    switch (charCode) {
-    case 0: {
-      if (std::strncmp(longOptions.at(optionIndex).name, "help", sizeof("help")) == 0) {
+      auto charCode = getopt_long(argc, argv, "hr:s:d:o:f:a:m", longOptions.data(), &optionIndex);
+
+      if (charCode == -1) { break; };
+      switch (charCode) {
+      case 0: {
+        if (std::strncmp(longOptions.at(optionIndex).name, "help", sizeof("help")) == 0) {
+          std::cout << help() << '\n';
+          return 0;
+        }
+        if (std::strncmp(longOptions.at(optionIndex).name, "list", sizeof("list")) == 0) {
+          std::cout << list(scene::configurations()) << '\n';
+          return 0;
+        }
+        if (std::strncmp(longOptions.at(optionIndex).name, "scene", sizeof("scene")) == 0) {
+          selectedScene = std::string(optarg);
+        }
+        break;
+      }
+      case 'h': {
         std::cout << help() << '\n';
         return 0;
       }
-      if (std::strncmp(longOptions.at(optionIndex).name, "list", sizeof("list")) == 0) {
-        std::cout << list(scene::configurations()) << '\n';
-        return 0;
+      case 'r': {
+        auto resolutionText = std::string{ optarg };
+        auto baseMatch = std::smatch{};
+        if (!std::regex_match(resolutionText, baseMatch, resolutionRegex)) {
+          std::cerr << std::format(
+            "Invalid resolution argument received. Expected: '<width>x<height>, Got: {}'", resolutionText);
+          return 1;
+        }
+        try {
+          imageWidth = std::stoull(baseMatch[1].str());
+          imageHeight = std::stoull(baseMatch[2].str());
+        } catch (std::exception const& e) {
+          std::cerr << std::format("Failed to parse '-r' argument. Reason: {}", e.what()) << '\n';
+          return 1;
+        }
+        break;
       }
-      if (std::strncmp(longOptions.at(optionIndex).name, "scene", sizeof("scene")) == 0) {
-        selectedScene = std::string(optarg);
+      case 's': {
+        auto sampleTest = std::string{ optarg };
+        try {
+          sampleCount = std::stoull(sampleTest);
+        } catch (std::exception const& e) {
+          std::cerr << std::format("Failed to parse '-s' argument. Reason: {}", e.what()) << '\n';
+          return 1;
+        }
+        break;
       }
-      break;
-    }
-    case 'h': {
-      std::cout << help() << '\n';
-      return 0;
-    }
-    case 'r': {
-      auto resolutionText = std::string{ optarg };
-      auto baseMatch = std::smatch{};
-      if (!std::regex_match(resolutionText, baseMatch, resolutionRegex)) {
-        std::cerr << std::format(
-          "Invalid resolution argument received. Expected: '<width>x<height>, Got: {}'", resolutionText);
-        return 1;
+      case 'd': {
+        auto rayDepthText = std::string{ optarg };
+        try {
+          rayDepth = std::stoull(rayDepthText);
+        } catch (std::exception const& e) {
+          std::cerr << std::format("Failed to parse '-d' argument. Reason: {}", e.what()) << '\n';
+          return 1;
+        }
+        break;
       }
-      try {
-        imageWidth = std::stoull(baseMatch[1].str());
-        imageHeight = std::stoull(baseMatch[2].str());
-      } catch (std::exception const& e) {
-        std::cerr << std::format("Failed to parse '-r' argument. Reason: {}", e.what()) << '\n';
-        return 1;
+      case 'o': {
+        output = std::string{ optarg };
+        break;
       }
-      break;
-    }
-    case 's': {
-      auto sampleTest = std::string{ optarg };
-      try {
-        sampleCount = std::stoull(sampleTest);
-      } catch (std::exception const& e) {
-        std::cerr << std::format("Failed to parse '-s' argument. Reason: {}", e.what()) << '\n';
-        return 1;
+      case 'f': {
+        auto degreesVerticalFOVText = std::string{ optarg };
+        try {
+          degreesVerticalFOV = std::stod(degreesVerticalFOVText);
+        } catch (std::exception const& e) {
+          std::cerr << std::format("Failed to parse '-f' argument. Reason: {}", e.what()) << '\n';
+          return 1;
+        }
+        break;
       }
-      break;
-    }
-    case 'd': {
-      auto rayDepthText = std::string{ optarg };
-      try {
-        rayDepth = std::stoull(rayDepthText);
-      } catch (std::exception const& e) {
-        std::cerr << std::format("Failed to parse '-d' argument. Reason: {}", e.what()) << '\n';
-        return 1;
+      case 'a': {
+        auto defocusAngleText = std::string{ optarg };
+        try {
+          defocusAngle = std::stod(defocusAngleText);
+        } catch (std::exception const& e) {
+          std::cerr << std::format("Failed to parse '-a' argument. Reason: {}", e.what()) << '\n';
+          return 1;
+        }
+        break;
       }
-      break;
-    }
-    case 'o': {
-      output = std::string{ optarg };
-      break;
-    }
-    case 'f': {
-      auto degreesVerticalFOVText = std::string{ optarg };
-      try {
-        degreesVerticalFOV = std::stod(degreesVerticalFOVText);
-      } catch (std::exception const& e) {
-        std::cerr << std::format("Failed to parse '-f' argument. Reason: {}", e.what()) << '\n';
-        return 1;
+      case 'm': {
+        auto focusDistanceText = std::string{ optarg };
+        try {
+          focusDistance = std::stod(focusDistanceText);
+        } catch (std::exception const& e) {
+          std::cerr << std::format("Failed to parse '-m' argument. Reason: {}", e.what()) << '\n';
+          return 1;
+        }
+        break;
       }
-      break;
-    }
-    case 'a': {
-      auto defocusAngleText = std::string{ optarg };
-      try {
-        defocusAngle = std::stod(defocusAngleText);
-      } catch (std::exception const& e) {
-        std::cerr << std::format("Failed to parse '-a' argument. Reason: {}", e.what()) << '\n';
-        return 1;
+      case '?': {
+        break;
       }
-      break;
-    }
-    case 'm': {
-      auto focusDistanceText = std::string{ optarg };
-      try {
-        focusDistance = std::stod(focusDistanceText);
-      } catch (std::exception const& e) {
-        std::cerr << std::format("Failed to parse '-m' argument. Reason: {}", e.what()) << '\n';
-        return 1;
+      default: {
+        std::cout << "Unhandled character code received: " << charCode << '\n';
       }
-      break;
+      }
+      // NOLINTEND(misc-include-cleaner)
     }
-    case '?': {
-      break;
-    }
-    default: {
-      std::cout << "Unhandled character code received: " << charCode << '\n';
-    }
-    }
-    // NOLINTEND(misc-include-cleaner)
-  }
 
-  auto const configs = scene::configurations();
-  auto selected = configs.find(selectedScene);
-  if (selected == configs.end()) {
-    std::cerr << std::format("Missing configuration for scene: {}", selectedScene) << '\n';
+    auto const configs = scene::configurations();
+    auto selected = configs.find(selectedScene);
+    if (selected == configs.end()) {
+      std::cerr << std::format("Missing configuration for scene: {}", selectedScene) << '\n';
+      return 1;
+    }
+
+    auto consolidatedSettings = selected->second.settings;
+    if (imageWidth) {
+      consolidatedSettings.imageWidth = imageWidth.value();
+      consolidatedSettings.imageHeight = imageHeight.value();
+    }
+    if (sampleCount) { consolidatedSettings.sampleCount = sampleCount.value(); }
+    if (rayDepth) { consolidatedSettings.rayDepth = rayDepth.value(); }
+    if (output) { consolidatedSettings.output = output.value(); }
+    if (degreesVerticalFOV) { consolidatedSettings.degreesVerticalFOV = degreesVerticalFOV.value(); }
+    if (defocusAngle) { consolidatedSettings.defocusAngle = defocusAngle.value(); }
+    if (focusDistance) { consolidatedSettings.focusDistance = focusDistance.value(); }
+
+    render::linearPartition(selected->second.sceneLoader(consolidatedSettings));
+  } catch (std::exception const& e) {
+    std::cerr << std::format("Unhandled exception:\n{}", e.what()) << '\n';
     return 1;
   }
-
-  auto consolidatedSettings = selected->second.settings;
-  if (imageWidth) {
-    consolidatedSettings.imageWidth = imageWidth.value();
-    consolidatedSettings.imageHeight = imageHeight.value();
-  }
-  if (sampleCount) { consolidatedSettings.sampleCount = sampleCount.value(); }
-  if (rayDepth) { consolidatedSettings.rayDepth = rayDepth.value(); }
-  if (output) { consolidatedSettings.output = output.value(); }
-  if (degreesVerticalFOV) { consolidatedSettings.degreesVerticalFOV = degreesVerticalFOV.value(); }
-  if (defocusAngle) { consolidatedSettings.defocusAngle = defocusAngle.value(); }
-  if (focusDistance) { consolidatedSettings.focusDistance = focusDistance.value(); }
-
-  render::linearPartition(selected->second.sceneLoader(consolidatedSettings));
 
   return 0;
 }
