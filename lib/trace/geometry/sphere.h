@@ -8,6 +8,7 @@
 #include "lib/trace/ray.h"
 
 #include <array>
+#include <cstddef>
 #include <optional>
 #include <random>
 #include <span>

@@ -8,10 +8,12 @@
 #include "lib/trace/ray.h"
 
 #include <array>
+#include <cstddef>
 #include <optional>
 #include <random>
 #include <span>
 #include <utility>
+#include <vector>
 
 
 namespace trace {
@@ -27,8 +29,8 @@ public:
 
 private:
   lina::Vec3 center_;
-  std::array<lina::Vec3, 8> triangleStrip1_;
-  std::array<lina::Vec3, 8> triangleStrip2_;
+  std::vector<lina::Vec3> vertices_;
+  std::vector<std::array<std::size_t, 3>> triangles_;
 };
 
 }// namespace trace

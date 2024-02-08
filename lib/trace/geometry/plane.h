@@ -7,6 +7,7 @@
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 
+#include <cstddef>
 #include <optional>
 #include <random>
 #include <string>

@@ -13,15 +13,6 @@
 
 namespace trace {
 
-auto triangleStripCollide(Ray const& ray,
-  lina::Vec3 const& center,
-  std::span<lina::Vec3 const> triangleStrip) -> std::optional<std::pair<Collision, double>>;
-
-auto triangleCollide(Ray const& ray,
-  lina::Vec3 const& center,
-  std::span<lina::Vec3 const, 3> triplet,
-  bool swapUV) -> std::optional<std::pair<Collision, double>>;
-
 auto triangleCollide(Ray const& ray,
   lina::Vec3 const& center,
   std::vector<lina::Vec3> const& vertices,
