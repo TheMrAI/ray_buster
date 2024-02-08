@@ -9,25 +9,32 @@
 #include "lib/trace/transform.h"
 #include "lib/trace/util.h"
 
+#include <array>
 #include <cmath>
+#include <cstddef>
 #include <format>
 #include <optional>
 #include <random>
 #include <span>
 #include <stdexcept>
+#include <vector>
 
 namespace trace {
 
-Plane::Plane(lina::Vec3 center)
-  : center_{ center }, triangleStrip_{ lina::Vec3{ -0.5, -0.5, 0.0 },
-      lina::Vec3{ -0.5, 0.5, 0.0 },
-      lina::Vec3{ 0.5, -0.5, 0.0 },
-      lina::Vec3{ 0.5, 0.5, 0.0 } }
-{}
+Plane::Plane() : center_{ lina::Vec3{} }, vertices_(4), triangles_(2)
+{
+  vertices_.at(0) = lina::Vec3{ -0.5, -0.5, 0.0 };
+  vertices_.at(1) = lina::Vec3{ -0.5, 0.5, 0.0 };
+  vertices_.at(2) = lina::Vec3{ 0.5, -0.5, 0.0 };
+  vertices_.at(3) = lina::Vec3{ 0.5, 0.5, 0.0 };
+
+  triangles_.at(0) = std::array<std::size_t, 3>{ 0, 1, 2 };
+  triangles_.at(1) = std::array<std::size_t, 3>{ 2, 1, 3 };
+}
 
 auto Plane::Collide(Ray const& ray) const -> std::optional<Collision>
 {
-  auto closestCollisionData = triangleStripCollide(ray, center_, triangleStrip_);
+  auto closestCollisionData = meshCollide(ray, center_, vertices_, triangles_);
 
   if (!closestCollisionData) { return std::optional<Collision>{}; }
   return std::optional<Collision>{ closestCollisionData->first };
@@ -38,7 +45,7 @@ auto Plane::Transform(std::span<double const, 16> transformationMatrix) -> void
   auto center4 = trace::extend3Dto4D(center_, false);
   center_ = trace::cut4Dto3D(lina::mul(transformationMatrix, center4));
 
-  for (auto& vertex : triangleStrip_) {
+  for (auto& vertex : vertices_) {
     auto vertex4 = trace::extend3Dto4D(vertex, true);
     vertex = trace::cut4Dto3D(lina::mul(transformationMatrix, vertex4));
   }
@@ -56,16 +63,15 @@ auto Plane::SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) c
     auto cosine = std::fabs(lina::dot(rayDirection, collision.value().normal));
 
     // the length of the cross product is equal to the size of the parallelogram described by the vectors
-    auto area =
-      lina::cross(this->triangleStrip_[1] - this->triangleStrip_[0], this->triangleStrip_[2] - this->triangleStrip_[0])
-        .Length();
+    // the order matters for a positive cross product
+    auto area = lina::cross(this->vertices_[2] - this->vertices_[0], this->vertices_[1] - this->vertices_[0]).Length();
     return distanceSquared / (cosine * area);
   };
 
   samplingPDF.GenerateSample = [&randomGenerator, this, from]() -> lina::Vec3 {
-    auto Q = this->triangleStrip_[0] + this->center_;
-    auto u = this->triangleStrip_[2] - this->triangleStrip_[0];
-    auto v = this->triangleStrip_[1] - this->triangleStrip_[0];
+    auto Q = this->vertices_[0] + this->center_;
+    auto u = this->vertices_[2] - this->vertices_[0];
+    auto v = this->vertices_[1] - this->vertices_[0];
 
     auto onPlane =
       Q + (randomUniformDouble(randomGenerator, 0.0, 1.0) * u) + (randomUniformDouble(randomGenerator, 0.0, 1.0) * v);
@@ -81,7 +87,7 @@ auto buildPlane(lina::Vec3 center, double width, double depth, Axis normalAxis, 
   if (width < 0.00001 || depth < 0.00001) {
     throw std::logic_error(std::format("Width and depth must be bigger than 0.0. Got: {}, {}", width, depth));
   }
-  auto plane = Plane{ lina::Vec3{} };
+  auto plane = Plane{};
 
   auto transformation = trace::scale(lina::Vec3{ width, depth, 0.0 });
   auto radians = trace::degreesToRadians(90.0);

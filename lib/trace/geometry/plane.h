@@ -10,6 +10,7 @@
 #include <optional>
 #include <random>
 #include <string>
+#include <vector>
 
 namespace trace {
 
@@ -26,7 +27,7 @@ class Plane : public Component
 {
 public:
   // The plane constructed plane will always have a size of 1.0 * 1.0.
-  Plane(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 });
+  Plane();
 
   [[nodiscard]] auto Collide(Ray const& ray) const -> std::optional<Collision> override;
   auto Transform(std::span<double const, 16> transformationMatrix) -> void override;
@@ -34,7 +35,8 @@ public:
 
 private:
   lina::Vec3 center_;
-  std::array<lina::Vec3, 4> triangleStrip_;
+  std::vector<lina::Vec3> vertices_;
+  std::vector<std::array<std::size_t, 3>> triangles_;
 };
 
 // Build a plane conveniently oriented along any of the major axis.
