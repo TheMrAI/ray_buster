@@ -2,7 +2,7 @@
 #define RAY_BUSTER_LIB_TRACE_MATERIAL_H_
 
 #include "lib/lina/vec3.h"
-#include "lib/trace/component.h"
+#include "lib/trace/geometry/component.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/scattering.h"
 

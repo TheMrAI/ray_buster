@@ -3,7 +3,7 @@
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
-#include "lib/trace/component.h"
+#include "lib/trace/geometry/component.h"
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 
@@ -20,17 +20,13 @@ class Sphere : public Component
 {
 public:
   Sphere();
-
-  [[nodiscard]] auto Collide(Ray const& ray) const -> std::optional<Collision> override;
-  auto Transform(std::span<double const, 16> transformationMatrix) -> void override;
-  [[nodiscard]] auto SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF override;
+  Sphere(Sphere const&) = default;
+  Sphere(Sphere&&) = default;
+  auto operator=(Sphere const&) -> Sphere& = default;
+  auto operator=(Sphere&&) -> Sphere& = default;
+  virtual ~Sphere() = default;
 
   friend auto buildSphere(lina::Vec3 center, double radius, std::size_t subdivisionLevel) -> Sphere;
-
-private:
-  lina::Vec3 center_;
-  std::vector<lina::Vec3> vertices_;
-  std::vector<std::array<std::size_t, 3>> triangles_;
 };
 
 // Build a unit sphere at origo then move it to the target position.

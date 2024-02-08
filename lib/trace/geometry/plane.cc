@@ -3,7 +3,7 @@
 #include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
-#include "lib/trace/geometry/triangle.h"
+#include "lib/trace/geometry/component.h"
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
@@ -21,7 +21,8 @@
 
 namespace trace {
 
-Plane::Plane() : center_{ lina::Vec3{} }, vertices_(4), triangles_(2)
+Plane::Plane()
+  : Component{ lina::Vec3{ 0.0, 0.0, 0.0 }, std::vector<lina::Vec3>(4), std::vector<std::array<std::size_t, 3>>(2) }
 {
   vertices_.at(0) = lina::Vec3{ -0.5, -0.5, 0.0 };
   vertices_.at(1) = lina::Vec3{ -0.5, 0.5, 0.0 };
@@ -30,25 +31,6 @@ Plane::Plane() : center_{ lina::Vec3{} }, vertices_(4), triangles_(2)
 
   triangles_.at(0) = std::array<std::size_t, 3>{ 0, 1, 2 };
   triangles_.at(1) = std::array<std::size_t, 3>{ 2, 1, 3 };
-}
-
-auto Plane::Collide(Ray const& ray) const -> std::optional<Collision>
-{
-  auto closestCollisionData = meshCollide(ray, center_, vertices_, triangles_);
-
-  if (!closestCollisionData) { return std::optional<Collision>{}; }
-  return std::optional<Collision>{ closestCollisionData->first };
-}
-
-auto Plane::Transform(std::span<double const, 16> transformationMatrix) -> void
-{
-  auto center4 = trace::extend3Dto4D(center_, false);
-  center_ = trace::cut4Dto3D(lina::mul(transformationMatrix, center4));
-
-  for (auto& vertex : vertices_) {
-    auto vertex4 = trace::extend3Dto4D(vertex, true);
-    vertex = trace::cut4Dto3D(lina::mul(transformationMatrix, vertex4));
-  }
 }
 
 auto Plane::SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF

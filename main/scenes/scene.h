@@ -2,7 +2,7 @@
 #define RAY_BUSTER_MAIN_SCENE_H
 
 #include "lib/trace/camera.h"
-#include "lib/trace/component.h"
+#include "lib/trace/geometry/component.h"
 #include "lib/trace/material.h"
 
 #include <memory>

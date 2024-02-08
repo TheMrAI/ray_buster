@@ -2,18 +2,13 @@
 
 #include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
-#include "lib/trace/collision.h"
-#include "lib/trace/geometry/triangle.h"
-#include "lib/trace/pdf.h"
-#include "lib/trace/ray.h"
+#include "lib/trace/geometry/component.h"
 #include "lib/trace/transform.h"
 
 #include <array>
 #include <cmath>
 #include <cstddef>
 #include <format>
-#include <optional>
-#include <random>
 #include <span>
 #include <stdexcept>
 #include <unordered_map>
@@ -27,8 +22,7 @@ namespace trace {
 // For that I needed some extra help from:
 // https://math.stackexchange.com/questions/2174594/co-ordinates-of-the-vertices-an-icosahedron-relative-to-its-centroid
 Sphere::Sphere()
-  : center_{ lina::Vec3{ 0.0, 0.0, 0.0 } }, vertices_{ std::vector<lina::Vec3>(12) },
-    triangles_{ std::vector<std::array<std::size_t, 3>>(20) }
+  : Component{ lina::Vec3{ 0.0, 0.0, 0.0 }, std::vector<lina::Vec3>(12), std::vector<std::array<std::size_t, 3>>(20) }
 {
   auto phi = (1.0 + std::sqrt(5.0)) * 0.5;// golden ratio
   auto a = 1.0;
@@ -73,26 +67,6 @@ Sphere::Sphere()
   triangles_.at(18) = std::array<std::size_t, 3>{ 2, 11, 7 };
   triangles_.at(19) = std::array<std::size_t, 3>{ 2, 5, 10 };
 }
-
-auto Sphere::Collide(Ray const& ray) const -> std::optional<Collision>
-{
-  auto closestCollisionData = meshCollide(ray, center_, vertices_, triangles_);
-  if (!closestCollisionData) { return std::optional<Collision>{}; }
-  return std::optional<Collision>{ closestCollisionData->first };
-}
-
-auto Sphere::Transform(std::span<double const, 16> transformationMatrix) -> void
-{
-  auto center4 = trace::extend3Dto4D(center_, false);
-  center_ = trace::cut4Dto3D(lina::mul(transformationMatrix, center4));
-
-  for (auto& vertex : vertices_) {
-    auto vertex4 = trace::extend3Dto4D(vertex, true);
-    vertex = trace::cut4Dto3D(lina::mul(transformationMatrix, vertex4));
-  }
-}
-
-auto Sphere::SamplingPDF(std::mt19937& /*randomGenerator*/, lina::Vec3 const& /*from*/) const -> PDF { return PDF{}; }
 
 auto makeId(std::size_t l, std::size_t r) -> std::pair<std::size_t, std::size_t>
 {

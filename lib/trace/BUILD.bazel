@@ -2,6 +2,7 @@
 cc_library(
     name = "trace",
     srcs = [
+            "geometry/component.cc",
             "geometry/cuboid.cc",
             "geometry/plane.cc",
             "geometry/sphere.cc",
@@ -16,6 +17,7 @@ cc_library(
             "transform.cc",
             ],
     hdrs = [
+            "geometry/component.h",
             "geometry/cuboid.h",
             "geometry/plane.h",
             "geometry/sphere.h",
@@ -26,7 +28,6 @@ cc_library(
             "material/metal.h", 
             "camera.h",
             "collision.h",
-            "component.h",
             "material.h",
             "util.h",
             "pdf.h",

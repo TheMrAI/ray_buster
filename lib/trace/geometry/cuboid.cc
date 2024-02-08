@@ -1,24 +1,16 @@
 #include "cuboid.h"
 
-#include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
-#include "lib/trace/collision.h"
-#include "lib/trace/geometry/triangle.h"
-#include "lib/trace/pdf.h"
-#include "lib/trace/ray.h"
-#include "lib/trace/transform.h"
+#include "lib/trace/geometry/component.h"
 
 #include <array>
 #include <cstddef>
-#include <optional>
-#include <random>
-#include <span>
-#include <utility>
+#include <vector>
 
 namespace trace {
 
 Cuboid::Cuboid(lina::Vec3 center, double width, double height, double depth)
-  : center_{ center }, vertices_(8), triangles_(12)
+  : Component{ center, std::vector<lina::Vec3>(8), std::vector<std::array<std::size_t, 3>>(12) }
 {
   auto halfWidth = width / 2.0;
   auto halfHeight = height / 2.0;
@@ -46,26 +38,5 @@ Cuboid::Cuboid(lina::Vec3 center, double width, double height, double depth)
   triangles_.at(10) = std::array<std::size_t, 3>{ 4, 5, 6 };
   triangles_.at(11) = std::array<std::size_t, 3>{ 6, 5, 7 };
 }
-
-auto Cuboid::Collide(Ray const& ray) const -> std::optional<Collision>
-{
-  auto closestCollisionData = meshCollide(ray, center_, vertices_, triangles_);
-
-  if (!closestCollisionData) { return std::optional<Collision>{}; }
-  return std::optional<Collision>{ closestCollisionData->first };
-}
-
-auto Cuboid::Transform(std::span<double const, 16> transformationMatrix) -> void
-{
-  auto center4 = trace::extend3Dto4D(center_, false);
-  center_ = trace::cut4Dto3D(lina::mul(transformationMatrix, center4));
-
-  for (auto& vertex : vertices_) {
-    auto vertex4 = trace::extend3Dto4D(vertex, true);
-    vertex = trace::cut4Dto3D(lina::mul(transformationMatrix, vertex4));
-  }
-}
-
-auto Cuboid::SamplingPDF(std::mt19937& /*randomGenerator*/, lina::Vec3 const& /*from*/) const -> PDF { return PDF{}; }
 
 }// namespace trace

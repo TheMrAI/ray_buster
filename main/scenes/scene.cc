@@ -1,7 +1,7 @@
 #include "main/scenes/scene.h"
 
 #include "lib/trace/camera.h"
-#include "lib/trace/component.h"
+#include "lib/trace/geometry/component.h"
 #include "lib/trace/material.h"
 
 #include <cstddef>
