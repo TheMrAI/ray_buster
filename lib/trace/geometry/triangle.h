@@ -6,6 +6,7 @@
 #include "lib/trace/ray.h"
 
 #include <array>
+#include <cstddef>
 #include <optional>
 #include <span>
 #include <utility>
@@ -13,15 +14,23 @@
 
 namespace trace {
 
+struct MeshCollision
+{
+  Collision collision;
+  std::size_t vertexId;
+  double distance;
+};
+
 auto triangleCollide(Ray const& ray,
   lina::Vec3 const& center,
   std::vector<lina::Vec3> const& vertices,
-  std::span<std::size_t const, 3> triangle) -> std::optional<std::pair<Collision, double>>;
+  std::vector<std::array<std::size_t, 3>> const& triangles,
+  std::size_t triangleId) -> std::optional<MeshCollision>;
 
 auto meshCollide(Ray const& ray,
   lina::Vec3 const& center,
   std::vector<lina::Vec3> const& vertices,
-  std::vector<std::array<std::size_t, 3>> const& triangles) -> std::optional<std::pair<Collision, double>>;
+  std::vector<std::array<std::size_t, 3>> const& triangles) -> std::optional<MeshCollision>;
 
 }// namespace trace
 

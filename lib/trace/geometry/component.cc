@@ -28,7 +28,7 @@ auto Component::Collide(Ray const& ray) const -> std::optional<Collision>
 {
   auto closestCollisionData = meshCollide(ray, center_, vertices_, triangles_);
   if (!closestCollisionData) { return std::optional<Collision>{}; }
-  return std::optional<Collision>{ closestCollisionData->first };
+  return std::optional<Collision>{ closestCollisionData->collision };
 }
 
 // Apply the linear transformation matrix to the object.
