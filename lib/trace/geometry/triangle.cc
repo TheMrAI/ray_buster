@@ -19,36 +19,37 @@ auto triangleCollide(Ray const& ray,
   std::size_t triangleId) -> std::optional<MeshCollision>
 {
   auto const& triangle = triangles[triangleId];
-  auto localizedTriangle = std::array<lina::Vec3, 3>{
+  auto const localizedTriangle = std::array<lina::Vec3, 3>{
     vertices[triangle[0]] + center, vertices[triangle[1]] + center, vertices[triangle[2]] + center
   };
-  auto u = localizedTriangle[2] - localizedTriangle[0];
-  auto v = localizedTriangle[1] - localizedTriangle[0];
+  auto const u = localizedTriangle[2] - localizedTriangle[0];
+  auto const v = localizedTriangle[1] - localizedTriangle[0];
 
   // lina::cross(u, v) is positive if u is to the right of u
   // PS.: Every time I see this code I have to double check.
-  auto normal = lina::unit(lina::cross(u, v));
-  auto D = lina::dot(normal, localizedTriangle[0]);
+  auto const n = lina::cross(u, v);
+  auto const normal = lina::unit(n);
+  auto const D = lina::dot(normal, localizedTriangle[0]);
 
-  auto denominator = lina::dot(normal, ray.Direction());
+  auto const denominator = lina::dot(normal, ray.Direction());
   if (denominator == 0.0) { return std::optional<MeshCollision>{}; }
 
-  auto t = (D - lina::dot(normal, ray.Source())) / denominator;
+  auto const t = (D - lina::dot(normal, ray.Source())) / denominator;
   if (t <= 0.0) { return std::optional<MeshCollision>{}; }
-  auto collisionPoint = ray.Source() + ray.Direction() * t;
+  auto const collisionPoint = ray.Source() + ray.Direction() * t;
 
-  auto planeDelta = collisionPoint - localizedTriangle[0];
-  auto common = normal / (lina::dot(normal, lina::cross(u, v)));
-  auto alpha = lina::dot(common, lina::cross(planeDelta, v));
-  auto beta = lina::dot(common, lina::cross(u, planeDelta));
+  auto const planeDelta = collisionPoint - localizedTriangle[0];
+  auto const common = n / lina::dot(n, n);
+  auto const alpha = lina::dot(common, lina::cross(planeDelta, v));
+  auto const beta = lina::dot(common, lina::cross(u, planeDelta));
 
-  auto scalarSum = alpha + beta;
+  auto const scalarSum = alpha + beta;
   if (0.0 > alpha || alpha > 1.0 || 0.0 > beta || beta > 1.0 || scalarSum > 1.0) {
     return std::optional<MeshCollision>{};
   }
 
   auto collision = Collision{};
-  std::swap(collision.point, collisionPoint);
+  collision.point = collisionPoint;
   collision.normal = normal;
   collision.frontFace = lina::dot(normal, ray.Direction()) < 0.0;
 
