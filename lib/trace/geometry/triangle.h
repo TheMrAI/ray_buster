@@ -3,6 +3,7 @@
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
+#include "lib/trace/geometry/triangle_data.h"
 #include "lib/trace/ray.h"
 
 #include <array>
@@ -22,15 +23,12 @@ struct MeshCollision
 };
 
 auto triangleCollide(Ray const& ray,
-  lina::Vec3 const& center,
-  std::vector<lina::Vec3> const& vertices,
-  std::vector<std::array<std::size_t, 3>> const& triangles,
+  std::vector<TriangleData> const& trianglesData,
   std::size_t triangleId) -> std::optional<MeshCollision>;
 
 auto meshCollide(Ray const& ray,
-  lina::Vec3 const& center,
-  std::vector<lina::Vec3> const& vertices,
-  std::vector<std::array<std::size_t, 3>> const& triangles) -> std::optional<MeshCollision>;
+  std::vector<std::array<std::size_t, 3>> const& triangles,
+  std::vector<TriangleData> const& trianglesData) -> std::optional<MeshCollision>;
 
 }// namespace trace
 

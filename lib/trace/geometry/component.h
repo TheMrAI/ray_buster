@@ -3,6 +3,7 @@
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
+#include "lib/trace/geometry/triangle_data.h"
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 
@@ -16,7 +17,10 @@ class Component
 {
 public:
   Component() = default;
-  Component(lina::Vec3 center, std::vector<lina::Vec3> vertices, std::vector<std::array<std::size_t, 3>> triangles);
+  Component(lina::Vec3 center,
+    std::vector<lina::Vec3> vertices,
+    std::vector<std::array<std::size_t, 3>> triangles,
+    std::vector<TriangleData> triangleData);
   Component(Component const&) = default;
   Component(Component&&) = default;
   auto operator=(Component const&) -> Component& = default;
@@ -29,9 +33,13 @@ public:
   [[nodiscard]] virtual auto SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF;
 
 protected:
+  auto updateTriangleData() -> void;
+
+protected:
   lina::Vec3 center_;
   std::vector<lina::Vec3> vertices_;
   std::vector<std::array<std::size_t, 3>> triangles_;
+  std::vector<TriangleData> trianglesData_;
 };
 
 }// namespace trace

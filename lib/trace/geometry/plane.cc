@@ -4,6 +4,7 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/geometry/component.h"
+#include "lib/trace/geometry/triangle_data.h"
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
@@ -22,7 +23,10 @@
 namespace trace {
 
 Plane::Plane()
-  : Component{ lina::Vec3{ 0.0, 0.0, 0.0 }, std::vector<lina::Vec3>(4), std::vector<std::array<std::size_t, 3>>(2) }
+  : Component{ lina::Vec3{ 0.0, 0.0, 0.0 },
+      std::vector<lina::Vec3>(4),
+      std::vector<std::array<std::size_t, 3>>(2),
+      std::vector<TriangleData>(2) }
 {
   vertices_.at(0) = lina::Vec3{ -0.5, -0.5, 0.0 };
   vertices_.at(1) = lina::Vec3{ -0.5, 0.5, 0.0 };
@@ -31,6 +35,8 @@ Plane::Plane()
 
   triangles_.at(0) = std::array<std::size_t, 3>{ 0, 1, 2 };
   triangles_.at(1) = std::array<std::size_t, 3>{ 2, 1, 3 };
+
+  updateTriangleData();
 }
 
 auto Plane::SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF

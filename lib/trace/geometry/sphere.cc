@@ -22,7 +22,7 @@ namespace trace {
 // For that I needed some extra help from:
 // https://math.stackexchange.com/questions/2174594/co-ordinates-of-the-vertices-an-icosahedron-relative-to-its-centroid
 Sphere::Sphere()
-  : Component{ lina::Vec3{ 0.0, 0.0, 0.0 }, std::vector<lina::Vec3>(12), std::vector<std::array<std::size_t, 3>>(20) }
+  : Component{ lina::Vec3{ 0.0, 0.0, 0.0 }, std::vector<lina::Vec3>(12), std::vector<std::array<std::size_t, 3>>(20), std::vector<TriangleData>(20) }
 {
   auto phi = (1.0 + std::sqrt(5.0)) * 0.5;// golden ratio
   auto a = 1.0;
@@ -164,6 +164,7 @@ auto buildSphere(lina::Vec3 center, double radius, std::size_t subdivisionLevel)
   }
 
   auto transformMatrix = lina::mul(trace::translate(center), trace::scale(lina::Vec3{ radius, radius, radius }));
+  sphere.trianglesData_ = std::vector<TriangleData>(sphere.triangles_.size());
   sphere.Transform(transformMatrix);
 
   return sphere;

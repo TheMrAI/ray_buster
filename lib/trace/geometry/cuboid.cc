@@ -2,6 +2,7 @@
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/geometry/component.h"
+#include "lib/trace/geometry/triangle_data.h"
 
 #include <array>
 #include <cstddef>
@@ -10,7 +11,10 @@
 namespace trace {
 
 Cuboid::Cuboid(lina::Vec3 center, double width, double height, double depth)
-  : Component{ center, std::vector<lina::Vec3>(8), std::vector<std::array<std::size_t, 3>>(12) }
+  : Component{ center,
+      std::vector<lina::Vec3>(8),
+      std::vector<std::array<std::size_t, 3>>(12),
+      std::vector<TriangleData>(12) }
 {
   auto halfWidth = width / 2.0;
   auto halfHeight = height / 2.0;
@@ -37,6 +41,8 @@ Cuboid::Cuboid(lina::Vec3 center, double width, double height, double depth)
   triangles_.at(9) = std::array<std::size_t, 3>{ 1, 7, 5 };
   triangles_.at(10) = std::array<std::size_t, 3>{ 4, 5, 6 };
   triangles_.at(11) = std::array<std::size_t, 3>{ 6, 5, 7 };
+
+  updateTriangleData();
 }
 
 }// namespace trace
