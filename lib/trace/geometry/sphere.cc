@@ -134,8 +134,6 @@ auto loopSubdivision(std::vector<lina::Vec3> const& vertices, std::vector<std::a
       insertOrRetrieve(makeId(mappedVertexIds.at(2), mappedVertexIds.at(0)), subEdgeVertexIds, updatedVertices);
     // add triangles
     updatedTriangles.emplace_back(
-      std::array<std::size_t, 3>{ mappedVertexIds.at(0), mappedVertexIds.at(1), mappedVertexIds.at(2) });
-    updatedTriangles.emplace_back(
       std::array<std::size_t, 3>{ subVertexIds.at(2), mappedVertexIds.at(0), subVertexIds.at(0) });
     updatedTriangles.emplace_back(
       std::array<std::size_t, 3>{ subVertexIds.at(0), mappedVertexIds.at(1), subVertexIds.at(1) });
