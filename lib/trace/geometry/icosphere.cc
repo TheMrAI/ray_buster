@@ -1,20 +1,17 @@
-#include "sphere.h"
+#include "lib/trace/geometry/icosphere.h"
 
 #include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
-#include "lib/trace/collision.h"
 #include "lib/trace/geometry/component.h"
 #include "lib/trace/geometry/mesh.h"
 #include "lib/trace/geometry/triangle_data.h"
 #include "lib/trace/geometry/vertex_data.h"
-#include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
 
 #include <array>
 #include <cmath>
 #include <cstddef>
 #include <format>
-#include <optional>
 #include <span>
 #include <stdexcept>
 #include <unordered_map>
@@ -27,7 +24,7 @@ namespace trace {
 // Very good article, but not enough to generate our icosahedron.
 // For that I needed some extra help from:
 // https://math.stackexchange.com/questions/2174594/co-ordinates-of-the-vertices-an-icosahedron-relative-to-its-centroid
-Sphere::Sphere()
+Icosphere::Icosphere()
   : Component{ Mesh{ lina::Vec3{ 0.0, 0.0, 0.0 },
       std::vector<lina::Vec3>(12),
       std::vector<VertexData>(12),
@@ -76,22 +73,6 @@ Sphere::Sphere()
   mesh_.triangles.at(17) = std::array<std::size_t, 3>{ 5, 3, 8 };
   mesh_.triangles.at(18) = std::array<std::size_t, 3>{ 2, 11, 7 };
   mesh_.triangles.at(19) = std::array<std::size_t, 3>{ 2, 5, 10 };
-}
-
-auto Sphere::Collide(Ray const& ray) const -> std::optional<Collision>
-{
-  auto closestCollisionData = meshCollide(ray, mesh_.triangles, mesh_.triangleData);
-  if (!closestCollisionData) { return std::optional<Collision>{}; }
-
-  // Adjust normal vector of collision for Gouraud shading
-  auto const& normalTwo = mesh_.vertexData[mesh_.triangles[closestCollisionData->triangleId][2]].normal;
-  auto const& normalOne = mesh_.vertexData[mesh_.triangles[closestCollisionData->triangleId][1]].normal;
-  auto const& normalZero = mesh_.vertexData[mesh_.triangles[closestCollisionData->triangleId][0]].normal;
-  closestCollisionData->collision.normal = closestCollisionData->alpha * normalTwo
-                                           + closestCollisionData->beta * normalOne
-                                           + closestCollisionData->gamma * normalZero;
-
-  return std::optional<Collision>{ closestCollisionData->collision };
 }
 
 auto makeId(std::size_t l, std::size_t r) -> std::pair<std::size_t, std::size_t>
@@ -154,7 +135,7 @@ auto loopSubdivision(std::vector<lina::Vec3> const& vertices, std::vector<std::a
   return std::make_pair(std::move(updatedVertices), std::move(updatedTriangles));
 }
 
-auto Sphere::updateTriangleData() -> void
+auto Icosphere::updateTriangleData() -> void
 {
   Component::updateTriangleData();
   // temporarily collect all the neighboring triangle ids for each vertex id
@@ -195,12 +176,12 @@ auto Sphere::updateTriangleData() -> void
   }
 }
 
-auto buildSphere(lina::Vec3 center, double radius, std::size_t subdivisionLevel) -> Sphere
+auto buildIcosphere(lina::Vec3 center, double radius, std::size_t subdivisionLevel) -> Icosphere
 {
   radius = std::fabs(radius);
   if (radius < 0.00001) { throw std::logic_error(std::format("Radius must be bigger than 0.00001. Got: {}", radius)); }
 
-  auto sphere = Sphere{};
+  auto sphere = Icosphere{};
   for (auto i = std::size_t{ 0 }; i < subdivisionLevel; ++i) {
     // subdivide
     auto [updatedVertices, updatedTriangles] = loopSubdivision(sphere.mesh_.vertices, sphere.mesh_.triangles);
