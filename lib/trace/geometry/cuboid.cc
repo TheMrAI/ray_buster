@@ -3,6 +3,7 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/geometry/component.h"
 #include "lib/trace/geometry/triangle_data.h"
+#include "lib/trace/geometry/vertex_data.h"
 
 #include <array>
 #include <cstddef>
@@ -13,6 +14,7 @@ namespace trace {
 Cuboid::Cuboid(lina::Vec3 center, double width, double height, double depth)
   : Component{ center,
       std::vector<lina::Vec3>(8),
+      std::vector<VertexData>(),// no need
       std::vector<std::array<std::size_t, 3>>(12),
       std::vector<TriangleData>(12) }
 {

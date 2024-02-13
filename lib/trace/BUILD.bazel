@@ -23,6 +23,7 @@ cc_library(
             "geometry/sphere.h",
             "geometry/triangle.h",
             "geometry/triangle_data.h",
+            "geometry/vertex_data.h",
             "material/dielectric.h",
             "material/emissive.h",
             "material/lambertian.h", 

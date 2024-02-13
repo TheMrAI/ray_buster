@@ -5,11 +5,13 @@
 #include "lib/trace/collision.h"
 #include "lib/trace/geometry/triangle.h"
 #include "lib/trace/geometry/triangle_data.h"
+#include "lib/trace/geometry/vertex_data.h"
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
 
 #include <array>
+#include <cassert>
 #include <cstddef>
 #include <optional>
 #include <random>
@@ -21,10 +23,11 @@ namespace trace {
 
 Component::Component(lina::Vec3 center,
   std::vector<lina::Vec3> vertices,
+  std::vector<VertexData> vertexData,
   std::vector<std::array<std::size_t, 3>> triangles,
   std::vector<TriangleData> triangleData)
-  : center_{ center }, vertices_{ std::move(vertices) }, triangles_{ std::move(triangles) },
-    trianglesData_{ std::move(triangleData) }
+  : center_{ center }, vertices_{ std::move(vertices) }, verticesData_{ std::move(vertexData) },
+    triangles_{ std::move(triangles) }, trianglesData_{ std::move(triangleData) }
 {}
 
 auto Component::Collide(Ray const& ray) const -> std::optional<Collision>

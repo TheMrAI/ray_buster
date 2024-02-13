@@ -40,7 +40,7 @@ auto triangleCollide(Ray const& ray,
   collision.normal = triangleData.normal;
   collision.frontFace = lina::dot(triangleData.normal, ray.Direction()) < 0.0;
 
-  return MeshCollision(collision, triangleId, t);
+  return MeshCollision(collision, triangleId, t, alpha, beta, 1.0 - alpha - beta);
 }
 
 // Just copy-pasting these here so that we can repurpose them here quickly,

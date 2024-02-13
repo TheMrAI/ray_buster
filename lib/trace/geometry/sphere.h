@@ -26,7 +26,12 @@ public:
   auto operator=(Sphere&&) -> Sphere& = default;
   virtual ~Sphere() = default;
 
+  auto Collide(Ray const& ray) const -> std::optional<Collision> override;
+
   friend auto buildSphere(lina::Vec3 center, double radius, std::size_t subdivisionLevel) -> Sphere;
+
+protected:
+  auto updateTriangleData() -> void override;
 };
 
 // Build a unit sphere at origo then move it to the target position.

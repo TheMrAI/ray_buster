@@ -2,13 +2,19 @@
 
 #include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
+#include "lib/trace/collision.h"
 #include "lib/trace/geometry/component.h"
+#include "lib/trace/geometry/triangle.h"
+#include "lib/trace/geometry/triangle_data.h"
+#include "lib/trace/geometry/vertex_data.h"
+#include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
 
 #include <array>
 #include <cmath>
 #include <cstddef>
 #include <format>
+#include <optional>
 #include <span>
 #include <stdexcept>
 #include <unordered_map>
@@ -22,7 +28,11 @@ namespace trace {
 // For that I needed some extra help from:
 // https://math.stackexchange.com/questions/2174594/co-ordinates-of-the-vertices-an-icosahedron-relative-to-its-centroid
 Sphere::Sphere()
-  : Component{ lina::Vec3{ 0.0, 0.0, 0.0 }, std::vector<lina::Vec3>(12), std::vector<std::array<std::size_t, 3>>(20), std::vector<TriangleData>(20) }
+  : Component{ lina::Vec3{ 0.0, 0.0, 0.0 },
+      std::vector<lina::Vec3>(12),
+      std::vector<VertexData>(12),
+      std::vector<std::array<std::size_t, 3>>(20),
+      std::vector<TriangleData>(20) }
 {
   auto phi = (1.0 + std::sqrt(5.0)) * 0.5;// golden ratio
   auto a = 1.0;
@@ -66,6 +76,22 @@ Sphere::Sphere()
   triangles_.at(17) = std::array<std::size_t, 3>{ 5, 3, 8 };
   triangles_.at(18) = std::array<std::size_t, 3>{ 2, 11, 7 };
   triangles_.at(19) = std::array<std::size_t, 3>{ 2, 5, 10 };
+}
+
+auto Sphere::Collide(Ray const& ray) const -> std::optional<Collision>
+{
+  auto closestCollisionData = meshCollide(ray, triangles_, trianglesData_);
+  if (!closestCollisionData) { return std::optional<Collision>{}; }
+
+  // Adjust normal vector of collision for Gouraud shading
+  auto const& normalTwo = verticesData_[triangles_[closestCollisionData->triangleId][2]].normal;
+  auto const& normalOne = verticesData_[triangles_[closestCollisionData->triangleId][1]].normal;
+  auto const& normalZero = verticesData_[triangles_[closestCollisionData->triangleId][0]].normal;
+  closestCollisionData->collision.normal = closestCollisionData->alpha * normalTwo
+                                           + closestCollisionData->beta * normalOne
+                                           + closestCollisionData->gamma * normalZero;
+
+  return std::optional<Collision>{ closestCollisionData->collision };
 }
 
 auto makeId(std::size_t l, std::size_t r) -> std::pair<std::size_t, std::size_t>
@@ -146,6 +172,47 @@ auto loopSubdivision(std::vector<lina::Vec3> const& vertices, std::vector<std::a
   return std::make_pair(updatedVertices, updatedTriangles);
 }
 
+auto Sphere::updateTriangleData() -> void
+{
+  Component::updateTriangleData();
+  // temporarily collect all the neighboring triangle ids for each vertex id
+  auto vertexTriangles = std::unordered_map<std::size_t, std::vector<std::size_t>>{};
+
+  for (auto triangleId = std::size_t{ 0 }; triangleId < triangles_.size(); ++triangleId) {
+    auto const& triangle = triangles_[triangleId];
+
+    auto entryOne = vertexTriangles.find(triangle.at(0));
+    if (entryOne == vertexTriangles.end()) {
+      auto result = vertexTriangles.insert({ triangle.at(0), std::vector<std::size_t>{} });
+      entryOne = result.first;
+    }
+    entryOne->second.emplace_back(triangleId);
+
+    auto entryTwo = vertexTriangles.find(triangle.at(1));
+    if (entryTwo == vertexTriangles.end()) {
+      auto result = vertexTriangles.insert({ triangle.at(1), std::vector<std::size_t>{} });
+      entryTwo = result.first;
+    }
+    entryTwo->second.emplace_back(triangleId);
+
+    auto entryThree = vertexTriangles.find(triangle.at(2));
+    if (entryThree == vertexTriangles.end()) {
+      auto result = vertexTriangles.insert({ triangle.at(2), std::vector<std::size_t>{} });
+      entryThree = result.first;
+    }
+    entryThree->second.emplace_back(triangleId);
+  }
+
+  for (auto vertexId = std::size_t{ 0 }; vertexId < vertices_.size(); ++vertexId) {
+    auto const& triangleNeighbors = vertexTriangles.at(vertexId);
+
+    auto interpolatedVertexNormal = lina::Vec3{};
+    for (auto const& element : triangleNeighbors) { interpolatedVertexNormal += trianglesData_.at(element).normal; }
+
+    verticesData_[vertexId] = VertexData{ interpolatedVertexNormal / static_cast<double>(triangleNeighbors.size()) };
+  }
+}
+
 auto buildSphere(lina::Vec3 center, double radius, std::size_t subdivisionLevel) -> Sphere
 {
   radius = std::fabs(radius);
@@ -162,10 +229,14 @@ auto buildSphere(lina::Vec3 center, double radius, std::size_t subdivisionLevel)
   }
 
   auto transformMatrix = lina::mul(trace::translate(center), trace::scale(lina::Vec3{ radius, radius, radius }));
+
+  // update the size of the trianglesData_ storage
+  sphere.verticesData_ = std::vector<VertexData>(sphere.vertices_.size());
   sphere.trianglesData_ = std::vector<TriangleData>(sphere.triangles_.size());
   sphere.Transform(transformMatrix);
 
   return sphere;
 }
+
 
 }// namespace trace

@@ -18,8 +18,12 @@ namespace trace {
 struct MeshCollision
 {
   Collision collision;
-  std::size_t vertexId;
+  std::size_t triangleId;
   double distance;
+  // Collision in Barycentric coordinates
+  double alpha = 0.0;// weight for 2nd triangle point
+  double beta = 0.0;// weight for 1st triangle point
+  double gamma = 0.0;// weight for 0th triangle point
 };
 
 auto triangleCollide(Ray const& ray,

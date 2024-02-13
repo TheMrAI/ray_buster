@@ -5,6 +5,7 @@
 #include "lib/trace/collision.h"
 #include "lib/trace/geometry/component.h"
 #include "lib/trace/geometry/triangle_data.h"
+#include "lib/trace/geometry/vertex_data.h"
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
@@ -25,6 +26,7 @@ namespace trace {
 Plane::Plane()
   : Component{ lina::Vec3{ 0.0, 0.0, 0.0 },
       std::vector<lina::Vec3>(4),
+      std::vector<VertexData>(),// no need
       std::vector<std::array<std::size_t, 3>>(2),
       std::vector<TriangleData>(2) }
 {
