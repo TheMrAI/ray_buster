@@ -1,4 +1,4 @@
-#include "main/scenes/test/sphere.h"
+#include "main/scenes/test/icosphere.h"
 
 #include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
@@ -22,7 +22,7 @@ namespace scene::test {
 constexpr auto planeColor = lina::Vec3{ 0.75, 0.75, 0.75 };
 constexpr auto sphereColor = lina::Vec3{ 0.9296, 0.9179, 0.8476 };
 
-auto sphereMaterial(RenderSettings const& settings) -> Composition
+auto icosphereMaterial(RenderSettings const& settings) -> Composition
 {
   auto const camera = trace::Camera{ settings.imageWidth,
     settings.imageHeight,
@@ -55,7 +55,7 @@ auto sphereMaterial(RenderSettings const& settings) -> Composition
   return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
 }
 
-auto sphereScale(RenderSettings const& settings) -> Composition
+auto icosphereScale(RenderSettings const& settings) -> Composition
 {
   auto const camera = trace::Camera{ settings.imageWidth,
     settings.imageHeight,
@@ -100,7 +100,7 @@ auto sphereScale(RenderSettings const& settings) -> Composition
   return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
 }
 
-auto sphereRotate(RenderSettings const& settings) -> Composition
+auto icosphereRotate(RenderSettings const& settings) -> Composition
 {
   auto const camera = trace::Camera{ settings.imageWidth,
     settings.imageHeight,
@@ -142,7 +142,7 @@ auto sphereRotate(RenderSettings const& settings) -> Composition
   return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
 }
 
-auto sphereEmissive(RenderSettings const& settings) -> Composition
+auto icosphereEmissive(RenderSettings const& settings) -> Composition
 {
   auto const camera = trace::Camera{ settings.imageWidth,
     settings.imageHeight,

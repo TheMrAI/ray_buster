@@ -1,5 +1,5 @@
-#ifndef RAY_BUSTER_LIB_TRACE_GEOMETRY_SPHERE_H_
-#define RAY_BUSTER_LIB_TRACE_GEOMETRY_SPHERE_H_
+#ifndef RAY_BUSTER_LIB_TRACE_GEOMETRY_ICOSPHERE_H_
+#define RAY_BUSTER_LIB_TRACE_GEOMETRY_ICOSPHERE_H_
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"

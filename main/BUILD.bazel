@@ -25,7 +25,7 @@ cc_library(
             "scenes/scene_settings.cc",
             "scenes/test/cuboid.cc",
             "scenes/test/plane.cc",
-            "scenes/test/sphere.cc",
+            "scenes/test/icosphere.cc",
     ],
     hdrs = [
             "scenes/collection/cornell_box.h",
@@ -33,7 +33,7 @@ cc_library(
             "scenes/scene_settings.h",
             "scenes/test/cuboid.h",
             "scenes/test/plane.h",
-            "scenes/test/sphere.h",
+            "scenes/test/icosphere.h",
     ],
     deps = ["//lib/lina:lina", "//lib/trace:trace"],
 )
