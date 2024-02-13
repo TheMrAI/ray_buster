@@ -79,7 +79,7 @@ auto cuboidScale(RenderSettings const& settings) -> Composition
     lina::mul(trace::scale(lina::Vec3{ 1.0, 2.0, 1.0 }), trace::translate(-cuboidOneCenter))));
   sceneElements.emplace_back(std::move(cuboidOne), std::make_unique<trace::Lambertian>(cuboidColor));
 
-  auto cuboidTwoCenter = lina::Vec3{ -0.0, 0.5, 0.5 };
+  auto cuboidTwoCenter = lina::Vec3{ 0.0, 0.5, 0.5 };
   auto cuboidTwo = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidTwoCenter, 1.0, 1.0, 1.0));
   cuboidTwo->Transform(lina::mul(trace::translate(cuboidTwoCenter),
     lina::mul(trace::scale(lina::Vec3{ 2.0, 1.0, 1.0 }), trace::translate(-cuboidTwoCenter))));

@@ -6,9 +6,8 @@
 namespace scene::test {
 
 auto sphereMaterial(RenderSettings const& settings) -> Composition;
-// don't test scaling either, as it is no-op for now
-// auto sphere_scale() -> Composition;
-// we don't test sphere rotation
+auto sphereScale(RenderSettings const& settings) -> Composition;
+auto sphereRotate(RenderSettings const& settings) -> Composition;
 auto sphereEmissive(RenderSettings const& settings) -> Composition;
 
 }// namespace scene::test

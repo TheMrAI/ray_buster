@@ -85,13 +85,23 @@ auto configurations() -> std::map<std::string, Configuration>
           scene::RenderSettings const& settings) -> scene::Composition { return scene::test::planeEmissive(settings); },
         defaultRenderSettings } },
     { "test-sphere-material",
-      Configuration{ "3 spheres with lambertian, dielectric and metallic surfaces.",
+      Configuration{ "3 icospheres with lambertian, dielectric and metallic surfaces.",
         [](scene::RenderSettings const& settings) -> scene::Composition {
           return scene::test::sphereMaterial(settings);
         },
         defaultRenderSettings } },
+    { "test-sphere-scale",
+      Configuration{ "4 initial icospheres are scaled. 3 icospheres are scaled along only one dimension while the "
+                     "fourth is scaled uniformly.",
+        [](scene::RenderSettings const& settings) -> scene::Composition { return scene::test::sphereScale(settings); },
+        defaultRenderSettings } },
+    { "test-sphere-rotate",
+      Configuration{
+        "3 icospheres are rotated along only one axis. The icospheres are stretched to make the rotation possible.",
+        [](scene::RenderSettings const& settings) -> scene::Composition { return scene::test::sphereRotate(settings); },
+        defaultRenderSettings } },
     { "test-sphere-emissive",
-      Configuration{ "1 sphere with an emissive material.",
+      Configuration{ "1 icosphere with an emissive material.",
         [](scene::RenderSettings const& settings) -> scene::Composition {
           return scene::test::sphereEmissive(settings);
         },
