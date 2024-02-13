@@ -27,8 +27,6 @@ enum class Orientation { Aligned, Reverse };
 class Plane : public Component
 {
 public:
-  // The plane constructed plane will always have a size of 1.0 * 1.0.
-  Plane();
   Plane(Plane const&) = default;
   Plane(Plane&&) = default;
   auto operator=(Plane const&) -> Plane& = default;
@@ -36,12 +34,18 @@ public:
   virtual ~Plane() = default;
 
   [[nodiscard]] auto SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF override;
+  friend auto
+    buildPlane(lina::Vec3 center, double width, double depth, Axis normalAxis, Orientation orientation) -> Plane;
+
+private:
+  // The plane constructed plane will always have a size of 1.0 * 1.0.
+  Plane();
 };
 
 // Build a plane conveniently oriented along any of the major axis.
-auto buildPlane(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 },
-  double width = 0.0,
-  double depth = 0.0,
+[[nodiscard]] auto buildPlane(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 },
+  double width = 1.0,
+  double depth = 1.0,
   Axis normalAxis = Axis::Z,
   Orientation orientation = Orientation::Aligned) -> Plane;
 

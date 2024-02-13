@@ -19,7 +19,6 @@ namespace trace {
 class Sphere : public Component
 {
 public:
-  Sphere();
   Sphere(Sphere const&) = default;
   Sphere(Sphere&&) = default;
   auto operator=(Sphere const&) -> Sphere& = default;
@@ -32,10 +31,13 @@ public:
 
 protected:
   auto updateTriangleData() -> void override;
+
+private:
+  Sphere();
 };
 
 // Build a unit sphere at origo then move it to the target position.
-auto buildSphere(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 },
+[[nodiscard]] auto buildSphere(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 },
   double radius = 1.0,
   std::size_t subdivisionLevel = 2) -> Sphere;
 

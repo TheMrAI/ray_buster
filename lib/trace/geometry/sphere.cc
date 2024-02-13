@@ -4,7 +4,7 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/geometry/component.h"
-#include "lib/trace/geometry/triangle.h"
+#include "lib/trace/geometry/mesh.h"
 #include "lib/trace/geometry/triangle_data.h"
 #include "lib/trace/geometry/vertex_data.h"
 #include "lib/trace/ray.h"
@@ -28,11 +28,11 @@ namespace trace {
 // For that I needed some extra help from:
 // https://math.stackexchange.com/questions/2174594/co-ordinates-of-the-vertices-an-icosahedron-relative-to-its-centroid
 Sphere::Sphere()
-  : Component{ lina::Vec3{ 0.0, 0.0, 0.0 },
+  : Component{ Mesh{ lina::Vec3{ 0.0, 0.0, 0.0 },
       std::vector<lina::Vec3>(12),
       std::vector<VertexData>(12),
       std::vector<std::array<std::size_t, 3>>(20),
-      std::vector<TriangleData>(20) }
+      std::vector<TriangleData>(20) } }
 {
   auto phi = (1.0 + std::sqrt(5.0)) * 0.5;// golden ratio
   auto a = 1.0;
@@ -40,53 +40,53 @@ Sphere::Sphere()
   // The initial "sphere" will only be an icosahedron
   // Vertexes described by the 3 mutually perpendicular rectangles.
   // For each vertex we take the unit vector, so final result can be inscribed into a unit sphere.
-  vertices_.at(0) = lina::unit(lina::Vec3{ -a, 0.0, phi });
-  vertices_.at(1) = lina::unit(lina::Vec3{ a, 0.0, phi });
-  vertices_.at(2) = lina::unit(lina::Vec3{ -a, 0.0, -phi });
-  vertices_.at(3) = lina::unit(lina::Vec3{ a, 0.0, -phi });
-  vertices_.at(4) = lina::unit(lina::Vec3{ 0.0, phi, a });
-  vertices_.at(5) = lina::unit(lina::Vec3{ 0.0, phi, -a });
-  vertices_.at(6) = lina::unit(lina::Vec3{ 0.0, -phi, a });
-  vertices_.at(7) = lina::unit(lina::Vec3{ 0.0, -phi, -a });
-  vertices_.at(8) = lina::unit(lina::Vec3{ phi, a, 0.0 });
-  vertices_.at(9) = lina::unit(lina::Vec3{ phi, -a, 0.0 });
-  vertices_.at(10) = lina::unit(lina::Vec3{ -phi, a, 0.0 });
-  vertices_.at(11) = lina::unit(lina::Vec3{ -phi, -a, 0.0 });
+  mesh_.vertices.at(0) = lina::unit(lina::Vec3{ -a, 0.0, phi });
+  mesh_.vertices.at(1) = lina::unit(lina::Vec3{ a, 0.0, phi });
+  mesh_.vertices.at(2) = lina::unit(lina::Vec3{ -a, 0.0, -phi });
+  mesh_.vertices.at(3) = lina::unit(lina::Vec3{ a, 0.0, -phi });
+  mesh_.vertices.at(4) = lina::unit(lina::Vec3{ 0.0, phi, a });
+  mesh_.vertices.at(5) = lina::unit(lina::Vec3{ 0.0, phi, -a });
+  mesh_.vertices.at(6) = lina::unit(lina::Vec3{ 0.0, -phi, a });
+  mesh_.vertices.at(7) = lina::unit(lina::Vec3{ 0.0, -phi, -a });
+  mesh_.vertices.at(8) = lina::unit(lina::Vec3{ phi, a, 0.0 });
+  mesh_.vertices.at(9) = lina::unit(lina::Vec3{ phi, -a, 0.0 });
+  mesh_.vertices.at(10) = lina::unit(lina::Vec3{ -phi, a, 0.0 });
+  mesh_.vertices.at(11) = lina::unit(lina::Vec3{ -phi, -a, 0.0 });
 
   // The order of the vertices matters! Always using a clockwise
   // order, such that by default the normal will point outwards
   // from the object.
-  triangles_.at(0) = std::array<std::size_t, 3>{ 6, 0, 1 };
-  triangles_.at(1) = std::array<std::size_t, 3>{ 4, 1, 0 };
-  triangles_.at(2) = std::array<std::size_t, 3>{ 6, 1, 9 };
-  triangles_.at(3) = std::array<std::size_t, 3>{ 8, 1, 4 };
-  triangles_.at(4) = std::array<std::size_t, 3>{ 0, 6, 11 };
-  triangles_.at(5) = std::array<std::size_t, 3>{ 0, 10, 4 };
-  triangles_.at(6) = std::array<std::size_t, 3>{ 9, 1, 8 };
-  triangles_.at(7) = std::array<std::size_t, 3>{ 10, 0, 11 };
-  triangles_.at(8) = std::array<std::size_t, 3>{ 6, 9, 7 };
-  triangles_.at(9) = std::array<std::size_t, 3>{ 11, 6, 7 };
-  triangles_.at(10) = std::array<std::size_t, 3>{ 5, 8, 4 };
-  triangles_.at(11) = std::array<std::size_t, 3>{ 5, 4, 10 };
-  triangles_.at(12) = std::array<std::size_t, 3>{ 2, 7, 3 };
-  triangles_.at(13) = std::array<std::size_t, 3>{ 3, 5, 2 };
-  triangles_.at(14) = std::array<std::size_t, 3>{ 3, 9, 8 };
-  triangles_.at(15) = std::array<std::size_t, 3>{ 2, 10, 11 };
-  triangles_.at(16) = std::array<std::size_t, 3>{ 3, 7, 9 };
-  triangles_.at(17) = std::array<std::size_t, 3>{ 5, 3, 8 };
-  triangles_.at(18) = std::array<std::size_t, 3>{ 2, 11, 7 };
-  triangles_.at(19) = std::array<std::size_t, 3>{ 2, 5, 10 };
+  mesh_.triangles.at(0) = std::array<std::size_t, 3>{ 6, 0, 1 };
+  mesh_.triangles.at(1) = std::array<std::size_t, 3>{ 4, 1, 0 };
+  mesh_.triangles.at(2) = std::array<std::size_t, 3>{ 6, 1, 9 };
+  mesh_.triangles.at(3) = std::array<std::size_t, 3>{ 8, 1, 4 };
+  mesh_.triangles.at(4) = std::array<std::size_t, 3>{ 0, 6, 11 };
+  mesh_.triangles.at(5) = std::array<std::size_t, 3>{ 0, 10, 4 };
+  mesh_.triangles.at(6) = std::array<std::size_t, 3>{ 9, 1, 8 };
+  mesh_.triangles.at(7) = std::array<std::size_t, 3>{ 10, 0, 11 };
+  mesh_.triangles.at(8) = std::array<std::size_t, 3>{ 6, 9, 7 };
+  mesh_.triangles.at(9) = std::array<std::size_t, 3>{ 11, 6, 7 };
+  mesh_.triangles.at(10) = std::array<std::size_t, 3>{ 5, 8, 4 };
+  mesh_.triangles.at(11) = std::array<std::size_t, 3>{ 5, 4, 10 };
+  mesh_.triangles.at(12) = std::array<std::size_t, 3>{ 2, 7, 3 };
+  mesh_.triangles.at(13) = std::array<std::size_t, 3>{ 3, 5, 2 };
+  mesh_.triangles.at(14) = std::array<std::size_t, 3>{ 3, 9, 8 };
+  mesh_.triangles.at(15) = std::array<std::size_t, 3>{ 2, 10, 11 };
+  mesh_.triangles.at(16) = std::array<std::size_t, 3>{ 3, 7, 9 };
+  mesh_.triangles.at(17) = std::array<std::size_t, 3>{ 5, 3, 8 };
+  mesh_.triangles.at(18) = std::array<std::size_t, 3>{ 2, 11, 7 };
+  mesh_.triangles.at(19) = std::array<std::size_t, 3>{ 2, 5, 10 };
 }
 
 auto Sphere::Collide(Ray const& ray) const -> std::optional<Collision>
 {
-  auto closestCollisionData = meshCollide(ray, triangles_, trianglesData_);
+  auto closestCollisionData = meshCollide(ray, mesh_.triangles, mesh_.triangleData);
   if (!closestCollisionData) { return std::optional<Collision>{}; }
 
   // Adjust normal vector of collision for Gouraud shading
-  auto const& normalTwo = verticesData_[triangles_[closestCollisionData->triangleId][2]].normal;
-  auto const& normalOne = verticesData_[triangles_[closestCollisionData->triangleId][1]].normal;
-  auto const& normalZero = verticesData_[triangles_[closestCollisionData->triangleId][0]].normal;
+  auto const& normalTwo = mesh_.vertexData[mesh_.triangles[closestCollisionData->triangleId][2]].normal;
+  auto const& normalOne = mesh_.vertexData[mesh_.triangles[closestCollisionData->triangleId][1]].normal;
+  auto const& normalZero = mesh_.vertexData[mesh_.triangles[closestCollisionData->triangleId][0]].normal;
   closestCollisionData->collision.normal = closestCollisionData->alpha * normalTwo
                                            + closestCollisionData->beta * normalOne
                                            + closestCollisionData->gamma * normalZero;
@@ -178,8 +178,8 @@ auto Sphere::updateTriangleData() -> void
   // temporarily collect all the neighboring triangle ids for each vertex id
   auto vertexTriangles = std::unordered_map<std::size_t, std::vector<std::size_t>>{};
 
-  for (auto triangleId = std::size_t{ 0 }; triangleId < triangles_.size(); ++triangleId) {
-    auto const& triangle = triangles_[triangleId];
+  for (auto triangleId = std::size_t{ 0 }; triangleId < mesh_.triangles.size(); ++triangleId) {
+    auto const& triangle = mesh_.triangles[triangleId];
 
     auto entryOne = vertexTriangles.find(triangle.at(0));
     if (entryOne == vertexTriangles.end()) {
@@ -203,13 +203,13 @@ auto Sphere::updateTriangleData() -> void
     entryThree->second.emplace_back(triangleId);
   }
 
-  for (auto vertexId = std::size_t{ 0 }; vertexId < vertices_.size(); ++vertexId) {
+  for (auto vertexId = std::size_t{ 0 }; vertexId < mesh_.vertices.size(); ++vertexId) {
     auto const& triangleNeighbors = vertexTriangles.at(vertexId);
 
     auto interpolatedVertexNormal = lina::Vec3{};
-    for (auto const& element : triangleNeighbors) { interpolatedVertexNormal += trianglesData_.at(element).normal; }
+    for (auto const& element : triangleNeighbors) { interpolatedVertexNormal += mesh_.triangleData.at(element).normal; }
 
-    verticesData_[vertexId] = VertexData{ interpolatedVertexNormal / static_cast<double>(triangleNeighbors.size()) };
+    mesh_.vertexData[vertexId] = VertexData{ interpolatedVertexNormal / static_cast<double>(triangleNeighbors.size()) };
   }
 }
 
@@ -221,18 +221,18 @@ auto buildSphere(lina::Vec3 center, double radius, std::size_t subdivisionLevel)
   auto sphere = Sphere{};
   for (auto i = std::size_t{ 0 }; i < subdivisionLevel; i++) {
     // subdivide
-    auto [updatedVertices, updatedTriangles] = loopSubdivision(sphere.vertices_, sphere.triangles_);
-    std::swap(sphere.vertices_, updatedVertices);
-    std::swap(sphere.triangles_, updatedTriangles);
+    auto [updatedVertices, updatedTriangles] = loopSubdivision(sphere.mesh_.vertices, sphere.mesh_.triangles);
+    std::swap(sphere.mesh_.vertices, updatedVertices);
+    std::swap(sphere.mesh_.triangles, updatedTriangles);
     // normalize vector length / or project them onto the unit sphere
-    for (auto& vertex : sphere.vertices_) { vertex = lina::unit(vertex); }
+    for (auto& vertex : sphere.mesh_.vertices) { vertex = lina::unit(vertex); }
   }
 
   auto transformMatrix = lina::mul(trace::translate(center), trace::scale(lina::Vec3{ radius, radius, radius }));
 
   // update the size of the trianglesData_ storage
-  sphere.verticesData_ = std::vector<VertexData>(sphere.vertices_.size());
-  sphere.trianglesData_ = std::vector<TriangleData>(sphere.triangles_.size());
+  sphere.mesh_.vertexData = std::vector<VertexData>(sphere.mesh_.vertices.size());
+  sphere.mesh_.triangleData = std::vector<TriangleData>(sphere.mesh_.triangles.size());
   sphere.Transform(transformMatrix);
 
   return sphere;

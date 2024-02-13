@@ -1,4 +1,4 @@
-#include "lib/trace/geometry/triangle.h"
+#include "lib/trace/geometry/mesh.h"
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"

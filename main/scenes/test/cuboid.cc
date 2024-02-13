@@ -41,15 +41,15 @@ auto cuboidMaterial(RenderSettings const& settings) -> Composition
     std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto cuboidOneCenter = lina::Vec3{ -2.0, 0.75, 0.75 };
-  auto cuboidOne = std::make_unique<trace::Cuboid>(cuboidOneCenter, 1.5, 1.5, 1.5);
+  auto cuboidOne = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidOneCenter, 1.5, 1.5, 1.5));
   sceneElements.emplace_back(std::move(cuboidOne), std::make_unique<trace::Lambertian>(cuboidColor));
 
   auto cuboidTwoCenter = lina::Vec3{ -0.0, 0.75, 0.75 };
-  auto cuboidTwo = std::make_unique<trace::Cuboid>(cuboidTwoCenter, 1.5, 1.5, 1.5);
+  auto cuboidTwo = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidTwoCenter, 1.5, 1.5, 1.5));
   sceneElements.emplace_back(std::move(cuboidTwo), std::make_unique<trace::Dielectric>(1.4));
 
   auto cuboidThreeCenter = lina::Vec3{ 2.0, 0.75, 0.75 };
-  auto cuboidThree = std::make_unique<trace::Cuboid>(cuboidThreeCenter, 1.5, 1.5, 1.5);
+  auto cuboidThree = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidThreeCenter, 1.5, 1.5, 1.5));
   sceneElements.emplace_back(std::move(cuboidThree), std::make_unique<trace::Metal>(cuboidColor, 0.01, 3));
 
   return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
@@ -74,25 +74,25 @@ auto cuboidScale(RenderSettings const& settings) -> Composition
     std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto cuboidOneCenter = lina::Vec3{ -2.0, 1.0, 0.5 };
-  auto cuboidOne = std::make_unique<trace::Cuboid>(cuboidOneCenter, 1.0, 1.0, 1.0);
+  auto cuboidOne = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidOneCenter, 1.0, 1.0, 1.0));
   cuboidOne->Transform(lina::mul(trace::translate(cuboidOneCenter),
     lina::mul(trace::scale(lina::Vec3{ 1.0, 2.0, 1.0 }), trace::translate(-cuboidOneCenter))));
   sceneElements.emplace_back(std::move(cuboidOne), std::make_unique<trace::Lambertian>(cuboidColor));
 
   auto cuboidTwoCenter = lina::Vec3{ -0.0, 0.5, 0.5 };
-  auto cuboidTwo = std::make_unique<trace::Cuboid>(cuboidTwoCenter, 1.0, 1.0, 1.0);
+  auto cuboidTwo = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidTwoCenter, 1.0, 1.0, 1.0));
   cuboidTwo->Transform(lina::mul(trace::translate(cuboidTwoCenter),
     lina::mul(trace::scale(lina::Vec3{ 2.0, 1.0, 1.0 }), trace::translate(-cuboidTwoCenter))));
   sceneElements.emplace_back(std::move(cuboidTwo), std::make_unique<trace::Lambertian>(cuboidColor));
 
   auto cuboidThreeCenter = lina::Vec3{ 2.0, 0.5, 1.0 };
-  auto cuboidThree = std::make_unique<trace::Cuboid>(cuboidThreeCenter, 1.0, 1.0, 1.0);
+  auto cuboidThree = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidThreeCenter, 1.0, 1.0, 1.0));
   cuboidThree->Transform(lina::mul(trace::translate(cuboidThreeCenter),
     lina::mul(trace::scale(lina::Vec3{ 1.0, 1.0, 2.0 }), trace::translate(-cuboidThreeCenter))));
   sceneElements.emplace_back(std::move(cuboidThree), std::make_unique<trace::Lambertian>(cuboidColor));
 
   auto cuboidFourCenter = lina::Vec3{ -1.75, 0.75, 2.0 };
-  auto cuboidFour = std::make_unique<trace::Cuboid>(cuboidFourCenter, 1.0, 1.0, 1.0);
+  auto cuboidFour = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidFourCenter, 1.0, 1.0, 1.0));
   cuboidFour->Transform(lina::mul(trace::translate(cuboidFourCenter),
     lina::mul(trace::scale(lina::Vec3{ 1.5, 1.5, 1.5 }), trace::translate(-cuboidFourCenter))));
   sceneElements.emplace_back(std::move(cuboidFour), std::make_unique<trace::Lambertian>(cuboidColor));
@@ -119,25 +119,25 @@ auto cuboidRotate(RenderSettings const& settings) -> Composition
     std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto cuboidOneCenter = lina::Vec3{ -2.0, 0.5, 0.5 };
-  auto cuboidOne = std::make_unique<trace::Cuboid>(cuboidOneCenter, 1.0, 1.0, 1.0);
+  auto cuboidOne = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidOneCenter, 1.0, 1.0, 1.0));
   cuboidOne->Transform(lina::mul(trace::translate(cuboidOneCenter),
     lina::mul(trace::rotateAlongZ(trace::degreesToRadians(30)), trace::translate(-cuboidOneCenter))));
   sceneElements.emplace_back(std::move(cuboidOne), std::make_unique<trace::Lambertian>(cuboidColor));
 
   auto cuboidTwoCenter = lina::Vec3{ -0.0, 0.5, 0.7 };
-  auto cuboidTwo = std::make_unique<trace::Cuboid>(cuboidTwoCenter, 1.0, 1.0, 1.0);
+  auto cuboidTwo = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidTwoCenter, 1.0, 1.0, 1.0));
   cuboidTwo->Transform(lina::mul(trace::translate(cuboidTwoCenter),
     lina::mul(trace::rotateAlongY(trace::degreesToRadians(30)), trace::translate(-cuboidTwoCenter))));
   sceneElements.emplace_back(std::move(cuboidTwo), std::make_unique<trace::Lambertian>(cuboidColor));
 
   auto cuboidThreeCenter = lina::Vec3{ 2.0, 0.5, 0.7 };
-  auto cuboidThree = std::make_unique<trace::Cuboid>(cuboidThreeCenter, 1.0, 1.0, 1.0);
+  auto cuboidThree = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidThreeCenter, 1.0, 1.0, 1.0));
   cuboidThree->Transform(lina::mul(trace::translate(cuboidThreeCenter),
     lina::mul(trace::rotateAlongX(trace::degreesToRadians(30)), trace::translate(-cuboidThreeCenter))));
   sceneElements.emplace_back(std::move(cuboidThree), std::make_unique<trace::Lambertian>(cuboidColor));
 
   auto cuboidFourCenter = lina::Vec3{ -1.75, 0.75, 2.0 };
-  auto cuboidFour = std::make_unique<trace::Cuboid>(cuboidFourCenter, 1.0, 1.0, 1.0);
+  auto cuboidFour = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidFourCenter, 1.0, 1.0, 1.0));
   auto multiRotation = lina::mul(trace::rotateAlongX(trace::degreesToRadians(30)),
     lina::mul(trace::rotateAlongY(trace::degreesToRadians(30)), trace::rotateAlongZ(trace::degreesToRadians(30))));
   cuboidFour->Transform(
@@ -166,7 +166,7 @@ auto cuboidEmissive(RenderSettings const& settings) -> Composition
     std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto cuboidOneCenter = lina::Vec3{ 0.0, 1.5, 1.5 };
-  auto cuboidOne = std::make_unique<trace::Cuboid>(cuboidOneCenter, 1.5, 1.5, 1.5);
+  auto cuboidOne = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidOneCenter, 1.5, 1.5, 1.5));
   sceneElements.emplace_back(std::move(cuboidOne), std::make_unique<trace::Emissive>(lina::Vec3{ 3.0, 3.0, 3.0 }));
 
   return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, false };

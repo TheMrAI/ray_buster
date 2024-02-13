@@ -4,6 +4,7 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/geometry/component.h"
+#include "lib/trace/geometry/mesh.h"
 #include "lib/trace/geometry/triangle_data.h"
 #include "lib/trace/geometry/vertex_data.h"
 #include "lib/trace/pdf.h"
@@ -24,21 +25,19 @@
 namespace trace {
 
 Plane::Plane()
-  : Component{ lina::Vec3{ 0.0, 0.0, 0.0 },
+  : Component{ Mesh{ lina::Vec3{ 0.0, 0.0, 0.0 },
       std::vector<lina::Vec3>(4),
       std::vector<VertexData>(),// no need
       std::vector<std::array<std::size_t, 3>>(2),
-      std::vector<TriangleData>(2) }
+      std::vector<TriangleData>(2) } }
 {
-  vertices_.at(0) = lina::Vec3{ -0.5, -0.5, 0.0 };
-  vertices_.at(1) = lina::Vec3{ -0.5, 0.5, 0.0 };
-  vertices_.at(2) = lina::Vec3{ 0.5, -0.5, 0.0 };
-  vertices_.at(3) = lina::Vec3{ 0.5, 0.5, 0.0 };
+  mesh_.vertices.at(0) = lina::Vec3{ -0.5, -0.5, 0.0 };
+  mesh_.vertices.at(1) = lina::Vec3{ -0.5, 0.5, 0.0 };
+  mesh_.vertices.at(2) = lina::Vec3{ 0.5, -0.5, 0.0 };
+  mesh_.vertices.at(3) = lina::Vec3{ 0.5, 0.5, 0.0 };
 
-  triangles_.at(0) = std::array<std::size_t, 3>{ 0, 1, 2 };
-  triangles_.at(1) = std::array<std::size_t, 3>{ 2, 1, 3 };
-
-  updateTriangleData();
+  mesh_.triangles.at(0) = std::array<std::size_t, 3>{ 0, 1, 2 };
+  mesh_.triangles.at(1) = std::array<std::size_t, 3>{ 2, 1, 3 };
 }
 
 auto Plane::SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF
@@ -54,14 +53,16 @@ auto Plane::SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) c
 
     // the length of the cross product is equal to the size of the parallelogram described by the vectors
     // the order matters for a positive cross product
-    auto area = lina::cross(this->vertices_[2] - this->vertices_[0], this->vertices_[1] - this->vertices_[0]).Length();
+    auto area =
+      lina::cross(this->mesh_.vertices[2] - this->mesh_.vertices[0], this->mesh_.vertices[1] - this->mesh_.vertices[0])
+        .Length();
     return distanceSquared / (cosine * area);
   };
 
   samplingPDF.GenerateSample = [&randomGenerator, this, from]() -> lina::Vec3 {
-    auto Q = this->vertices_[0] + this->center_;
-    auto u = this->vertices_[2] - this->vertices_[0];
-    auto v = this->vertices_[1] - this->vertices_[0];
+    auto Q = this->mesh_.vertices[0] + this->mesh_.center;
+    auto u = this->mesh_.vertices[2] - this->mesh_.vertices[0];
+    auto v = this->mesh_.vertices[1] - this->mesh_.vertices[0];
 
     auto onPlane =
       Q + (randomUniformDouble(randomGenerator, 0.0, 1.0) * u) + (randomUniformDouble(randomGenerator, 0.0, 1.0) * v);

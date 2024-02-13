@@ -4,6 +4,7 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/geometry/triangle_data.h"
+#include "lib/trace/geometry/vertex_data.h"
 #include "lib/trace/ray.h"
 
 #include <array>
@@ -14,6 +15,15 @@
 #include <vector>
 
 namespace trace {
+
+struct Mesh
+{
+  lina::Vec3 center;
+  std::vector<lina::Vec3> vertices;
+  std::vector<VertexData> vertexData;
+  std::vector<std::array<std::size_t, 3>> triangles;
+  std::vector<TriangleData> triangleData;
+};
 
 struct MeshCollision
 {
