@@ -113,7 +113,7 @@ struct pairHash
 
 auto insertOrRetrieve(std::pair<std::size_t, std::size_t> const& id,
   std::unordered_map<std::pair<std::size_t, std::size_t>, std::size_t, pairHash>& subEdgeVertexIds,
-  std::vector<lina::Vec3>& updatedVertices)
+  std::vector<lina::Vec3>& updatedVertices) -> std::size_t
 {
   auto entry = subEdgeVertexIds.find(id);
   if (entry == subEdgeVertexIds.end()) {
@@ -130,46 +130,28 @@ auto insertOrRetrieve(std::pair<std::size_t, std::size_t> const& id,
 auto loopSubdivision(std::vector<lina::Vec3> const& vertices, std::vector<std::array<std::size_t, 3>> const& triangles)
   -> std::pair<std::vector<lina::Vec3>, std::vector<std::array<std::size_t, 3>>>
 {
-  auto vertexProcessed = std::unordered_map<std::size_t, std::size_t>();
-  // map old vertex id to new ones
-  auto updatedVertices = std::vector<lina::Vec3>();
+  // simply copy original vertices as they were
+  auto updatedVertices = std::vector<lina::Vec3>(vertices);
   auto updatedTriangles = std::vector<std::array<std::size_t, 3>>();
 
   // hold all the new vertices in a map, with their id in the updatedVertices vector
   // for the key, keep the ids in increasing order
   auto subEdgeVertexIds = std::unordered_map<std::pair<std::size_t, std::size_t>, std::size_t, pairHash>{};
-  auto mappedVertexIds = std::array<std::size_t, 3>{};
   auto subVertexIds = std::array<std::size_t, 3>{};
   for (auto const& triangle : triangles) {
-    // add vertices
-    for (auto i = std::size_t{ 0 }; i < triangle.size(); i++) {
-      auto processed = vertexProcessed.find(triangle.at(i));
-      if (processed == vertexProcessed.end()) {
-        updatedVertices.emplace_back(vertices.at(triangle.at(i)));
-        auto result = vertexProcessed.insert({ triangle.at(i), updatedVertices.size() - 1 });
-        processed = result.first;
-      }
-      mappedVertexIds.at(i) = processed->second;
-    }
     // add sub vertices
-    subVertexIds.at(0) =
-      insertOrRetrieve(makeId(mappedVertexIds.at(0), mappedVertexIds.at(1)), subEdgeVertexIds, updatedVertices);
-    subVertexIds.at(1) =
-      insertOrRetrieve(makeId(mappedVertexIds.at(1), mappedVertexIds.at(2)), subEdgeVertexIds, updatedVertices);
-    subVertexIds.at(2) =
-      insertOrRetrieve(makeId(mappedVertexIds.at(2), mappedVertexIds.at(0)), subEdgeVertexIds, updatedVertices);
+    subVertexIds.at(0) = insertOrRetrieve(makeId(triangle.at(0), triangle.at(1)), subEdgeVertexIds, updatedVertices);
+    subVertexIds.at(1) = insertOrRetrieve(makeId(triangle.at(1), triangle.at(2)), subEdgeVertexIds, updatedVertices);
+    subVertexIds.at(2) = insertOrRetrieve(makeId(triangle.at(2), triangle.at(0)), subEdgeVertexIds, updatedVertices);
     // add triangles
-    updatedTriangles.emplace_back(
-      std::array<std::size_t, 3>{ subVertexIds.at(2), mappedVertexIds.at(0), subVertexIds.at(0) });
-    updatedTriangles.emplace_back(
-      std::array<std::size_t, 3>{ subVertexIds.at(0), mappedVertexIds.at(1), subVertexIds.at(1) });
-    updatedTriangles.emplace_back(
-      std::array<std::size_t, 3>{ subVertexIds.at(1), mappedVertexIds.at(2), subVertexIds.at(2) });
+    updatedTriangles.emplace_back(std::array<std::size_t, 3>{ subVertexIds.at(2), triangle.at(0), subVertexIds.at(0) });
+    updatedTriangles.emplace_back(std::array<std::size_t, 3>{ subVertexIds.at(0), triangle.at(1), subVertexIds.at(1) });
+    updatedTriangles.emplace_back(std::array<std::size_t, 3>{ subVertexIds.at(1), triangle.at(2), subVertexIds.at(2) });
     updatedTriangles.emplace_back(
       std::array<std::size_t, 3>{ subVertexIds.at(2), subVertexIds.at(0), subVertexIds.at(1) });
   }
 
-  return std::make_pair(updatedVertices, updatedTriangles);
+  return std::make_pair(std::move(updatedVertices), std::move(updatedTriangles));
 }
 
 auto Sphere::updateTriangleData() -> void
@@ -219,7 +201,7 @@ auto buildSphere(lina::Vec3 center, double radius, std::size_t subdivisionLevel)
   if (radius < 0.00001) { throw std::logic_error(std::format("Radius must be bigger than 0.00001. Got: {}", radius)); }
 
   auto sphere = Sphere{};
-  for (auto i = std::size_t{ 0 }; i < subdivisionLevel; i++) {
+  for (auto i = std::size_t{ 0 }; i < subdivisionLevel; ++i) {
     // subdivide
     auto [updatedVertices, updatedTriangles] = loopSubdivision(sphere.mesh_.vertices, sphere.mesh_.triangles);
     std::swap(sphere.mesh_.vertices, updatedVertices);
