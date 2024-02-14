@@ -9,9 +9,8 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
 #include <optional>
-#include <span>
-#include <utility>
 #include <vector>
 
 namespace trace {
@@ -28,8 +27,8 @@ struct Mesh
 struct MeshCollision
 {
   Collision collision;
-  std::size_t triangleId;
-  double distance;
+  std::size_t triangleId = std::numeric_limits<std::size_t>::max();
+  double distance = std::numeric_limits<double>::max();
   // Collision in Barycentric coordinates
   double alpha = 0.0;// weight for 2nd triangle point
   double beta = 0.0;// weight for 1st triangle point

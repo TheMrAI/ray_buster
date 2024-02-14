@@ -5,7 +5,6 @@
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 
-#include <functional>
 #include <variant>
 
 namespace trace {

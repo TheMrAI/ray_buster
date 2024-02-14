@@ -21,7 +21,7 @@ namespace trace {
 class Onb
 {
 public:
-  Onb(lina::Vec3 const& direction);
+  explicit Onb(lina::Vec3 const& direction);
   [[nodiscard]] auto Transform(lina::Vec3 const& vec) const -> lina::Vec3;
 
 private:

@@ -2,22 +2,17 @@
 #define RAY_BUSTER_LIB_TRACE_GEOMETRY_PLANE_H_
 
 #include "lib/lina/vec3.h"
-#include "lib/trace/collision.h"
 #include "lib/trace/geometry/component.h"
 #include "lib/trace/pdf.h"
-#include "lib/trace/ray.h"
 
-#include <cstddef>
-#include <optional>
+#include <cstdint>
 #include <random>
-#include <string>
-#include <vector>
 
 namespace trace {
 
-enum class Axis { X, Y, Z };
+enum class Axis : std::uint8_t { X, Y, Z };
 
-enum class Orientation { Aligned, Reverse };
+enum class Orientation : std::uint8_t { Aligned, Reverse };
 
 // A simple Plane, which is always lays parallel to the x, y axises, and the normal being on the
 // z axis pointing in its positive direction. The reason behind these constraints is that for the time
@@ -31,7 +26,7 @@ public:
   Plane(Plane&&) = default;
   auto operator=(Plane const&) -> Plane& = default;
   auto operator=(Plane&&) -> Plane& = default;
-  virtual ~Plane() = default;
+  ~Plane() override = default;
 
   [[nodiscard]] auto SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF override;
   friend auto

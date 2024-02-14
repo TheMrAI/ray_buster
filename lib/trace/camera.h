@@ -4,6 +4,7 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/ray.h"
 
+#include <cstddef>
 #include <random>
 
 namespace trace {

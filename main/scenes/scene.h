@@ -5,6 +5,7 @@
 #include "lib/trace/geometry/component.h"
 #include "lib/trace/material.h"
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -20,8 +21,8 @@ public:
   Element(std::unique_ptr<trace::Component>&& inputComponent, std::unique_ptr<trace::Material>&& material);
   Element(Element const&) = delete;
   Element(Element&&) = default;
-  Element& operator=(Element const&) = delete;
-  Element& operator=(Element&&) = default;
+  auto operator=(Element const&) -> Element& = delete;
+  auto operator=(Element&&) -> Element& = delete;
   ~Element() = default;
 };
 
@@ -44,8 +45,8 @@ public:
     bool inputUseSkybox);
   Composition(Composition const&) = delete;
   Composition(Composition&&) = default;
-  Composition& operator=(Composition const&) = delete;
-  Composition& operator=(Composition&&) = default;
+  auto operator=(Composition const&) -> Composition& = delete;
+  auto operator=(Composition&&) -> Composition& = default;
   ~Composition() = default;
 };
 

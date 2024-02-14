@@ -2,17 +2,9 @@
 #define RAY_BUSTER_LIB_TRACE_GEOMETRY_ICOSPHERE_H_
 
 #include "lib/lina/vec3.h"
-#include "lib/trace/collision.h"
 #include "lib/trace/geometry/component.h"
-#include "lib/trace/pdf.h"
-#include "lib/trace/ray.h"
 
-#include <array>
 #include <cstddef>
-#include <optional>
-#include <random>
-#include <span>
-#include <vector>
 
 namespace trace {
 
@@ -34,7 +26,7 @@ public:
   Icosphere(Icosphere&&) = default;
   auto operator=(Icosphere const&) -> Icosphere& = default;
   auto operator=(Icosphere&&) -> Icosphere& = default;
-  virtual ~Icosphere() = default;
+  ~Icosphere() override = default;
 
   friend auto buildIcosphere(lina::Vec3 center, double radius, std::size_t subdivisionLevel) -> Icosphere;
 

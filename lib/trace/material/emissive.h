@@ -10,9 +10,9 @@ namespace trace {
 class Emissive : public Material
 {
 public:
-  Emissive(lina::Vec3 color, bool directional = false);
+  explicit Emissive(lina::Vec3 color, bool directional = false);
 
-  auto Emit(Collision const& collision) const -> lina::Vec3 override;
+  [[nodiscard]] auto Emit(Collision const& collision) const -> lina::Vec3 override;
 
 private:
   lina::Vec3 color_;

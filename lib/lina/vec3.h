@@ -2,6 +2,7 @@
 #define RAY_BUSTER_LIB_LINA_VEC3_H_
 
 #include <array>
+#include <cstddef>
 
 namespace lina {
 

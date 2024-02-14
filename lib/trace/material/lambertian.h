@@ -15,7 +15,7 @@ namespace trace {
 class Lambertian : public Material
 {
 public:
-  Lambertian(lina::Vec3 albedo);
+  explicit Lambertian(lina::Vec3 albedo);
 
   auto Scatter(Ray const& ray,
     Collision const& collision,

@@ -7,6 +7,7 @@
 #include "lib/trace/ray.h"
 #include "lib/trace/scattering.h"
 
+#include <cstddef>
 #include <optional>
 #include <random>
 
@@ -21,7 +22,7 @@ public:
   // Retry count describes how many times we wish to retry generating the fuzzed ray. It is important to keep
   // this number reasonably small, or the render could spend a lot of time while trying to generate very a ray in
   // very unlikely circumstances.
-  Metal(lina::Vec3 albedo, double fuzz = 0.01, std::size_t retryCount = 3);
+  explicit Metal(lina::Vec3 albedo, double fuzz = 0.01, std::size_t retryCount = 3);
 
   auto Scatter(Ray const& ray,
     Collision const& collision,

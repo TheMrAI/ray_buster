@@ -17,7 +17,7 @@ public:
   // air: ~1.0
   // glass: 1.3 - 1.7
   // diamond: 2.4
-  Dielectric(double indexOfRefraction = 1.4);
+  explicit Dielectric(double indexOfRefraction = 1.4);
 
   // As a rule of thumb, you know that your refraction calculations are correct, when you make dielectric
   // sphere using indexOfRefraction of 1.0, and it becomes imperceptible.

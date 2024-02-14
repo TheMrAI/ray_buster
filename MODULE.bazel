@@ -5,17 +5,10 @@
 # For more details, please check https://github.com/bazelbuild/bazel/issues/18958
 ###############################################################################
 
-module(name = "ray_buster", version = "0.0.1")
+module(
+    name = "ray_buster",
+    repo_name = "ray_buster",
+    version = "0.0.1",
+)
 
 bazel_dep(name = "googletest", version = "1.14.0", dev_dependency= True)
-
-# Hedron's Compile Commands Extractor for Bazel
-# https://github.com/hedronvision/bazel-compile-commands-extractor
-bazel_dep(name = "hedron_compile_commands", dev_dependency = True)
-git_override(
-    module_name = "hedron_compile_commands",
-    remote = "https://github.com/hedronvision/bazel-compile-commands-extractor.git",
-    commit = "4d5671472a7272ea19dd61debf1e64d8aed27b41",
-    # Replace the commit hash (above) with the latest (https://github.com/hedronvision/bazel-compile-commands-extractor/commits/main).
-    # Even better, set up Renovate and let it do the work for you (see "Suggestion: Updates" in the README).
-)

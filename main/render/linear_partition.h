@@ -3,12 +3,13 @@
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
+#include "lib/trace/ray.h"
 #include "main/scenes/scene.h"
 
+#include <cstddef>
 #include <optional>
 #include <ostream>
 #include <random>
-#include <thread>
 #include <utility>
 #include <vector>
 

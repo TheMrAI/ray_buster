@@ -1,4 +1,14 @@
+# Enable Bzlmod for every Bazel command
+common --enable_bzlmod
+
 # Have no idea, why this hoopla is needed, but configuring toolchains
 # https://bazel.build/tutorials/ccp-toolchain-config seems excessive just for
 # setting the CPP version. Well it will work as a start.
 build --action_env=BAZEL_CXXOPTS="-std=c++2b"
+
+# Required for bazel_clang_tidy to operate as expected
+build:clang-tidy --aspects @bazel_clang_tidy//clang_tidy:clang_tidy.bzl%clang_tidy_aspect
+build:clang-tidy --output_groups=report
+
+# Optionally override the .clang-tidy config file target
+build:clang-tidy --@bazel_clang_tidy//:clang_tidy_config=//:clang_tidy_config

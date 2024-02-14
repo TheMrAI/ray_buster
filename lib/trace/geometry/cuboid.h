@@ -2,18 +2,7 @@
 #define RAY_BUSTER_LIB_TRACE_GEOMETRY_CUBOID_H_
 
 #include "lib/lina/vec3.h"
-#include "lib/trace/collision.h"
 #include "lib/trace/geometry/component.h"
-#include "lib/trace/pdf.h"
-#include "lib/trace/ray.h"
-
-#include <array>
-#include <cstddef>
-#include <optional>
-#include <random>
-#include <span>
-#include <utility>
-#include <vector>
 
 namespace trace {
 
@@ -24,12 +13,12 @@ public:
   Cuboid(Cuboid&&) = default;
   auto operator=(Cuboid const&) -> Cuboid& = default;
   auto operator=(Cuboid&&) -> Cuboid& = default;
-  virtual ~Cuboid() = default;
+  ~Cuboid() override = default;
 
   friend auto buildCuboid(lina::Vec3 center, double width, double height, double depth) -> Cuboid;
 
 private:
-  Cuboid();
+  Cuboid();// NOLINT
 };
 
 [[nodiscard]] auto buildCuboid(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 },

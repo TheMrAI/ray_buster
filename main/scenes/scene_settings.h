@@ -1,12 +1,9 @@
 #ifndef RAY_BUSTER_MAIN_SCENE_SETTINGS_H
 #define RAY_BUSTER_MAIN_SCENE_SETTINGS_H
 
-#include "main/scenes/collection/cornell_box.h"
 #include "main/scenes/scene.h"
-#include "main/scenes/test/cuboid.h"
-#include "main/scenes/test/icosphere.h"
-#include "main/scenes/test/plane.h"
 
+#include <functional>
 #include <map>
 #include <string>
 
