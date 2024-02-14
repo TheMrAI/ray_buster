@@ -28,7 +28,7 @@ public:
   auto operator=(Icosphere&&) -> Icosphere& = default;
   ~Icosphere() override = default;
 
-  friend auto buildIcosphere(lina::Vec3 center, double radius, std::size_t subdivisionLevel) -> Icosphere;
+  friend auto buildIcosphere(lina::Vec3 center, double diameter, std::size_t subdivisionLevel) -> Icosphere;
 
 protected:
   auto updateTriangleData() -> void override;
@@ -39,7 +39,7 @@ private:
 
 // Build a unit sphere at origo then move it to the target position.
 [[nodiscard]] auto buildIcosphere(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 },
-  double radius = 1.0,
+  double diameter = 1.0,
   std::size_t subdivisionLevel = 2) -> Icosphere;
 
 }// namespace trace

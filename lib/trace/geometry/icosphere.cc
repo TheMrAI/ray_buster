@@ -36,19 +36,19 @@ Icosphere::Icosphere()
 
   // The initial "sphere" will only be an icosahedron
   // Vertexes described by the 3 mutually perpendicular rectangles.
-  // For each vertex we take the unit vector, so final result can be inscribed into a unit sphere.
-  mesh_.vertices.at(0) = lina::unit(lina::Vec3{ -a, 0.0, phi });
-  mesh_.vertices.at(1) = lina::unit(lina::Vec3{ a, 0.0, phi });
-  mesh_.vertices.at(2) = lina::unit(lina::Vec3{ -a, 0.0, -phi });
-  mesh_.vertices.at(3) = lina::unit(lina::Vec3{ a, 0.0, -phi });
-  mesh_.vertices.at(4) = lina::unit(lina::Vec3{ 0.0, phi, a });
-  mesh_.vertices.at(5) = lina::unit(lina::Vec3{ 0.0, phi, -a });
-  mesh_.vertices.at(6) = lina::unit(lina::Vec3{ 0.0, -phi, a });
-  mesh_.vertices.at(7) = lina::unit(lina::Vec3{ 0.0, -phi, -a });
-  mesh_.vertices.at(8) = lina::unit(lina::Vec3{ phi, a, 0.0 });
-  mesh_.vertices.at(9) = lina::unit(lina::Vec3{ phi, -a, 0.0 });
-  mesh_.vertices.at(10) = lina::unit(lina::Vec3{ -phi, a, 0.0 });
-  mesh_.vertices.at(11) = lina::unit(lina::Vec3{ -phi, -a, 0.0 });
+  // For each vertex we take the unit vector and divide it by 2, so final result can be inscribed into a unit sphere.
+  mesh_.vertices.at(0) = lina::unit(lina::Vec3{ -a, 0.0, phi }) / 2.0;
+  mesh_.vertices.at(1) = lina::unit(lina::Vec3{ a, 0.0, phi }) / 2.0;
+  mesh_.vertices.at(2) = lina::unit(lina::Vec3{ -a, 0.0, -phi }) / 2.0;
+  mesh_.vertices.at(3) = lina::unit(lina::Vec3{ a, 0.0, -phi }) / 2.0;
+  mesh_.vertices.at(4) = lina::unit(lina::Vec3{ 0.0, phi, a }) / 2.0;
+  mesh_.vertices.at(5) = lina::unit(lina::Vec3{ 0.0, phi, -a }) / 2.0;
+  mesh_.vertices.at(6) = lina::unit(lina::Vec3{ 0.0, -phi, a }) / 2.0;
+  mesh_.vertices.at(7) = lina::unit(lina::Vec3{ 0.0, -phi, -a }) / 2.0;
+  mesh_.vertices.at(8) = lina::unit(lina::Vec3{ phi, a, 0.0 }) / 2.0;
+  mesh_.vertices.at(9) = lina::unit(lina::Vec3{ phi, -a, 0.0 }) / 2.0;
+  mesh_.vertices.at(10) = lina::unit(lina::Vec3{ -phi, a, 0.0 }) / 2.0;
+  mesh_.vertices.at(11) = lina::unit(lina::Vec3{ -phi, -a, 0.0 }) / 2.0;
 
   // The order of the vertices matters! Always using a clockwise
   // order, such that by default the normal will point outwards
@@ -176,10 +176,12 @@ auto Icosphere::updateTriangleData() -> void
   }
 }
 
-auto buildIcosphere(lina::Vec3 center, double radius, std::size_t subdivisionLevel) -> Icosphere
+auto buildIcosphere(lina::Vec3 center, double diameter, std::size_t subdivisionLevel) -> Icosphere
 {
-  radius = std::fabs(radius);
-  if (radius < 0.00001) { throw std::logic_error(std::format("Radius must be bigger than 0.00001. Got: {}", radius)); }
+  diameter = std::fabs(diameter);
+  if (diameter < 0.00001) {
+    throw std::logic_error(std::format("Radius must be bigger than 0.00001. Got: {}", diameter));
+  }
 
   auto sphere = Icosphere{};
   for (auto i = std::size_t{ 0 }; i < subdivisionLevel; ++i) {
@@ -191,7 +193,7 @@ auto buildIcosphere(lina::Vec3 center, double radius, std::size_t subdivisionLev
     for (auto& vertex : sphere.mesh_.vertices) { vertex = lina::unit(vertex); }
   }
 
-  auto transformMatrix = lina::mul(trace::translate(center), trace::scale(lina::Vec3{ radius, radius, radius }));
+  auto transformMatrix = lina::mul(trace::translate(center), trace::scale(lina::Vec3{ diameter, diameter, diameter }));
 
   // update the size of the trianglesData_ storage
   sphere.mesh_.vertexData = std::vector<VertexData>(sphere.mesh_.vertices.size());
