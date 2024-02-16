@@ -11,19 +11,19 @@ Unit length vectors for orthonormal bases will be u, v and w.
 Build:
 
 ```bash
-bazelisk build -c opt //main:ray_buster
+bazel build -c opt //main:ray_buster
 ```
 
 Test:
 
 ```bash
-bazelisk test --cxxopt=-std=c++2b --test_output=all //lib/lina:lina_test
+bazel test --cxxopt=-std=c++2b --test_output=all //lib/lina:lina_test
 ```
 
 Run clang-tidy:
 
 ```bash
-bazelisk build //... --config clang-tidy
+bazel build //... --config clang-tidy
 ```
 
 ## Inspired by
