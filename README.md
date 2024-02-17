@@ -17,7 +17,7 @@ bazel build -c opt //main:ray_buster
 Test:
 
 ```bash
-bazel test --cxxopt=-std=c++2b --test_output=all //lib/lina:lina_test
+bazel test --test_output=all //...
 ```
 
 Run clang-tidy:
