@@ -7,6 +7,7 @@ cc_library(
             "geometry/plane.cc",
             "geometry/icosphere.cc",
             "geometry/mesh.cc",
+            "geometry/mesh_limits.cc",
             "material/dielectric.cc",
             "material/emissive.cc",
             "material/lambertian.cc",
@@ -22,6 +23,7 @@ cc_library(
             "geometry/plane.h",
             "geometry/icosphere.h",
             "geometry/mesh.h",
+            "geometry/mesh_limits.h",
             "geometry/triangle_data.h",
             "geometry/vertex_data.h",
             "material/dielectric.h",
@@ -45,7 +47,8 @@ cc_test(
   name = "geometry_test",
   size = "small",
   srcs = [
-          "geometry/icosphere_test.cc"
+          "geometry/cuboid_test.cc",
+          "geometry/icosphere_test.cc",
          ],
   deps = [
           "//lib/lina:lina",

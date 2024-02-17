@@ -24,18 +24,16 @@ Cuboid::Cuboid()
       std::vector<std::array<std::size_t, 3>>(12),
       std::vector<TriangleData>(12) } }
 {
-  auto halfWidth = 0.5;
-  auto halfHeight = 0.5;
-  auto halfDepth = 0.5;
+  auto unit = 1.0;
 
-  mesh_.vertices[0] = lina::Vec3{ -halfWidth, -halfDepth, -halfHeight };
-  mesh_.vertices[1] = lina::Vec3{ -halfWidth, halfDepth, -halfHeight };
-  mesh_.vertices[2] = lina::Vec3{ halfWidth, -halfDepth, -halfHeight };
-  mesh_.vertices[3] = lina::Vec3{ halfWidth, halfDepth, -halfHeight };
-  mesh_.vertices[4] = lina::Vec3{ -halfWidth, -halfDepth, halfHeight };
-  mesh_.vertices[5] = lina::Vec3{ -halfWidth, halfDepth, halfHeight };
-  mesh_.vertices[6] = lina::Vec3{ halfWidth, -halfDepth, halfHeight };
-  mesh_.vertices[7] = lina::Vec3{ halfWidth, halfDepth, halfHeight };
+  mesh_.vertices[0] = lina::Vec3{ -unit, -unit, -unit };
+  mesh_.vertices[1] = lina::Vec3{ -unit, unit, -unit };
+  mesh_.vertices[2] = lina::Vec3{ unit, -unit, -unit };
+  mesh_.vertices[3] = lina::Vec3{ unit, unit, -unit };
+  mesh_.vertices[4] = lina::Vec3{ -unit, -unit, unit };
+  mesh_.vertices[5] = lina::Vec3{ -unit, unit, unit };
+  mesh_.vertices[6] = lina::Vec3{ unit, -unit, unit };
+  mesh_.vertices[7] = lina::Vec3{ unit, unit, unit };
 
   mesh_.triangles.at(0) = std::array<std::size_t, 3>{ 2, 3, 0 };
   mesh_.triangles.at(1) = std::array<std::size_t, 3>{ 0, 3, 1 };
@@ -51,19 +49,19 @@ Cuboid::Cuboid()
   mesh_.triangles.at(11) = std::array<std::size_t, 3>{ 6, 5, 7 };
 }
 
-auto buildCuboid(lina::Vec3 center, double width, double height, double depth) -> Cuboid
+auto buildCuboid(lina::Vec3 center, double width, double depth, double height) -> Cuboid
 {
   width = std::fabs(width);
-  height = std::fabs(height);
   depth = std::fabs(depth);
-  if (width < 0.00001 || height < 0.00001 || depth < 0.00001) {
+  height = std::fabs(height);
+  if (width < 0.00001 || depth < 0.00001 || height < 0.00001) {
     throw std::logic_error(
-      std::format("Width, height and depth must be bigger than 0.0. Got: {}, {}, {}", width, height, depth));
+      std::format("Width, height and depth must be bigger than 0.0. Got: {}, {}, {}", width, depth, height));
   }
 
   auto cuboid = Cuboid{};
 
-  auto transformation = trace::scale(lina::Vec3{ width, depth, height });
+  auto transformation = trace::scale(lina::Vec3{ width / 2.0, depth / 2.0, height / 2.0 });
   transformation = lina::mul(translate(center), transformation);
 
   cuboid.Transform(transformation);

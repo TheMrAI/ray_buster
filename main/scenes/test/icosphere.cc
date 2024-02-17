@@ -41,15 +41,15 @@ auto icosphereMaterial(RenderSettings const& settings) -> Composition
     std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto sphereOneCenter = lina::Vec3{ -1.75, 0.75, 0.75 };
-  auto sphereOne = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereOneCenter, 0.75, 3));
+  auto sphereOne = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereOneCenter, 1.5, 3));
   sceneElements.emplace_back(std::move(sphereOne), std::make_unique<trace::Lambertian>(sphereColor));
 
   auto sphereTwoCenter = lina::Vec3{ -0.0, 0.75, 0.75 };
-  auto sphereTwo = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereTwoCenter, 0.75, 3));
+  auto sphereTwo = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereTwoCenter, 1.5, 4));
   sceneElements.emplace_back(std::move(sphereTwo), std::make_unique<trace::Dielectric>(1.4));
 
   auto sphereThreeCenter = lina::Vec3{ 1.75, 0.75, 0.75 };
-  auto sphereThree = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereThreeCenter, 0.75, 3));
+  auto sphereThree = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereThreeCenter, 1.5, 3));
   sceneElements.emplace_back(std::move(sphereThree), std::make_unique<trace::Metal>(sphereColor, 0.01, 3));
 
   return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
@@ -74,25 +74,25 @@ auto icosphereScale(RenderSettings const& settings) -> Composition
     std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto sphereOneCenter = lina::Vec3{ -2.0, 1.0, 0.5 };
-  auto sphereOne = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereOneCenter, 0.5, 3));
+  auto sphereOne = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereOneCenter, 1.0, 3));
   sphereOne->Transform(lina::mul(trace::translate(sphereOneCenter),
     lina::mul(trace::scale(lina::Vec3{ 1.0, 2.0, 1.0 }), trace::translate(-sphereOneCenter))));
   sceneElements.emplace_back(std::move(sphereOne), std::make_unique<trace::Lambertian>(sphereColor));
 
   auto sphereTwoCenter = lina::Vec3{ 0.0, 0.5, 0.5 };
-  auto sphereTwo = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereTwoCenter, 0.5, 3));
+  auto sphereTwo = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereTwoCenter, 1.0, 3));
   sphereTwo->Transform(lina::mul(trace::translate(sphereTwoCenter),
     lina::mul(trace::scale(lina::Vec3{ 2.0, 1.0, 1.0 }), trace::translate(-sphereTwoCenter))));
   sceneElements.emplace_back(std::move(sphereTwo), std::make_unique<trace::Lambertian>(sphereColor));
 
   auto sphereThreeCenter = lina::Vec3{ 2.0, 0.5, 1.0 };
-  auto sphereThree = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereThreeCenter, 0.5, 3));
+  auto sphereThree = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereThreeCenter, 1.0, 3));
   sphereThree->Transform(lina::mul(trace::translate(sphereThreeCenter),
     lina::mul(trace::scale(lina::Vec3{ 1.0, 1.0, 2.0 }), trace::translate(-sphereThreeCenter))));
   sceneElements.emplace_back(std::move(sphereThree), std::make_unique<trace::Lambertian>(sphereColor));
 
   auto sphereFourCenter = lina::Vec3{ -2.0, 1.25, 2.0 };
-  auto sphereFour = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereFourCenter, 0.5, 3));
+  auto sphereFour = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereFourCenter, 1.0, 3));
   sphereFour->Transform(lina::mul(trace::translate(sphereFourCenter),
     lina::mul(trace::scale(lina::Vec3{ 1.5, 1.5, 1.5 }), trace::translate(-sphereFourCenter))));
   sceneElements.emplace_back(std::move(sphereFour), std::make_unique<trace::Lambertian>(sphereColor));
@@ -119,24 +119,24 @@ auto icosphereRotate(RenderSettings const& settings) -> Composition
     std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto sphereOneCenter = lina::Vec3{ -2.0, 1.0, 0.5 };
-  auto sphereOne = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereOneCenter, 0.5, 3));
+  auto sphereOne = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereOneCenter, 1.0, 3));
   sphereOne->Transform(lina::mul(trace::translate(sphereOneCenter),
     lina::mul(trace::rotateAlongZ(trace::degreesToRadians(-30)),
       lina::mul(trace::scale(lina::Vec3{ 1.0, 2.0, 1.0 }), trace::translate(-sphereOneCenter)))));
   sceneElements.emplace_back(std::move(sphereOne), std::make_unique<trace::Lambertian>(sphereColor));
 
   auto sphereTwoCenter = lina::Vec3{ 0.0, 0.5, 1.0 };
-  auto sphereTwo = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereTwoCenter, 0.5, 3));
+  auto sphereTwo = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereTwoCenter, 1.0, 3));
   sphereTwo->Transform(lina::mul(trace::translate(sphereTwoCenter),
     lina::mul(trace::rotateAlongY(trace::degreesToRadians(30)),
       lina::mul(trace::scale(lina::Vec3{ 1.0, 1.0, 2.0 }), trace::translate(-sphereTwoCenter)))));
   sceneElements.emplace_back(std::move(sphereTwo), std::make_unique<trace::Lambertian>(sphereColor));
 
   auto sphereThreeCenter = lina::Vec3{ 2.0, 0.5, 1.0 };
-  auto sphereThree = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereThreeCenter, 0.5, 3));
+  auto sphereThree = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereThreeCenter, 1.0, 3));
   sphereThree->Transform(lina::mul(trace::translate(sphereThreeCenter),
-    lina::mul(trace::rotateAlongX(trace::degreesToRadians(-30)),
-      lina::mul(trace::scale(lina::Vec3{ 1.0, 2.0, 1.0 }), trace::translate(-sphereThreeCenter)))));
+    lina::mul(trace::rotateAlongX(trace::degreesToRadians(90)),
+      lina::mul(trace::scale(lina::Vec3{ 1.0, 1.0, 2.0 }), trace::translate(-sphereThreeCenter)))));
   sceneElements.emplace_back(std::move(sphereThree), std::make_unique<trace::Lambertian>(sphereColor));
 
   return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
@@ -161,7 +161,7 @@ auto icosphereEmissive(RenderSettings const& settings) -> Composition
     std::make_unique<trace::Plane>(std::move(bottom)), std::make_unique<trace::Lambertian>(planeColor));
 
   auto sphereOneCenter = lina::Vec3{ 0.0, 1.5, 1.5 };
-  auto sphereOne = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereOneCenter, 0.75, 1));
+  auto sphereOne = std::make_unique<trace::Icosphere>(trace::buildIcosphere(sphereOneCenter, 1.5, 3));
   sceneElements.emplace_back(std::move(sphereOne), std::make_unique<trace::Emissive>(lina::Vec3{ 3.0, 3.0, 3.0 }));
 
   return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, false };

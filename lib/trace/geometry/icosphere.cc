@@ -2,16 +2,20 @@
 
 #include "lib/lina/lina.h"
 #include "lib/lina/vec3.h"
+#include "lib/trace/collision.h"
 #include "lib/trace/geometry/component.h"
+#include "lib/trace/geometry/cuboid.h"
 #include "lib/trace/geometry/mesh.h"
 #include "lib/trace/geometry/triangle_data.h"
 #include "lib/trace/geometry/vertex_data.h"
+#include "lib/trace/ray.h"
 #include "lib/trace/transform.h"
 
 #include <array>
 #include <cmath>
 #include <cstddef>
 #include <format>
+#include <optional>
 #include <span>
 #include <stdexcept>
 #include <unordered_map>
@@ -29,26 +33,35 @@ Icosphere::Icosphere()
       std::vector<lina::Vec3>(12),
       std::vector<VertexData>(12),
       std::vector<std::array<std::size_t, 3>>(20),
-      std::vector<TriangleData>(20) } }
+      std::vector<TriangleData>(20) } },
+    boundingBox_{
+      buildCuboid(lina::Vec3{ 0.0, 0.0, 0.0 },
+        2.0,
+        2.0,
+        2.0)// the default bounding cuboid should retain it's unit side length property after construction to properly
+            // scale with the icosphere
+    }
 {
+  // the exact value of phi or a doesn't matter at all
+  // only that the follow the golden ratio property
   auto phi = (1.0 + std::sqrt(5.0)) * 0.5;// golden ratio
   auto a = 1.0;
 
   // The initial "sphere" will only be an icosahedron
   // Vertexes described by the 3 mutually perpendicular rectangles.
   // For each vertex we take the unit vector and divide it by 2, so final result can be inscribed into a unit sphere.
-  mesh_.vertices.at(0) = lina::unit(lina::Vec3{ -a, 0.0, phi }) / 2.0;
-  mesh_.vertices.at(1) = lina::unit(lina::Vec3{ a, 0.0, phi }) / 2.0;
-  mesh_.vertices.at(2) = lina::unit(lina::Vec3{ -a, 0.0, -phi }) / 2.0;
-  mesh_.vertices.at(3) = lina::unit(lina::Vec3{ a, 0.0, -phi }) / 2.0;
-  mesh_.vertices.at(4) = lina::unit(lina::Vec3{ 0.0, phi, a }) / 2.0;
-  mesh_.vertices.at(5) = lina::unit(lina::Vec3{ 0.0, phi, -a }) / 2.0;
-  mesh_.vertices.at(6) = lina::unit(lina::Vec3{ 0.0, -phi, a }) / 2.0;
-  mesh_.vertices.at(7) = lina::unit(lina::Vec3{ 0.0, -phi, -a }) / 2.0;
-  mesh_.vertices.at(8) = lina::unit(lina::Vec3{ phi, a, 0.0 }) / 2.0;
-  mesh_.vertices.at(9) = lina::unit(lina::Vec3{ phi, -a, 0.0 }) / 2.0;
-  mesh_.vertices.at(10) = lina::unit(lina::Vec3{ -phi, a, 0.0 }) / 2.0;
-  mesh_.vertices.at(11) = lina::unit(lina::Vec3{ -phi, -a, 0.0 }) / 2.0;
+  mesh_.vertices.at(0) = lina::unit(lina::Vec3{ -a, 0.0, phi });
+  mesh_.vertices.at(1) = lina::unit(lina::Vec3{ a, 0.0, phi });
+  mesh_.vertices.at(2) = lina::unit(lina::Vec3{ -a, 0.0, -phi });
+  mesh_.vertices.at(3) = lina::unit(lina::Vec3{ a, 0.0, -phi });
+  mesh_.vertices.at(4) = lina::unit(lina::Vec3{ 0.0, phi, a });
+  mesh_.vertices.at(5) = lina::unit(lina::Vec3{ 0.0, phi, -a });
+  mesh_.vertices.at(6) = lina::unit(lina::Vec3{ 0.0, -phi, a });
+  mesh_.vertices.at(7) = lina::unit(lina::Vec3{ 0.0, -phi, -a });
+  mesh_.vertices.at(8) = lina::unit(lina::Vec3{ phi, a, 0.0 });
+  mesh_.vertices.at(9) = lina::unit(lina::Vec3{ phi, -a, 0.0 });
+  mesh_.vertices.at(10) = lina::unit(lina::Vec3{ -phi, a, 0.0 });
+  mesh_.vertices.at(11) = lina::unit(lina::Vec3{ -phi, -a, 0.0 });
 
   // The order of the vertices matters! Always using a clockwise
   // order, such that by default the normal will point outwards
@@ -176,6 +189,20 @@ auto Icosphere::updateTriangleData() -> void
   }
 }
 
+auto Icosphere::Collide(Ray const& ray) const -> std::optional<Collision>
+{
+  if (!boundingBox_.Collide(ray)) { return std::optional<Collision>{}; }
+  return Component::Collide(ray);
+}
+// Apply the linear transformation matrix to the object.
+auto Icosphere::Transform(std::span<double const, 16> transformationMatrix) -> void
+{
+  Component::Transform(transformationMatrix);
+  boundingBox_.Transform(transformationMatrix);
+}
+
+auto Icosphere::GetBoundingBox() const -> Cuboid const& { return boundingBox_; }
+
 auto buildIcosphere(lina::Vec3 center, double diameter, std::size_t subdivisionLevel) -> Icosphere
 {
   diameter = std::fabs(diameter);
@@ -193,12 +220,14 @@ auto buildIcosphere(lina::Vec3 center, double diameter, std::size_t subdivisionL
     for (auto& vertex : sphere.mesh_.vertices) { vertex = lina::unit(vertex); }
   }
 
-  auto transformMatrix = lina::mul(trace::translate(center), trace::scale(lina::Vec3{ diameter, diameter, diameter }));
+  // we have to scale with the radius since all offsets are measured from the center of the icospehere
+  auto radius = diameter / 2.0;
+  auto transformMatrix = lina::mul(trace::translate(center), trace::scale(lina::Vec3{ radius, radius, radius }));
 
   // update the size of the trianglesData_ storage
   sphere.mesh_.vertexData = std::vector<VertexData>(sphere.mesh_.vertices.size());
   sphere.mesh_.triangleData = std::vector<TriangleData>(sphere.mesh_.triangles.size());
-  sphere.Transform(transformMatrix);
+  sphere.Transform(transformMatrix);// this will scale the bounding box as well
 
   return sphere;
 }

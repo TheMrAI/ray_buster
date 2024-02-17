@@ -55,7 +55,7 @@ auto cornellBox(RenderSettings const& settings) -> Composition
   auto masterLightIndex = static_cast<int>(sceneElements.size() - 1);
 
   auto cuboidOne =
-    std::make_unique<trace::Cuboid>(trace::buildCuboid(lina::Vec3{ -6.0, 30.0, 29.0 }, 28.0, 58.0, 28.0));
+    std::make_unique<trace::Cuboid>(trace::buildCuboid(lina::Vec3{ -6.0, 30.0, 29.0 }, 28.0, 28.0, 58.0));
   cuboidOne->Transform(trace::rotateAlongZ(trace::degreesToRadians(30)));
   sceneElements.emplace_back(
     std::move(cuboidOne), std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));

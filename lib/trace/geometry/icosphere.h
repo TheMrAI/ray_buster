@@ -2,9 +2,14 @@
 #define RAY_BUSTER_LIB_TRACE_GEOMETRY_ICOSPHERE_H_
 
 #include "lib/lina/vec3.h"
+#include "lib/trace/collision.h"
 #include "lib/trace/geometry/component.h"
+#include "lib/trace/geometry/cuboid.h"
+#include "lib/trace/ray.h"
 
 #include <cstddef>
+#include <optional>
+#include <span>
 
 namespace trace {
 
@@ -28,6 +33,12 @@ public:
   auto operator=(Icosphere&&) -> Icosphere& = default;
   ~Icosphere() override = default;
 
+  [[nodiscard]] auto Collide(Ray const& ray) const -> std::optional<Collision> override;
+  // Apply the linear transformation matrix to the object.
+  auto Transform(std::span<double const, 16> transformationMatrix) -> void override;
+
+  [[nodiscard]] auto GetBoundingBox() const -> Cuboid const&;
+
   friend auto buildIcosphere(lina::Vec3 center, double diameter, std::size_t subdivisionLevel) -> Icosphere;
 
 protected:
@@ -35,11 +46,16 @@ protected:
 
 private:
   Icosphere();
+
+  Cuboid boundingBox_;
 };
 
-// Build a unit sphere at origo then move it to the target position.
+// Build an icosphere at origo, scale and move it to the target position.
+// By default the constructed icosphere will have diameter of 2. This is because
+// an icosphere built in such a manner will have a radius of exactly one, which can
+// easily be scaled in any direction.
 [[nodiscard]] auto buildIcosphere(lina::Vec3 center = lina::Vec3{ 0.0, 0.0, 0.0 },
-  double diameter = 1.0,
+  double diameter = 2.0,
   std::size_t subdivisionLevel = 2) -> Icosphere;
 
 }// namespace trace
