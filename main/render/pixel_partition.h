@@ -1,5 +1,5 @@
-#ifndef RAY_BUSTER_MAIN_RENDER_H
-#define RAY_BUSTER_MAIN_RENDER_H
+#ifndef RAY_BUSTER_MAIN_RENDER_PIXEL_PARTITION_H
+#define RAY_BUSTER_MAIN_RENDER_PIXEL_PARTITION_H
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"

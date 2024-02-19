@@ -1,5 +1,5 @@
 
-#include "main/render/linear_partition.h"
+#include "main/render/pixel_partition.h"
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/camera.h"
@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <format>
 #include <functional>
 #include <future>
 #include <iostream>
@@ -28,6 +29,13 @@
 #include <vector>
 
 namespace render {
+
+// Source: https://codeforces.com/blog/entry/78852
+auto ceil2(std::size_t a, std::size_t b) -> std::size_t
+{
+  if (a == 0) { return 0; }
+  return ((a - 1) / b) + 1;
+}
 
 auto closestCollision(trace::Ray const& ray,
   std::vector<scene::Element> const& sceneElements) -> std::pair<std::optional<trace::Collision>, std::size_t>
@@ -147,73 +155,87 @@ auto linearPartition(scene::Composition sceneComposition, std::ostream& outputSt
   auto imageWidth = camera.ImageWidth();
   auto imageHeight = camera.ImageHeight();
 
-  constexpr auto minNumberOfLinesPerThread = std::size_t{ 50 };
-  auto const maxThreads = (imageHeight + minNumberOfLinesPerThread - std::size_t{ 1 }) / minNumberOfLinesPerThread;
   auto const hardwareThreads = std::size_t{ std::thread::hardware_concurrency() };
-  auto const numberOfThreads =
-    std::min(hardwareThreads == std::size_t{ 0 } ? std::size_t{ 4 } : hardwareThreads, maxThreads);
-  auto const blockSize = (imageHeight + numberOfThreads - std::size_t{ 1 }) / numberOfThreads;
+  // if we can't get the actual number of available hardware threads then we just default to four
+  auto const numberOfThreads = (hardwareThreads == std::size_t{ 0 } ? std::size_t{ 4 } : hardwareThreads);
 
   std::cerr << "Number of threads used: " << numberOfThreads << '\n';
 
   // reportProgress should only be true for one thread at a time
-  // capture sceneElements and samplingRays as const refs, because there should be nor circumstance where they need
-  // to be changed during rendering
-  auto renderChunk = [imageWidth,
-                       camera = std::cref(camera),
-                       sampleCount,
-                       rayDepth,
-                       sceneElements = std::cref(sceneElements),
-                       masterLightIndex,
-                       useSkybox](std::size_t from, std::size_t until, bool reportProgress = false) {
-    auto distance = until - from;
-    auto pixelColors = std::vector<std::vector<lina::Vec3>>(distance, std::vector<lina::Vec3>(imageWidth));
+  // capture sceneElements and samplingRays as const refs, because there should be no circumstance where they need
+  // to be changed during rendering (and we don't want to copy them)
+  auto renderChunk =
+    [imageWidth,
+      numberOfThreads,
+      camera = std::cref(camera),
+      sampleCount,
+      rayDepth,
+      sceneElements = std::cref(sceneElements),
+      masterLightIndex,
+      useSkybox](std::size_t startIndex, std::size_t endIndex, bool reportProgress = false) -> std::vector<lina::Vec3> {
+    auto maxElementCount = ceil2(endIndex, numberOfThreads);
+    auto pixelColors = std::vector<lina::Vec3>();
+    pixelColors.reserve(maxElementCount);
 
     auto randomDevice = std::random_device{};
     auto randomGenerator = std::mt19937{ randomDevice() };
 
-    for (auto i = from; i < until; ++i) {
-      if (reportProgress) { std::cout << "\rScan-lines remaining: " << (until - i - 1) << ' ' << std::flush; }
-      for (auto j = std::size_t{ 0 }; j < imageWidth; ++j) {
-        auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
-        for (auto sample = std::size_t{ 0 }; sample < sampleCount; ++sample) {
-          auto const ray = camera.get().GetSampleRayAt(i, j, randomGenerator, sampleCount > 1);
-          color += rayColor(ray, sceneElements, masterLightIndex, randomGenerator, rayDepth, useSkybox);
-        }
-        color /= static_cast<double>(sampleCount);
-        pixelColors[i - from][j] = color;
+    for (auto pixelId = startIndex; pixelId < endIndex; pixelId += numberOfThreads) {
+      if (reportProgress) {
+        // It complains for static_cast<double>(endIndex / numberOfThreads), but we intend doing
+        // the bugprone integer division, to have a nice approximation.
+        // NOLINTBEGIN(bugprone-integer-division)
+        std::cout << std::format("\rProcessing: {}/{}, {:.2f} %",
+          pixelColors.size() + 1,
+          endIndex / numberOfThreads,
+          100.0 * static_cast<double>(pixelColors.size() + 1) / static_cast<double>(endIndex / numberOfThreads))
+                  << std::flush;
+        // NOLINTEND(bugprone-integer-division)
       }
+      auto i = pixelId / imageWidth;
+      auto j = pixelId % imageWidth;
+      auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
+      for (auto sample = std::size_t{ 0 }; sample < sampleCount; ++sample) {
+        auto const ray = camera.get().GetSampleRayAt(i, j, randomGenerator, sampleCount > 1);
+        color += rayColor(ray, sceneElements, masterLightIndex, randomGenerator, rayDepth, useSkybox);
+      }
+      color /= static_cast<double>(sampleCount);
+      pixelColors.emplace_back(color);
     }
     if (reportProgress) { std::cout << '\n'; }
     return pixelColors;
   };
 
-  auto renderChunkResults = std::vector<std::future<std::vector<std::vector<lina::Vec3>>>>();
+  auto renderChunkResults = std::vector<std::future<std::vector<lina::Vec3>>>();
   renderChunkResults.reserve(numberOfThreads);
 
   auto workingThreads = std::vector<std::jthread>{};
   workingThreads.reserve(numberOfThreads - 1);
 
-  for (auto chunkIndex = std::size_t{ 0 }; chunkIndex < numberOfThreads; ++chunkIndex) {
-    auto renderTask =
-      std::packaged_task<std::vector<std::vector<lina::Vec3>>(std::size_t, std::size_t, bool)>(renderChunk);
+  auto const endIndex = imageWidth * imageHeight;
+  for (auto startIndex = std::size_t{ 0 }; startIndex < numberOfThreads; ++startIndex) {
+    auto renderTask = std::packaged_task<std::vector<lina::Vec3>(std::size_t, std::size_t, bool)>(renderChunk);
     renderChunkResults.emplace_back(renderTask.get_future());
 
-    auto from = chunkIndex * blockSize;
-    auto until = from + blockSize;
-    if (chunkIndex < numberOfThreads - 1) {
-      workingThreads.emplace_back(std::move(renderTask), from, until, false);
+    if (startIndex < numberOfThreads - 1) {
+      workingThreads.emplace_back(std::move(renderTask), startIndex, endIndex, false);
     } else {
-      renderTask(from, until, true);
+      renderTask(startIndex, endIndex, true);
     }
+  }
+
+  auto pixelData = std::vector<std::vector<lina::Vec3>>();
+  pixelData.reserve(numberOfThreads);
+  for (auto i = std::size_t{ 0 }; i < renderChunkResults.size(); ++i) {
+    pixelData.emplace_back(renderChunkResults[i].get());
   }
 
   // serialize render results
   outputStream << "P3\n" << imageWidth << ' ' << imageHeight << "\n255\n";
-  for (auto& renderResults : renderChunkResults) {
-    for (auto const& line : renderResults.get()) {
-      for (auto const& color : line) { writeColor(color, outputStream); }
-    }
+  for (auto pixelId = std::size_t{ 0 }; pixelId < endIndex; ++pixelId) {
+    auto renderResultIndex = pixelId % numberOfThreads;
+    auto pixelIndex = pixelId / numberOfThreads;
+    writeColor(pixelData[renderResultIndex][pixelIndex], outputStream);
   }
 }
 

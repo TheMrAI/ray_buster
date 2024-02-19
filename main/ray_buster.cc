@@ -1,4 +1,4 @@
-#include "main/render/linear_partition.h"
+#include "main/render/pixel_partition.h"
 #include "main/scenes/scene.h"
 #include "main/scenes/scene_settings.h"
 
