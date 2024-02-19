@@ -6,6 +6,7 @@
 namespace scene {
 
 auto cornellBox(RenderSettings const& settings) -> Composition;
+auto cornellBoxAdvanced(RenderSettings const& settings) -> Composition;
 
 }// namespace scene
 
