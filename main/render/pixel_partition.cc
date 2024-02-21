@@ -96,8 +96,7 @@ auto rayColor(trace::Ray const& ray,
           sampleDirection = materialPDF.GenerateSample();
         }
 
-        auto scatteredRay =
-          trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), sampleDirection };
+        auto scatteredRay = trace::Ray{ materialPDF.AdjustedCollisionPoint(), sampleDirection };
 
         auto samplingPDFValue =
           (0.5 * lightPDF.Evaluate(scatteredRay.Direction())) + (0.5 * materialPDF.Evaluate(scatteredRay.Direction()));
@@ -110,8 +109,7 @@ auto rayColor(trace::Ray const& ray,
       } else {
         // normal sampling
         auto materialPDF = std::get<trace::PDF>(scattering.value().type);
-        auto scatteredRay =
-          trace::Ray{ collision.value().point + (collision.value().normal * 0.00001), materialPDF.GenerateSample() };
+        auto scatteredRay = trace::Ray{ materialPDF.AdjustedCollisionPoint(), materialPDF.GenerateSample() };
 
         auto scatteringPDFValue = materialPDF.Evaluate(scatteredRay.Direction());
         auto pdfValue = scatteringPDFValue;

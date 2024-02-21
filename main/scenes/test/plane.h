@@ -9,6 +9,7 @@ auto planeMaterial(RenderSettings const& settings) -> Composition;
 auto planeScale(RenderSettings const& settings) -> Composition;
 auto planeRotate(RenderSettings const& settings) -> Composition;
 auto planeEmissive(RenderSettings const& settings) -> Composition;
+auto planeMaterialCollisionDirection(RenderSettings const& settings) -> Composition;
 
 }// namespace scene::test
 

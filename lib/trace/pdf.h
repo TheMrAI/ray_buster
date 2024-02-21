@@ -11,6 +11,7 @@ struct PDF
 {
   std::function<double(lina::Vec3 const&)> Evaluate;
   std::function<lina::Vec3()> GenerateSample;
+  std::function<lina::Vec3()> AdjustedCollisionPoint;
 };
 
 }// namespace trace

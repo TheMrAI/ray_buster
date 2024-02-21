@@ -20,14 +20,14 @@ auto Metal::Scatter(Ray const& ray,
   Collision const& collision,
   std::mt19937& randomGenerator) -> std::optional<Scattering>
 {
-  auto adjustedCollisionPoint = collision.point + collision.normal * 0.00001;
-  auto reflectedDirection = ray.Direction() - (2.0 * lina::dot(ray.Direction(), collision.normal) * collision.normal);
+  auto normal = collision.frontFace ? collision.normal : collision.normal * -1.0;
+  auto adjustedCollisionPoint = collision.point + normal * 0.00001;
+  auto reflectedDirection = ray.Direction() - (2.0 * lina::dot(ray.Direction(), normal) * normal);
 
   auto fuzzedDirection = reflectedDirection + randomOnUnitSphere(randomGenerator) * fuzz_;
   // Should the fuzzedDirection point in a direction [orthogonal to normal, opposite to normal], then we just
   // regenerate the fuzzed direction. This way we can ensure that we always return a valid ray.
-  for (auto retryCount = std::size_t{ 0 };
-       retryCount < retryCount_ && lina::dot(fuzzedDirection, collision.normal) <= 0.0;
+  for (auto retryCount = std::size_t{ 0 }; retryCount < retryCount_ && lina::dot(fuzzedDirection, normal) <= 0.0;
        ++retryCount) {
     fuzzedDirection = reflectedDirection + randomOnUnitSphere(randomGenerator) * fuzz_;
   }

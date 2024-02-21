@@ -19,16 +19,19 @@ auto Lambertian::Scatter(Ray const& /*ray*/,
   Collision const& collision,
   std::mt19937& randomGenerator) -> std::optional<Scattering>
 {
+  auto normal = collision.frontFace ? collision.normal : collision.normal * -1.0;
+  auto adjustedCollisionPoint = collision.point + (normal * 0.00001);
   auto scattering = Scattering{};
   scattering.attenuation = albedo_;
-  scattering.type = PDF{ [normal = collision.normal](const lina::Vec3& rayDirection) -> double {
+  scattering.type = PDF{ [normal](const lina::Vec3& rayDirection) -> double {
                           auto cos_theta = lina::dot(normal, lina::unit(rayDirection));
                           return cos_theta < 0.0 ? 0.0 : cos_theta / std::numbers::pi;
                         },
-    [normal = collision.normal, &randomGenerator]() -> lina::Vec3 {
+    [normal, &randomGenerator]() -> lina::Vec3 {
       auto onb = Onb{ normal };
       return onb.Transform(randomCosineDirection(randomGenerator));
-    } };
+    },
+    [adjustedCollisionPoint]() -> lina::Vec3 { return adjustedCollisionPoint; } };
 
   return std::optional<Scattering>{ scattering };
 }

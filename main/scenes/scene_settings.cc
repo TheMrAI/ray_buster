@@ -75,6 +75,39 @@ auto configurations() -> std::map<std::string, Configuration>
           return scene::test::cuboidEmissive(settings);
         },
         defaultRenderSettings } },
+    { "test-cuboid-inside-lambertian",
+      Configuration{ "Inside a lambertian cuboid, directly looking at one of it's sides. The scene is lit by a plane "
+                     "light, which is placed right behind the camera. The default ray depth is only two, to increase "
+                     "render speed, but this causes some color shift.",
+        [](scene::RenderSettings const& settings) -> scene::Composition {
+          return scene::test::cuboidInsideLambertian(settings);
+        },
+        scene::RenderSettings{
+          std::size_t{ 600 },
+          std::size_t{ 600 },
+          std::size_t{ 10 },
+          std::size_t{ 2 },
+          "",
+          90.0,
+          0.0,
+          1.0,
+        } } },
+    { "test-cuboid-inside-metal",
+      Configuration{ "Inside a metal cuboid. The scene is lit by a plane "
+                     "light,  which is placed right behind the camera. The output is a little psychedelic.",
+        [](scene::RenderSettings const& settings) -> scene::Composition {
+          return scene::test::cuboidInsideMetal(settings);
+        },
+        scene::RenderSettings{
+          std::size_t{ 600 },
+          std::size_t{ 600 },
+          std::size_t{ 10 },
+          std::size_t{ 10 },
+          "",
+          90.0,
+          0.0,
+          1.0,
+        } } },
     { "test-plane-material",
       Configuration{ "3 planes with lambertian, dielectric and metallic surfaces.",
         [](
@@ -96,6 +129,16 @@ auto configurations() -> std::map<std::string, Configuration>
         "direction. The planes aren't visible as they are perfectly parallel to the viewing direction.",
         [](
           scene::RenderSettings const& settings) -> scene::Composition { return scene::test::planeEmissive(settings); },
+        defaultRenderSettings } },
+    { "test-plane-material-collision-direction",
+      Configuration{
+        "3 plane pairs, all perpendicular to the camera. The pairs from top to bottom use materials: lambertian, "
+        "metal, dielectric. For each pair the left plane will have it's normal pointing towards the camera, while the "
+        "right away. (Note: The dielectric pair should be barely visible, as there should be minimal reflections from "
+        "this angle, so what we mostly see is the refraction effects.)",
+        [](scene::RenderSettings const& settings) -> scene::Composition {
+          return scene::test::planeMaterialCollisionDirection(settings);
+        },
         defaultRenderSettings } },
     { "test-icosphere-material",
       Configuration{ "3 icospheres with lambertian, dielectric and metallic surfaces.",
@@ -121,6 +164,32 @@ auto configurations() -> std::map<std::string, Configuration>
       Configuration{ "1 icosphere with an emissive material.",
         [](scene::RenderSettings const& settings) -> scene::Composition {
           return scene::test::icosphereEmissive(settings);
+        },
+        defaultRenderSettings } },
+    { "test-icosphere-inside-lambertian",
+      Configuration{ "Inside a lambertian icosphere. The scene is lit by a plane "
+                     "light, which is placed at the bottom of the sphere, lighting upwards to accentuate the shading "
+                     "differences of the triangles. The default ray depth is only two, to increase "
+                     "render speed, but this causes some color shift.",
+        [](scene::RenderSettings const& settings) -> scene::Composition {
+          return scene::test::icosphereInsideLambertian(settings);
+        },
+        scene::RenderSettings{
+          std::size_t{ 600 },
+          std::size_t{ 600 },
+          std::size_t{ 10 },
+          std::size_t{ 2 },
+          "",
+          70.0,
+          0.0,
+          1.0,
+        } } },
+    { "test-icosphere-inside-metal",
+      Configuration{ "Inside a metal icosphere. The scene is lit by a plane "
+                     "light,  which is placed right behind the camera. The base icosahedron is subdivided 4 to produce "
+                     "a less confusing image. Still the output is a little psychedelic.",
+        [](scene::RenderSettings const& settings) -> scene::Composition {
+          return scene::test::icosphereInsideMetal(settings);
         },
         defaultRenderSettings } },
   };

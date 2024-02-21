@@ -9,6 +9,8 @@ auto cuboidMaterial(RenderSettings const& settings) -> Composition;
 auto cuboidScale(RenderSettings const& settings) -> Composition;
 auto cuboidRotate(RenderSettings const& settings) -> Composition;
 auto cuboidEmissive(RenderSettings const& settings) -> Composition;
+auto cuboidInsideLambertian(RenderSettings const& settings) -> Composition;
+auto cuboidInsideMetal(RenderSettings const& settings) -> Composition;
 
 }// namespace scene::test
 

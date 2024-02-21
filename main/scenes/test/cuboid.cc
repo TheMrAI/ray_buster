@@ -172,4 +172,65 @@ auto cuboidEmissive(RenderSettings const& settings) -> Composition
   return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, false };
 }
 
+auto cuboidInsideLambertian(RenderSettings const& settings) -> Composition
+{
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
+    lina::Vec3{ 0.0, -1.5, 0.0 },// camera center
+    lina::Vec3{ 0.0, 0.0, 0.0 },// look at
+    lina::Vec3{ 0.0, 0.0, 1.0 },
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
+
+  auto sceneElements = std::vector<scene::Element>{};
+
+  auto cuboidOneCenter = lina::Vec3{ 0.0, 0.0, 0.0 };
+  auto cuboidOne = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidOneCenter, 3.5, 3.5, 3.5));
+  sceneElements.emplace_back(std::move(cuboidOne), std::make_unique<trace::Lambertian>(cuboidColor));
+
+  auto backlight =
+    trace::buildPlane(lina::Vec3{ 0.0, -1.6, 0.0 }, 3.0, 3.0, trace::Axis::Y, trace::Orientation::Aligned);
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(backlight)),
+    std::make_unique<trace::Emissive>(lina::Vec3{ 0.3, 0.3, 0.3 }, true));
+  auto masterLightIndex = static_cast<int>(sceneElements.size() - 1);
+
+  return Composition{
+    camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), masterLightIndex, false
+  };
+}
+
+auto cuboidInsideMetal(RenderSettings const& settings) -> Composition
+{
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
+    lina::Vec3{ 0.0, -1.5, 0.0 },// camera center
+    lina::Vec3{ 0.0, 0.0, 0.0 },// look at
+    lina::Vec3{ 0.0, 0.0, 1.0 },
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
+
+  auto sceneElements = std::vector<scene::Element>{};
+
+  auto cuboidOneCenter = lina::Vec3{ 0.0, 0.0, 0.0 };
+  auto cuboidOne = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidOneCenter, 3.5, 3.5, 3.5));
+  sceneElements.emplace_back(std::move(cuboidOne), std::make_unique<trace::Metal>(cuboidColor, 0.01, 3));
+
+  // Uncomment this if you would like to get some "reference" object in the image.
+  // auto cuboidTwoCenter = lina::Vec3{ 0.7, -1.5, 0.0 };
+  // auto cuboidTwo = std::make_unique<trace::Cuboid>(trace::buildCuboid(cuboidTwoCenter, 0.7, 0.7, 0.7));
+  // sceneElements.emplace_back(std::move(cuboidTwo), std::make_unique<trace::Lambertian>(planeColor));
+
+  auto backlight =
+    trace::buildPlane(lina::Vec3{ 0.0, -1.6, 0.0 }, 1.5, 1.5, trace::Axis::Y, trace::Orientation::Aligned);
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(backlight)),
+    std::make_unique<trace::Emissive>(lina::Vec3{ 0.3, 0.3, 0.3 }, true));
+  auto masterLightIndex = static_cast<int>(sceneElements.size() - 1);
+
+  return Composition{
+    camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), masterLightIndex, false
+  };
+}
+
 }// namespace scene::test

@@ -27,6 +27,10 @@ public:
   [[nodiscard]] virtual auto Collide(Ray const& ray) const -> std::optional<Collision>;
   // Apply the linear transformation matrix to the object.
   virtual auto Transform(std::span<double const, 16> transformationMatrix) -> void;
+
+  // For a sampling PDF, AdjustedCollisionPoint function will not be implemented, because it makes no sense.
+  // So just watch out, never to call it, until this PDF implementation could be replaced with something more
+  // general.
   [[nodiscard]] virtual auto SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF;
 
   [[nodiscard]] auto GetMesh() const -> Mesh const&;

@@ -156,4 +156,48 @@ auto planeEmissive(RenderSettings const& settings) -> Composition
   };
 }
 
+auto planeMaterialCollisionDirection(RenderSettings const& settings) -> Composition
+{
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
+    lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
+    lina::Vec3{ 0.0, 0.0, 1.5 },// look at
+    lina::Vec3{ 0.0, 0.0, 1.0 },
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
+
+  auto sceneElements = std::vector<scene::Element>{};
+
+  auto planeOne =
+    trace::buildPlane(lina::Vec3{ -0.75, 0.0, 3.0 }, 1.0, 1.0, trace::Axis::Y, trace::Orientation::Reverse);
+  sceneElements.emplace_back(
+    std::make_unique<trace::Plane>(std::move(planeOne)), std::make_unique<trace::Lambertian>(planeColor));
+  // the plane is reversed in the sense that it's front face is pointing away from us
+  auto planeOneReversed =
+    trace::buildPlane(lina::Vec3{ 0.75, 0.0, 3.0 }, 1.0, 1.0, trace::Axis::Y, trace::Orientation::Aligned);
+  sceneElements.emplace_back(
+    std::make_unique<trace::Plane>(std::move(planeOneReversed)), std::make_unique<trace::Lambertian>(planeColor));
+
+  auto planeTwo =
+    trace::buildPlane(lina::Vec3{ -0.75, 0.0, 1.5 }, 1.0, 1.0, trace::Axis::Y, trace::Orientation::Reverse);
+  sceneElements.emplace_back(
+    std::make_unique<trace::Plane>(std::move(planeTwo)), std::make_unique<trace::Metal>(planeColor, 0.01, 3));
+  auto planeTwoReversed =
+    trace::buildPlane(lina::Vec3{ 0.75, 0.0, 1.5 }, 1.0, 1.0, trace::Axis::Y, trace::Orientation::Aligned);
+  sceneElements.emplace_back(
+    std::make_unique<trace::Plane>(std::move(planeTwoReversed)), std::make_unique<trace::Metal>(planeColor, 0.01, 3));
+
+  auto planeThree =
+    trace::buildPlane(lina::Vec3{ -0.75, 0.0, 0.0 }, 1.0, 1.0, trace::Axis::Y, trace::Orientation::Reverse);
+  sceneElements.emplace_back(
+    std::make_unique<trace::Plane>(std::move(planeThree)), std::make_unique<trace::Dielectric>(1.4));
+  auto planeThreeReversed =
+    trace::buildPlane(lina::Vec3{ 0.75, 0.0, 0.0 }, 1.0, 1.0, trace::Axis::Y, trace::Orientation::Aligned);
+  sceneElements.emplace_back(
+    std::make_unique<trace::Plane>(std::move(planeThreeReversed)), std::make_unique<trace::Dielectric>(1.4));
+
+  return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, true };
+}
+
 }// namespace scene::test

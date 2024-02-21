@@ -9,6 +9,8 @@ auto icosphereMaterial(RenderSettings const& settings) -> Composition;
 auto icosphereScale(RenderSettings const& settings) -> Composition;
 auto icosphereRotate(RenderSettings const& settings) -> Composition;
 auto icosphereEmissive(RenderSettings const& settings) -> Composition;
+auto icosphereInsideLambertian(RenderSettings const& settings) -> Composition;
+auto icosphereInsideMetal(RenderSettings const& settings) -> Composition;
 
 }// namespace scene::test
 

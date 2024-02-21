@@ -167,4 +167,60 @@ auto icosphereEmissive(RenderSettings const& settings) -> Composition
   return Composition{ camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), -1, false };
 }
 
+auto icosphereInsideLambertian(RenderSettings const& settings) -> Composition
+{
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
+    lina::Vec3{ 0.0, -1.7, 0.0 },// camera center
+    lina::Vec3{ 0.0, 0.0, 0.0 },// look at
+    lina::Vec3{ 0.0, 0.0, 1.0 },
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
+
+  auto sceneElements = std::vector<scene::Element>{};
+
+  auto icosphereOneCenter = lina::Vec3{ 0.0, 0.0, 0.0 };
+  auto icosphereOne = std::make_unique<trace::Icosphere>(trace::buildIcosphere(icosphereOneCenter, 4.0, 1));
+  sceneElements.emplace_back(std::move(icosphereOne), std::make_unique<trace::Lambertian>(sphereColor));
+
+  auto backlight =
+    trace::buildPlane(lina::Vec3{ 0.0, 0.0, -1.7 }, 4.0, 4.0, trace::Axis::Z, trace::Orientation::Aligned);
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(backlight)),
+    std::make_unique<trace::Emissive>(lina::Vec3{ 1.0, 1.0, 1.0 }, false));
+  auto masterLightIndex = static_cast<int>(sceneElements.size() - 1);
+
+  return Composition{
+    camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), masterLightIndex, false
+  };
+}
+
+auto icosphereInsideMetal(RenderSettings const& settings) -> Composition
+{
+  auto const camera = trace::Camera{ settings.imageWidth,
+    settings.imageHeight,
+    lina::Vec3{ 0.0, -1.5, 0.0 },// camera center
+    lina::Vec3{ 0.0, 0.0, 0.0 },// look at
+    lina::Vec3{ 0.0, 0.0, 1.0 },
+    settings.degreesVerticalFOV,
+    settings.defocusAngle,
+    settings.focusDistance };
+
+  auto sceneElements = std::vector<scene::Element>{};
+
+  auto icosphereOneCenter = lina::Vec3{ 0.0, 0.0, 0.0 };
+  auto icosphereOne = std::make_unique<trace::Icosphere>(trace::buildIcosphere(icosphereOneCenter, 3.5, 4));
+  sceneElements.emplace_back(std::move(icosphereOne), std::make_unique<trace::Metal>(sphereColor, 0.01, 1));
+
+  auto backlight =
+    trace::buildPlane(lina::Vec3{ 0.0, -1.6, 0.0 }, 3.0, 3.0, trace::Axis::Y, trace::Orientation::Aligned);
+  sceneElements.emplace_back(std::make_unique<trace::Plane>(std::move(backlight)),
+    std::make_unique<trace::Emissive>(lina::Vec3{ 0.3, 0.3, 0.3 }, true));
+  auto masterLightIndex = static_cast<int>(sceneElements.size() - 1);
+
+  return Composition{
+    camera, settings.sampleCount, settings.rayDepth, std::move(sceneElements), masterLightIndex, false
+  };
+}
+
 }// namespace scene::test
