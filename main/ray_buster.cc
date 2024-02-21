@@ -5,8 +5,9 @@
 #include <cstring>
 #include <exception>
 #include <format>
-// clang-tidy doesn't recognize usage of this header
 #include <fstream>
+// clang-tidy doesn't recognize usage of the getopt.h header
+#include <filesystem>
 #include <getopt.h>//NOLINT
 #include <iostream>
 #include <map>
@@ -221,6 +222,8 @@ auto main(int argc, char* argv[]) -> int
     if (defocusAngle) { consolidatedSettings.defocusAngle = defocusAngle.value(); }
     if (focusDistance) { consolidatedSettings.focusDistance = focusDistance.value(); }
 
+    auto outputTarget = std::filesystem::path{ consolidatedSettings.outputFile };
+    std::filesystem::create_directories(outputTarget.parent_path());
     auto renderResult = std::ofstream{ consolidatedSettings.outputFile, std::ios_base::out | std::ios_base::trunc };
     if (!renderResult.is_open()) {
       std::cerr << std::format("Failed to open file: '{}'", consolidatedSettings.outputFile);
