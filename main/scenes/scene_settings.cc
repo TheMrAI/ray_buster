@@ -1,6 +1,7 @@
 #include "main/scenes/scene_settings.h"
 
 #include "main/scenes/collection/cornell_box.h"
+#include "main/scenes/collection/floating_sphere.h"
 #include "main/scenes/scene.h"
 #include "main/scenes/test/cuboid.h"
 #include "main/scenes/test/icosphere.h"
@@ -46,6 +47,23 @@ auto configurations() -> std::map<std::string, Configuration>
         scene::RenderSettings{
           std::size_t{ 800 },
           std::size_t{ 800 },
+          std::size_t{ 100 },
+          std::size_t{ 10 },
+          "",
+          70.0,
+          0.0,
+          1.0,
+        } } },
+    { "floating-sphere",
+      Configuration{ "A floating glass icosphere inside a metal icosphere, lit from below by 4 lights. A white light "
+                     "at the center of the frame and a red, green, blue light strips further back. The RGB light strip "
+                     "produces a pleasing rainbow pattern on the surface of the metal dome and in the refraction of "
+                     "the sphere.Pleas note, this is a tasking scene.Even with the default settings, it can take up to "
+                     "30 minutes to render.For a pristine render, this could take ~10 hours at least.",
+        [](scene::RenderSettings const& settings) -> scene::Composition { return scene::floatingSphere(settings); },
+        scene::RenderSettings{
+          std::size_t{ 1024 },
+          std::size_t{ 768 },
           std::size_t{ 100 },
           std::size_t{ 10 },
           "",

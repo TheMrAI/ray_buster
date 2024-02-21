@@ -21,6 +21,7 @@ cc_library(
     name = "scenes",
     srcs = [
             "scenes/collection/cornell_box.cc",
+            "scenes/collection/floating_sphere.cc",
             "scenes/scene.cc",
             "scenes/scene_settings.cc",
             "scenes/test/cuboid.cc",
@@ -29,6 +30,7 @@ cc_library(
     ],
     hdrs = [
             "scenes/collection/cornell_box.h",
+            "scenes/collection/floating_sphere.h",
             "scenes/scene.h",
             "scenes/scene_settings.h",
             "scenes/test/cuboid.h",
