@@ -36,15 +36,15 @@ auto floatingSphere(RenderSettings const& settings) -> Composition
     std::make_unique<trace::Lambertian>(lina::Vec3{ 0.9296, 0.9179, 0.8476 }));
 
   // dome
-  auto dome = trace::buildIcosphere(lina::Vec3{ 0.0, 0.0, -400.0 }, 6000.0, 4);
+  auto dome = trace::buildIcosphere(lina::Vec3{ 0.0, 0.0, -400.0 }, 6000.0, 5);
   sceneElements.emplace_back(
     std::make_unique<trace::Icosphere>(std::move(dome)), std::make_unique<trace::Metal>(lina::Vec3{ 1.0, 1.0, 1.0 }));
 
   // lights
-  auto whiteLight = lina::Vec3{ 6.5, 6.5, 6.5 };
-  auto redLight = lina::Vec3{ 6.5, 0.5, 0.5 };
-  auto greenLight = lina::Vec3{ 0.5, 6.5, 0.5 };
-  auto blueLight = lina::Vec3{ 0.5, 0.5, 6.5 };
+  auto whiteLight = lina::Vec3{ 6.0, 6.0, 6.0 };
+  auto redLight = lina::Vec3{ 6.0, 0.5, 0.5 };
+  auto greenLight = lina::Vec3{ 0.5, 6.0, 0.5 };
+  auto blueLight = lina::Vec3{ 0.5, 0.5, 6.0 };
 
   auto light =
     trace::buildPlane(lina::Vec3{ 0.0, 0.0, 0.1 }, 100.0, 100.0, trace::Axis::Z, trace::Orientation::Aligned);

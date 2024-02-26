@@ -26,7 +26,7 @@ auto cuboidMaterial(RenderSettings const& settings) -> Composition
 {
   auto const camera = trace::Camera{ settings.imageWidth,
     settings.imageHeight,
-    lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
+    lina::Vec3{ 0.0, -4.0, 1.5 },// camera center
     lina::Vec3{ 0.0, 0.0, 0.75 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
     settings.degreesVerticalFOV,
@@ -59,7 +59,7 @@ auto cuboidScale(RenderSettings const& settings) -> Composition
 {
   auto const camera = trace::Camera{ settings.imageWidth,
     settings.imageHeight,
-    lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
+    lina::Vec3{ 0.0, -4.0, 1.5 },// camera center
     lina::Vec3{ 0.0, 0.0, 1.5 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
     settings.degreesVerticalFOV,
@@ -104,7 +104,7 @@ auto cuboidRotate(RenderSettings const& settings) -> Composition
 {
   auto const camera = trace::Camera{ settings.imageWidth,
     settings.imageHeight,
-    lina::Vec3{ 0.0, -3.0, 1.5 },// camera center
+    lina::Vec3{ 0.0, -4.0, 1.5 },// camera center
     lina::Vec3{ 0.0, 0.0, 1.5 },// look at
     lina::Vec3{ 0.0, 0.0, 1.0 },
     settings.degreesVerticalFOV,

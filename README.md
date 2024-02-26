@@ -1,16 +1,50 @@
 # ray_buster
 
-A simple path tracer application using only the CPU.
+## Usage
 
-Huge inspiration and shootout to the motivating source: <https://raytracing.github.io/books/RayTracingInOneWeekend.html#overview>
+The tool has a simple interface which can be accessed by the common __help__ command:
 
-The scenes should be oriented in a way that the z axis points upwards. This is because, from all 3D editing software this is the most
-common orientation, and it feels natural.
+```bash
+$ ./ray_buster --help
+ray_buster is a simple CPU based path tracing application, with a number of built in scenes.
+The tool will aim to utilize all available CPU cores.
+
+Usage: ray_buster --scene cornell-box [OPTIONS]
+Commands:
+        --scene         Render the selected scene with its built in default configuration.
+        --list          List all available scenes with their default settings displayed as ready to paste arguments for quick override.
+                        Example:
+                                -r 800x800 -s 100 -d 10 -o  -f 70 -a 0 -m 1
+        -h --help       Print out the help message.
+
+For the scene command it is possible to override a number of optional the rendering settings, which are as follow:
+        -r <width>x<height>     - the rendering resolution. Example 1024x768
+        -s <value>              - sampling value. This controls how many sub pixel samples to take at each ray bounce.
+        -d <value>              - ray depth. How many ray bounces are simulated. After 20, it only gives diminishing returns.
+        -o <value>              - output file. The result will always use the PPM image format.
+        -f <value>              - vertical FOV in degrees.
+        -a <value>              - defocus angle. An angle for simulating camera focusing artifacts. A 0.0 disables the features.
+        -m <value>              - focus distance. The distance the camera is focusing at.
+
+Example usage:
+./ray_buster --scene cornell-box
+If the default configuration should be changed the easiest way is to list it with:
+./ray_buster --list
+Copy the appropriate parameter list and make the necessary modifications:
+./ray_buster --scene cornell-box -r 1000x1000 -s 1000 -d 20
+Parameters that we don't intend to override don't have to appear as arguments.
+```
+
+All scenes have a default configuration. These are set in such a way, that they produce a quick result, in a few minutes, but not
+a very good one. The reason is simply complexity. Some scenes can take hours to render in any reasonable detail. To save you some
+time all available scenes can be observed on [Scenes](scenes.md) page.
+
+## Build
 
 ## Build with Docker
 
-To quickly check out the program here are the instructions on how to run the docker setup. This way you don't have to install any compilers
-or tooling except for Docker, and then you can run it from linux or windows.
+To quickly check out the program here are the instructions on how to run the docker setup. This way you don't have to install any
+compilers or tooling except for Docker, and then you can run it from linux or windows.
 
 Build the image:
 
@@ -18,13 +52,11 @@ Build the image:
 docker build -t ray_buster .
 ```
 
-Run the program inside the package with:
+Run the program inside the docker container with:
 
 ```bash
 docker run ray_buster ./ray_buster --help
 ```
-
-This will give you all options and usage examples.
 
 Then to render your first scene, and get the result out of the container you will have to mount a folder into it like so:
 
@@ -32,8 +64,8 @@ Then to render your first scene, and get the result out of the container you wil
 docker run --mount type=bind,source="$(pwd)"/[local directory],target=/[in docker] ray_buster ./ray_buster --scene cornell-box -o /[in docker]/cornell-box.ppm
 ```
 
-Where **[local directory]** and **[in docker]** should be replaced with the desired paths. The local directory has to be created beforehand, but the one
-inside docker will be created automatically.
+Where __[local directory]__ and __[in docker]__ should be replaced with the desired paths. The local directory has to be created
+beforehand, but the one inside docker will be created automatically.
 
 Example:
 
@@ -51,29 +83,39 @@ docker system prune -a
 
 ## Build locally
 
+This would require you installing [bazel](https://bazel.build/). The recommended way of doing so would be using
+[bazelisk](https://github.com/bazelbuild/bazelisk).
+The compiler used is [GCC](https://gcc.gnu.org/) and the used C++ version is C++20.
+
+### Run build
+
 ```bash
 bazel build -c opt //main:ray_buster
 ```
 
-Test:
+### Run unit tests
 
 ```bash
 bazel test --test_output=all //...
 ```
 
-Run clang-tidy:
+Depends on [gtest]. Dependency handled by the bazel configuration.
+
+### Run clang-tidy
 
 ```bash
 bazel build //... --config clang-tidy
 ```
 
-## Inspired by
+### Auto-format code
 
-- <https://raytracing.github.io/>
+```bash
+format.sh
+```
 
-Huge thanks! Not sure I would have started the project without your efforts!
+This would require a [clang]<https://clang.llvm.org/>), [clang-tidy](https://clang.llvm.org/extra/clang-tidy/) installation.
+Depends on: [bazel_calng_tidy](https://github.com/erenon/bazel_clang_tidy). Dependency handled by the bazel configuration.
 
-## Other sources
+## Acknowledgements
 
-- <https://jo.dreggn.org/home/2007_intrt.pdf>
-- <https://64.github.io/cmake-raytracer/>
+Huge inspiration and shoutout to the motivating source [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html). Without this tutorial I am unsure if I could have gotten this far.
