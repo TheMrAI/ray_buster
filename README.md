@@ -41,10 +41,12 @@ time all available scenes can be observed on [Scenes](scenes.md) page.
 
 ## Build
 
-## Build with Docker
+## Docker
 
 To quickly check out the program here are the instructions on how to run the docker setup. This way you don't have to install any
 compilers or tooling except for Docker, and then you can run it from linux or windows.
+
+### Build and run
 
 Build the image:
 
@@ -55,13 +57,13 @@ docker build -t ray_buster .
 Run the program inside the docker container with:
 
 ```bash
-docker run ray_buster ./ray_buster --help
+docker run ray_buster bazel-bin/main/ray_buster --help
 ```
 
 Then to render your first scene, and get the result out of the container you will have to mount a folder into it like so:
 
 ```bash
-docker run --mount type=bind,source="$(pwd)"/[local directory],target=/[in docker] ray_buster ./ray_buster --scene cornell-box -o /[in docker]/cornell-box.ppm
+docker run --mount type=bind,source="$(pwd)"/[local directory],target=/[in docker] ray_buster bazel-bin/main/ray_buster --scene cornell-box -o /[in docker]/cornell-box.ppm
 ```
 
 Where __[local directory]__ and __[in docker]__ should be replaced with the desired paths. The local directory has to be created
@@ -70,10 +72,26 @@ beforehand, but the one inside docker will be created automatically.
 Example:
 
 ```bash
-docker run --mount type=bind,source="$(pwd)"/renders,target=/renders ray_buster ./ray_buster --scene cornell-box -o /renders/cornell-box.ppm
+docker run --mount type=bind,source="$(pwd)"/renders,target=/renders ray_buster bazel-bin/main/ray_buster --scene cornell-box -o /renders/cornell-box.ppm
 ```
 
 Now you can open the result at /renders/cornell-box.ppm.
+
+### Run unit tests
+
+```bash
+docker run ray_buster bazel test --test_output=all //...
+```
+
+Depends on [gtest]. Dependency handled by the bazel configuration.
+
+### Run clang-tidy
+
+```bash
+docker run ray_buster bazel build --config clang-tidy //...
+```
+
+### Cleanup
 
 When done purge all unused docker images with:
 
@@ -104,7 +122,7 @@ Depends on [gtest]. Dependency handled by the bazel configuration.
 ### Run clang-tidy
 
 ```bash
-bazel build //... --config clang-tidy
+bazel build --config clang-tidy //...
 ```
 
 ### Auto-format code
