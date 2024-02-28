@@ -1,0 +1,58 @@
+
+cc_library(
+    name = "trace",
+    srcs = [
+            "geometry/component.cc",
+            "geometry/cuboid.cc",
+            "geometry/plane.cc",
+            "geometry/icosphere.cc",
+            "geometry/mesh.cc",
+            "geometry/mesh_limits.cc",
+            "material/dielectric.cc",
+            "material/emissive.cc",
+            "material/lambertian.cc",
+            "material/metal.cc",
+            "camera.cc",
+            "util.cc",
+            "ray.cc",
+            "transform.cc",
+            ],
+    hdrs = [
+            "geometry/component.h",
+            "geometry/cuboid.h",
+            "geometry/plane.h",
+            "geometry/icosphere.h",
+            "geometry/mesh.h",
+            "geometry/mesh_limits.h",
+            "geometry/triangle_data.h",
+            "geometry/vertex_data.h",
+            "material/dielectric.h",
+            "material/emissive.h",
+            "material/lambertian.h", 
+            "material/metal.h", 
+            "camera.h",
+            "collision.h",
+            "material.h",
+            "util.h",
+            "pdf.h",
+            "ray.h",
+            "scattering.h",
+            "transform.h",
+            ],
+    visibility=["//main:__pkg__"],
+    deps = ["//lib/lina:lina"],
+)
+
+cc_test(
+  name = "geometry_test",
+  size = "small",
+  srcs = [
+          "geometry/cuboid_test.cc",
+          "geometry/icosphere_test.cc",
+         ],
+  deps = [
+          "//lib/lina:lina",
+          "@googletest//:gtest_main",
+          "trace",
+         ],
+)

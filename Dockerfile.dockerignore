@@ -1,0 +1,9 @@
+# all bazel output directories
+bazel-*
+.cache
+external
+# editor related
+.vscode/*
+# docker
+Dockerfile
+*.dockerignore

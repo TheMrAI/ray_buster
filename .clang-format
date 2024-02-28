@@ -62,6 +62,7 @@ IncludeCategories:
   Regex: ^(<|"(gtest|gmock|isl|json)/)
 - Priority: 1
   Regex: .*
+IncludeBlocks: Regroup
 IncludeIsMainRegex: (Test)?$
 IndentCaseLabels: false
 IndentWidth: 2

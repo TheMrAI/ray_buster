@@ -1,0 +1,41 @@
+cc_binary(
+    name = "ray_buster",
+    srcs = [
+            "ray_buster.cc",
+    ],
+    deps = [":scenes", ":render"],
+)
+
+cc_library(
+    name = "render",
+    srcs = [
+            "render/pixel_partition.cc",
+    ],
+    hdrs = [
+            "render/pixel_partition.h",
+    ],
+    deps = ["//lib/lina:lina", "//lib/trace:trace", ":scenes"],
+)
+
+cc_library(
+    name = "scenes",
+    srcs = [
+            "scenes/collection/cornell_box.cc",
+            "scenes/collection/floating_sphere.cc",
+            "scenes/scene.cc",
+            "scenes/scene_settings.cc",
+            "scenes/test/cuboid.cc",
+            "scenes/test/plane.cc",
+            "scenes/test/icosphere.cc",
+    ],
+    hdrs = [
+            "scenes/collection/cornell_box.h",
+            "scenes/collection/floating_sphere.h",
+            "scenes/scene.h",
+            "scenes/scene_settings.h",
+            "scenes/test/cuboid.h",
+            "scenes/test/plane.h",
+            "scenes/test/icosphere.h",
+    ],
+    deps = ["//lib/lina:lina", "//lib/trace:trace"],
+)
