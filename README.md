@@ -9,7 +9,7 @@ $ ./ray_buster --help
 ray_buster is a simple CPU based path tracing application, with a number of built in scenes.
 The tool will aim to utilize all available CPU cores.
 
-Usage: ray_buster --scene cornell-box [OPTIONS]
+Usage: ray_buster --scene [SELECTED_SCENE] [OPTIONS]
 Commands:
         --scene         Render the selected scene with its built in default configuration.
         --list          List all available scenes with their default settings displayed as ready to paste arguments for quick override.
@@ -17,7 +17,7 @@ Commands:
                                 -r 800x800 -s 100 -d 10 -o  -f 70 -a 0 -m 1
         -h --help       Print out the help message.
 
-For the scene command it is possible to override a number of optional the rendering settings, which are as follow:
+For the scene command it is possible to override a number of optional rendering settings, which are as follow:
         -r <width>x<height>     - the rendering resolution. Example 1024x768
         -s <value>              - sampling value. This controls how many sub pixel samples to take at each ray bounce.
         -d <value>              - ray depth. How many ray bounces are simulated. After 20, it only gives diminishing returns.
