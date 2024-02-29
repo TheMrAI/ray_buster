@@ -17,9 +17,8 @@ class Lambertian : public Material
 public:
   explicit Lambertian(lina::Vec3 albedo);
 
-  auto Scatter(Ray const& ray,
-    Collision const& collision,
-    std::mt19937& randomGenerator) -> std::optional<Scattering> override;
+  auto Scatter(Ray const& ray, Collision const& collision, std::mt19937& randomGenerator)
+    -> std::optional<Scattering> override;
 
 private:
   lina::Vec3 albedo_;

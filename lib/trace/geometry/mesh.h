@@ -35,9 +35,8 @@ struct MeshCollision
   double gamma = 0.0;// weight for 0th triangle point
 };
 
-auto triangleCollide(Ray const& ray,
-  std::vector<TriangleData> const& trianglesData,
-  std::size_t triangleId) -> std::optional<MeshCollision>;
+auto triangleCollide(Ray const& ray, std::vector<TriangleData> const& trianglesData, std::size_t triangleId)
+  -> std::optional<MeshCollision>;
 
 auto meshCollide(Ray const& ray,
   std::vector<std::array<std::size_t, 3>> const& triangles,

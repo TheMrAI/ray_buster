@@ -13,9 +13,8 @@
 
 namespace trace {
 
-auto triangleCollide(Ray const& ray,
-  std::vector<TriangleData> const& trianglesData,
-  std::size_t triangleId) -> std::optional<MeshCollision>
+auto triangleCollide(Ray const& ray, std::vector<TriangleData> const& trianglesData, std::size_t triangleId)
+  -> std::optional<MeshCollision>
 {
   auto const& triangleData = trianglesData[triangleId];
 

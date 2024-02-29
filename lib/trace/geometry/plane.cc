@@ -26,10 +26,10 @@ namespace trace {
 
 Plane::Plane()
   : Component{ Mesh{ lina::Vec3{ 0.0, 0.0, 0.0 },
-      std::vector<lina::Vec3>(4),
-      std::vector<VertexData>(),// no need
-      std::vector<std::array<std::size_t, 3>>(2),
-      std::vector<TriangleData>(2) } }
+    std::vector<lina::Vec3>(4),
+    std::vector<VertexData>(),// no need
+    std::vector<std::array<std::size_t, 3>>(2),
+    std::vector<TriangleData>(2) } }
 {
   mesh_.vertices.at(0) = lina::Vec3{ -0.5, -0.5, 0.0 };
   mesh_.vertices.at(1) = lina::Vec3{ -0.5, 0.5, 0.0 };

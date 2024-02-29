@@ -15,8 +15,8 @@
 
 namespace render {
 
-auto closestCollision(trace::Ray const& ray,
-  std::vector<scene::Element> const& sceneElements) -> std::pair<std::optional<trace::Collision>, std::size_t>;
+auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& sceneElements)
+  -> std::pair<std::optional<trace::Collision>, std::size_t>;
 
 auto rayColor(trace::Ray const& ray,
   std::vector<scene::Element> const& sceneElements,

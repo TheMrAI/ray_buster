@@ -19,10 +19,10 @@ namespace trace {
 
 Cuboid::Cuboid()
   : Component{ Mesh{ lina::Vec3{ 0.0, 0.0, 0.0 },
-      std::vector<lina::Vec3>(8),
-      std::vector<VertexData>(),// no need
-      std::vector<std::array<std::size_t, 3>>(12),
-      std::vector<TriangleData>(12) } }
+    std::vector<lina::Vec3>(8),
+    std::vector<VertexData>(),// no need
+    std::vector<std::array<std::size_t, 3>>(12),
+    std::vector<TriangleData>(12) } }
 {
   auto unit = 1.0;
 
