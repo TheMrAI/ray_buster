@@ -1,5 +1,17 @@
 # syntax=docker/dockerfile:1
-FROM gcc:13.2.0 AS base
+FROM ubuntu:23.10 AS base
+RUN ["apt", "update"]
+RUN ["apt", "install", "-y", "wget"]
+# needed for bazel for pulling bazel_clang_tidy source 
+RUN ["apt", "install", "-y", "git"]
+# setup gcc-13 and g++-13
+RUN ["apt", "install", "-y", "gcc-13", "g++-13"]
+RUN ["ln", "-s", "/usr/bin/gcc-13", "/usr/bin/gcc"]
+# install LLVM tools (clang-tidy-17, clang-format-17)
+RUN ["apt", "install", "-y", "clang-tidy-17"]
+RUN ["ln", "-s", "/usr/bin/clang-tidy-17", "/usr/bin/clang-tidy"]
+RUN ["apt", "install", "-y", "clang-format-17"]
+RUN ["ln", "-s", "/usr/bin/clang-format-17", "/usr/bin/clang-format"]
 # install bazilisk
 RUN ["wget", "-P", "/usr/local/bin/", "https://github.com/bazelbuild/bazelisk/releases/download/v1.19.0/bazelisk-linux-amd64"]
 # rename executable to bazel for ease of use
@@ -13,4 +25,3 @@ WORKDIR /ray_buster/
 COPY . .
 # build the project
 RUN ["bazel", "build", "-c", "opt", "//main:ray_buster"]
-WORKDIR /ray_buster/bazel-bin/main/

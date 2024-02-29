@@ -33,7 +33,7 @@ auto help() -> std::string
 {
   return "ray_buster is a simple CPU based path tracing application, with a number of built in scenes.\n"
          "The tool will aim to utilize all available CPU cores.\n\n"
-         "Usage: ray_buster --scene cornell-box [OPTIONS]\n"
+         "Usage: ray_buster --scene [SELECTED_SCENE] [OPTIONS]\n"
          "Commands:\n"
          "\t--scene\t\tRender the selected scene with its built in default configuration.\n"
          "\t--list\t\tList all available scenes with their default settings displayed as ready to paste arguments for "
@@ -42,7 +42,7 @@ auto help() -> std::string
          "\t\t\tExample:\n"
          "\t\t\t\t-r 800x800 -s 100 -d 10 -o  -f 70 -a 0 -m 1\n"
          "\t-h --help\tPrint out the help message.\n\n"
-         "For the scene command it is possible to override a number of optional the rendering settings, which are as "
+         "For the scene command it is possible to override a number of optional rendering settings, which are as "
          "follow:\n"
          "\t-r <width>x<height>\t- the rendering resolution. Example 1024x768\n"
          "\t-s <value>\t\t- sampling value. This controls how many sub pixel samples to take at each ray bounce.\n"
