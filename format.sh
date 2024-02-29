@@ -1,3 +1,2 @@
 #!/bin/bash
-clang-format --style=file -i $(find -iname "*\.cc")
-clang-format --style=file -i $(find -iname "*\.h")
+clang-format --style=file --Werror -i $(find -iname "*\.cc") && clang-format --style=file --Werror -i $(find -iname "*\.h")
