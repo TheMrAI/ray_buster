@@ -1,3 +1,4 @@
+#include "lib/lina/vec3.h"
 #include "lib/trace/geometry/icosphere.h"
 #include "lib/trace/geometry/mesh_limits.h"
 

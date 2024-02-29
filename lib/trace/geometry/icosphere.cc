@@ -15,6 +15,7 @@
 #include <cmath>
 #include <cstddef>
 #include <format>
+#include <functional>
 #include <optional>
 #include <span>
 #include <stdexcept>
@@ -30,10 +31,10 @@ namespace trace {
 // https://math.stackexchange.com/questions/2174594/co-ordinates-of-the-vertices-an-icosahedron-relative-to-its-centroid
 Icosphere::Icosphere()
   : Component{ Mesh{ lina::Vec3{ 0.0, 0.0, 0.0 },
-      std::vector<lina::Vec3>(12),
-      std::vector<VertexData>(12),
-      std::vector<std::array<std::size_t, 3>>(20),
-      std::vector<TriangleData>(20) } },
+    std::vector<lina::Vec3>(12),
+    std::vector<VertexData>(12),
+    std::vector<std::array<std::size_t, 3>>(20),
+    std::vector<TriangleData>(20) } },
     boundingBox_{
       buildCuboid(lina::Vec3{ 0.0, 0.0, 0.0 },
         2.0,

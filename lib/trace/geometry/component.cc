@@ -10,7 +10,6 @@
 #include "lib/trace/transform.h"
 
 #include <array>
-#include <cassert>
 #include <cstddef>
 #include <optional>
 #include <random>

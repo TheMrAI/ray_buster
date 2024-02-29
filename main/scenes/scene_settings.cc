@@ -180,9 +180,8 @@ auto configurations() -> std::map<std::string, Configuration>
         defaultRenderSettings } },
     { "test-icosphere-emissive",
       Configuration{ "1 icosphere with an emissive material.",
-        [](scene::RenderSettings const& settings) -> scene::Composition {
-          return scene::test::icosphereEmissive(settings);
-        },
+        [](scene::RenderSettings const& settings)
+          -> scene::Composition { return scene::test::icosphereEmissive(settings); },
         defaultRenderSettings } },
     { "test-icosphere-inside-lambertian",
       Configuration{ "Inside a lambertian icosphere. The scene is lit by a plane "

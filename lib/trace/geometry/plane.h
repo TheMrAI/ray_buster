@@ -29,8 +29,8 @@ public:
   ~Plane() override = default;
 
   [[nodiscard]] auto SamplingPDF(std::mt19937& randomGenerator, lina::Vec3 const& from) const -> PDF override;
-  friend auto
-    buildPlane(lina::Vec3 center, double width, double depth, Axis normalAxis, Orientation orientation) -> Plane;
+  friend auto buildPlane(lina::Vec3 center, double width, double depth, Axis normalAxis, Orientation orientation)
+    -> Plane;
 
 private:
   // The plane constructed plane will always have a size of 1.0 * 1.0.

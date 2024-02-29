@@ -75,9 +75,8 @@ auto Camera::ImageWidth() const -> std::size_t { return imageWidth_; }
 
 auto Camera::ImageHeight() const -> std::size_t { return imageHeight_; }
 
-auto sampleInUnitSquare(std::mt19937& randomGenerator,
-  lina::Vec3 const& unitDeltaU,
-  lina::Vec3 const& unitDeltaV) -> lina::Vec3
+auto sampleInUnitSquare(std::mt19937& randomGenerator, lina::Vec3 const& unitDeltaU, lina::Vec3 const& unitDeltaV)
+  -> lina::Vec3
 {
   auto uOffset = randomUniformDouble(randomGenerator, -0.5, 0.5);
   auto vOffset = randomUniformDouble(randomGenerator, -0.5, 0.5);

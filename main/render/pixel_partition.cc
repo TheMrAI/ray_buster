@@ -37,8 +37,8 @@ auto ceil2(std::size_t a, std::size_t b) -> std::size_t
   return ((a - 1) / b) + 1;
 }
 
-auto closestCollision(trace::Ray const& ray,
-  std::vector<scene::Element> const& sceneElements) -> std::pair<std::optional<trace::Collision>, std::size_t>
+auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& sceneElements)
+  -> std::pair<std::optional<trace::Collision>, std::size_t>
 {
   auto closestCollision = std::optional<trace::Collision>{};
   auto elementIndex = std::size_t{ 0 };
