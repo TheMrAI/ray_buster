@@ -42,6 +42,14 @@ auto meshCollide(Ray const& ray,
   std::vector<std::array<std::size_t, 3>> const& triangles,
   std::vector<TriangleData> const& trianglesData) -> std::optional<MeshCollision>;
 
+// The function only detects if a voxel collides with a given triangle. It does not describe where this collision
+// happens.
+// voxelDimension must be positive
+auto triangleVoxelCollide(lina::Vec3 voxelCenter, double voxelDimension, TriangleData triangleData) -> bool;
+
+// Evaluate whether or not the voxel centered at origo collides with a triangle.
+auto triangleVoxelCollisionTest(double voxelDimension, TriangleData const& triangleData) -> bool;
+
 }// namespace trace
 
 #endif

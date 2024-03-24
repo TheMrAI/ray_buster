@@ -50,6 +50,7 @@ cc_test(
   srcs = [
           "geometry/cuboid_test.cc",
           "geometry/icosphere_test.cc",
+          "geometry/mesh_test.cc",
          ],
   deps = [
           "//lib/lina:lina",

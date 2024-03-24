@@ -2,10 +2,13 @@
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
+#include "lib/trace/geometry/mesh_limits.h"
 #include "lib/trace/geometry/triangle_data.h"
 #include "lib/trace/ray.h"
 
+#include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <optional>
 #include <utility>
@@ -58,6 +61,75 @@ auto meshCollide(Ray const& ray,
     }
   }
   return closestCollisionData;
+}
+
+auto triangleVoxelCollide(lina::Vec3 voxelCenter, double const voxelDimension, TriangleData triangleData) -> bool
+{
+  auto const delta = -voxelCenter;
+  // translate the triangle
+  triangleData.Q += delta;
+  return triangleVoxelCollisionTest(voxelDimension, triangleData);
+}
+
+// We are using the algorithm described here:
+// https://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox_tam.pdf Except that we do not check whether
+// the plane of the triangle overlaps with the AABB of the voxel.
+auto triangleVoxelCollisionTest(double const voxelDimension, TriangleData const& triangleData) -> bool
+{
+  auto halfVoxelDimension = voxelDimension / 2.0;
+  auto voxelMeshLimits = MeshLimits{ -halfVoxelDimension,
+    halfVoxelDimension,
+    -halfVoxelDimension,
+    halfVoxelDimension,
+    -halfVoxelDimension,
+    halfVoxelDimension };
+
+  auto triangleLimits2 = triangleLimits(triangleData);
+
+  // Test set 1 voxel and triangle AABB collide
+  if (!collide(voxelMeshLimits, triangleLimits2)) { return false; }
+
+  // Test set 2
+  // Based on: https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html
+  // auto const projectedVoxelRadius = lina::dot(lina::Vec3{0.5, 0.5, 0.5}, triangleData.normal);
+  auto const projectedVoxelRadius = (halfVoxelDimension * std::abs(triangleData.normal[0]))
+                                    + (halfVoxelDimension * std::abs(triangleData.normal[1]))
+                                    + (halfVoxelDimension * std::abs(triangleData.normal[2]));
+  // Here we make an optimization. Originally it should be:
+  // auto const planeD = lina::dot(triangleData.normal, triangleData.Q);
+  // auto const voxelCenterDistanceOfPlane = lina::dot(triangleData.normal, lina::Vec3{0.0, 0.0, 0.0}) - planeD;
+  // Since lina::dot(...) will become zero, we omit it's calculation.
+  auto const voxelCenterDistanceFromPlane = -lina::dot(triangleData.normal, triangleData.Q);
+  if (!(std::abs(voxelCenterDistanceFromPlane) <= projectedVoxelRadius)) { return false; }
+
+  // Test set 3
+  // Test using SAT (separating axis theorem)
+  auto const voxelAxis =
+    std::array<lina::Vec3, 3>{ lina::Vec3{ 1.0, 0.0, 0.0 }, lina::Vec3{ 0.0, 1.0, 0.0 }, lina::Vec3{ 0.0, 0.0, 1.0 } };
+  auto const v1 = triangleData.Q + triangleData.u;
+  auto const v2 = triangleData.Q + triangleData.v;
+  auto const triangleEdges = std::array<lina::Vec3, 3>{ triangleData.u, v2 - v1, -triangleData.v };
+
+  for (auto const& voxelAxes : voxelAxis) {
+    for (auto const& triangleEdge : triangleEdges) {
+      auto const axesEdgeCross = lina::cross(voxelAxes, triangleEdge);
+
+      auto const p0 = lina::dot(axesEdgeCross, triangleData.Q);
+      auto const p1 = lina::dot(axesEdgeCross, v1);
+      auto const p2 = lina::dot(axesEdgeCross, v2);
+
+      auto const r = (halfVoxelDimension * std::abs(axesEdgeCross[0]))
+                     + (halfVoxelDimension * std::abs(axesEdgeCross[1]))
+                     + (halfVoxelDimension * std::abs(axesEdgeCross[2]));
+
+      if (std::min({ p0, p1, p2 }) > r || std::max({ p0, p1, p2 }) < -r) {
+        // A separating axis has been found, there is no overlap.
+        return false;
+      }
+    }
+  }
+
+  return true;
 }
 
 }// namespace trace
