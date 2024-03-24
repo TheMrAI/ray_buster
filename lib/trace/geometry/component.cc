@@ -52,23 +52,13 @@ auto Component::GetMesh() const -> Mesh const& { return mesh_; }
 auto Component::updateTriangleData() -> void
 {
   for (auto triangleId = std::size_t{ 0 }; triangleId < mesh_.triangles.size(); ++triangleId) {
-    auto& triangleData = mesh_.triangleData[triangleId];
 
     auto const& triangle = mesh_.triangles[triangleId];
     auto const localizedTriangle = std::array<lina::Vec3, 3>{ mesh_.vertices[triangle[0]] + mesh_.center,
       mesh_.vertices[triangle[1]] + mesh_.center,
       mesh_.vertices[triangle[2]] + mesh_.center };
 
-    triangleData.Q = localizedTriangle[0];
-    triangleData.u = localizedTriangle[2] - localizedTriangle[0];
-    triangleData.v = localizedTriangle[1] - localizedTriangle[0];
-
-    // lina::cross(u, v) is positive if u is to the right of v in space
-    // PS.: Every time I see this code I have to double check.
-    triangleData.n = lina::cross(triangleData.u, triangleData.v);
-    triangleData.normal = lina::unit(triangleData.n);
-    triangleData.D = lina::dot(triangleData.normal, localizedTriangle[0]);
-    triangleData.common = triangleData.n / lina::dot(triangleData.n, triangleData.n);
+    mesh_.triangleData[triangleId] = TriangleData{ localizedTriangle };
   }
 }
 
