@@ -1,5 +1,5 @@
-#ifndef RAY_BUSTER_LIB_TRACE_GEOMETRY_MESH_LIMITS_H_
-#define RAY_BUSTER_LIB_TRACE_GEOMETRY_MESH_LIMITS_H_
+#ifndef RAY_BUSTER_LIB_TRACE_GEOMETRY_AABB_H_
+#define RAY_BUSTER_LIB_TRACE_GEOMETRY_AABB_H_
 
 #include "lib/trace/geometry/mesh.h"
 #include "lib/trace/geometry/triangle_data.h"
@@ -8,7 +8,7 @@ namespace trace {
 
 // These are basically the dimensions of the axis aligned bounding box
 // for any given mesh.
-struct MeshLimits
+struct Aabb
 {
   double minX;
   double maxX;
@@ -18,11 +18,11 @@ struct MeshLimits
   double maxZ;
 };
 
-auto collide(MeshLimits const& lhs, MeshLimits const& rhs) -> bool;
+auto collide(Aabb const& lhs, Aabb const& rhs) -> bool;
 
-auto meshLimits(trace::Mesh const& mesh) -> MeshLimits;
+auto meshAabb(trace::Mesh const& mesh) -> Aabb;
 
-auto triangleLimits(TriangleData const& triangleData) -> MeshLimits;
+auto triangleAabb(TriangleData const& triangleData) -> Aabb;
 
 }// namespace trace
 

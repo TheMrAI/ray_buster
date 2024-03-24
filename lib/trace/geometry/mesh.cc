@@ -2,7 +2,7 @@
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
-#include "lib/trace/geometry/mesh_limits.h"
+#include "lib/trace/geometry/aabb.h"
 #include "lib/trace/geometry/triangle_data.h"
 #include "lib/trace/ray.h"
 
@@ -77,17 +77,18 @@ auto triangleVoxelCollide(lina::Vec3 voxelCenter, double const voxelDimension, T
 auto triangleVoxelCollisionTest(double const voxelDimension, TriangleData const& triangleData) -> bool
 {
   auto halfVoxelDimension = voxelDimension / 2.0;
-  auto voxelMeshLimits = MeshLimits{ -halfVoxelDimension,
+  auto voxelAabb = Aabb{ -halfVoxelDimension,
     halfVoxelDimension,
     -halfVoxelDimension,
     halfVoxelDimension,
     -halfVoxelDimension,
     halfVoxelDimension };
 
-  auto triangleLimits2 = triangleLimits(triangleData);
+  auto triangleBB = triangleAabb(triangleData);
 
-  // Test set 1 voxel and triangle AABB collide
-  if (!collide(voxelMeshLimits, triangleLimits2)) { return false; }
+  // Test set 1
+  // voxel and triangle AABB collide
+  if (!collide(voxelAabb, triangleBB)) { return false; }
 
   // Test set 2
   // Based on: https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html

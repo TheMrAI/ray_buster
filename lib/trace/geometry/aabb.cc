@@ -1,4 +1,4 @@
-#include "lib/trace/geometry/mesh_limits.h"
+#include "lib/trace/geometry/aabb.h"
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/geometry/mesh.h"
@@ -10,7 +10,7 @@
 
 namespace trace {
 
-auto collide(MeshLimits const& lhs, MeshLimits const& rhs) -> bool
+auto collide(Aabb const& lhs, Aabb const& rhs) -> bool
 {
   auto overlapX = (lhs.minX <= rhs.minX && rhs.minX <= lhs.maxX) || (lhs.minX <= rhs.maxX && rhs.maxX <= lhs.maxX);
   auto containX = (lhs.minX < rhs.minX && lhs.maxX > rhs.maxX) || (rhs.minX < lhs.minX && rhs.maxX > lhs.maxX);
@@ -29,9 +29,9 @@ auto collide(MeshLimits const& lhs, MeshLimits const& rhs) -> bool
   // NOLINTEND(readability-simplify-boolean-expr)
 }
 
-auto meshLimits(trace::Mesh const& mesh) -> MeshLimits
+auto meshAabb(trace::Mesh const& mesh) -> Aabb
 {
-  auto limits = MeshLimits{ std::numeric_limits<double>::max(),
+  auto limits = Aabb{ std::numeric_limits<double>::max(),
     std::numeric_limits<double>::min(),
     std::numeric_limits<double>::max(),
     std::numeric_limits<double>::min(),
@@ -50,9 +50,9 @@ auto meshLimits(trace::Mesh const& mesh) -> MeshLimits
   return limits;
 }
 
-auto triangleLimits(TriangleData const& triangleData) -> MeshLimits
+auto triangleAabb(TriangleData const& triangleData) -> Aabb
 {
-  auto limits = MeshLimits{ std::numeric_limits<double>::max(),
+  auto limits = Aabb{ std::numeric_limits<double>::max(),
     std::numeric_limits<double>::min(),
     std::numeric_limits<double>::max(),
     std::numeric_limits<double>::min(),
