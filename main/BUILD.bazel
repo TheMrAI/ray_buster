@@ -10,9 +10,11 @@ cc_library(
     name = "render",
     srcs = [
             "render/pixel_partition.cc",
+            "render/voxel_space.cc",
     ],
     hdrs = [
             "render/pixel_partition.h",
+            "render/voxel_space.h",
     ],
     deps = ["//lib/lina:lina", "//lib/trace:trace", ":scenes"],
 )
@@ -38,4 +40,18 @@ cc_library(
             "scenes/test/icosphere.h",
     ],
     deps = ["//lib/lina:lina", "//lib/trace:trace"],
+)
+
+cc_test(
+  name = "render_test",
+  size = "small",
+  srcs = [
+          "render/voxel_space_test.cc",
+         ],
+  deps = [
+          "//lib/lina:lina",
+          "//lib/trace:trace",
+          ":render",
+          "@googletest//:gtest_main",
+         ],
 )

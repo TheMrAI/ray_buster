@@ -5,10 +5,12 @@
 #include "lib/trace/camera.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/geometry/component.h"
+#include "lib/trace/geometry/mesh.h"
 #include "lib/trace/material.h"
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/util.h"
+#include "main/render/voxel_space.h"
 #include "main/scenes/scene.h"
 
 #include <algorithm>
@@ -37,8 +39,9 @@ auto ceil2(std::size_t a, std::size_t b) -> std::size_t
   return ((a - 1) / b) + 1;
 }
 
-auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& sceneElements)
-  -> std::pair<std::optional<trace::Collision>, std::size_t>
+auto closestCollision(trace::Ray const& ray,
+  std::vector<scene::Element> const& sceneElements,
+  render::VoxelSpace const& /*voxelSpace*/) -> std::pair<std::optional<trace::Collision>, std::size_t>
 {
   auto closestCollision = std::optional<trace::Collision>{};
   auto elementIndex = std::size_t{ 0 };
@@ -64,6 +67,7 @@ auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& 
 
 auto rayColor(trace::Ray const& ray,
   std::vector<scene::Element> const& sceneElements,
+  render::VoxelSpace const& voxelSpace,
   int masterLightIndex,
   std::mt19937& randomGenerator,
   std::size_t depth,
@@ -71,7 +75,7 @@ auto rayColor(trace::Ray const& ray,
 {
   if (depth == 0) { return lina::Vec3{ 0.0, 0.0, 0.0 }; }
 
-  auto [collision, elementIndex] = closestCollision(ray, sceneElements);
+  auto [collision, elementIndex] = closestCollision(ray, sceneElements, voxelSpace);
   if (collision) {
     auto const& material = sceneElements[elementIndex].material;
     auto const emission = material->Emit(collision.value());
@@ -81,8 +85,9 @@ auto rayColor(trace::Ray const& ray,
     auto scatterColor = lina::Vec3{};
     if (std::holds_alternative<trace::Ray>(scattering.value().type)) {
       auto scatteredRay = std::get<trace::Ray>(scattering.value().type);
-      scatterColor = scattering.value().attenuation
-                     * rayColor(scatteredRay, sceneElements, masterLightIndex, randomGenerator, depth - 1, useSkybox);
+      scatterColor =
+        scattering.value().attenuation
+        * rayColor(scatteredRay, sceneElements, voxelSpace, masterLightIndex, randomGenerator, depth - 1, useSkybox);
     } else if (std::holds_alternative<trace::PDF>(scattering.value().type)) {
       // combined
       if (masterLightIndex > -1 && masterLightIndex < static_cast<int>(sceneElements.size())) {
@@ -104,7 +109,7 @@ auto rayColor(trace::Ray const& ray,
         auto scatteringPDFValue = materialPDF.Evaluate(scatteredRay.Direction());
 
         auto incomingColor =
-          rayColor(scatteredRay, sceneElements, masterLightIndex, randomGenerator, depth - 1, useSkybox);
+          rayColor(scatteredRay, sceneElements, voxelSpace, masterLightIndex, randomGenerator, depth - 1, useSkybox);
         scatterColor = (scattering.value().attenuation * scatteringPDFValue * incomingColor) / samplingPDFValue;
       } else {
         // normal sampling
@@ -116,7 +121,8 @@ auto rayColor(trace::Ray const& ray,
 
         scatterColor =
           (scattering.value().attenuation * scatteringPDFValue
-            * rayColor(scatteredRay, sceneElements, masterLightIndex, randomGenerator, depth - 1, useSkybox))
+            * rayColor(
+              scatteredRay, sceneElements, voxelSpace, masterLightIndex, randomGenerator, depth - 1, useSkybox))
           / pdfValue;
       }
     } else {
@@ -150,6 +156,9 @@ auto writeColor(lina::Vec3 const& color, std::ostream& outputStream) -> void
 auto linearPartition(scene::Composition sceneComposition, std::ostream& outputStream) -> void
 {
   auto [camera, sampleCount, rayDepth, sceneElements, masterLightIndex, useSkybox] = std::move(sceneComposition);
+  auto meshes = std::vector<trace::Mesh>{};
+  for (auto const& sceneElement : sceneElements) { meshes.emplace_back(sceneElement.component->GetMesh()); }
+  auto voxelSpace = render::VoxelSpace{ meshes, 1.0 };
   auto imageWidth = camera.ImageWidth();
   auto imageHeight = camera.ImageHeight();
 
@@ -169,6 +178,7 @@ auto linearPartition(scene::Composition sceneComposition, std::ostream& outputSt
       sampleCount,
       rayDepth,
       sceneElements = std::cref(sceneElements),
+      voxelSpace = std::cref(voxelSpace),
       masterLightIndex,
       useSkybox](std::size_t startIndex, std::size_t endIndex, bool reportProgress = false) -> std::vector<lina::Vec3> {
     auto maxElementCount = ceil2(endIndex, numberOfThreads);
@@ -195,7 +205,7 @@ auto linearPartition(scene::Composition sceneComposition, std::ostream& outputSt
       auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
       for (auto sample = std::size_t{ 0 }; sample < sampleCount; ++sample) {
         auto const ray = camera.get().GetSampleRayAt(i, j, randomGenerator, sampleCount > 1);
-        color += rayColor(ray, sceneElements, masterLightIndex, randomGenerator, rayDepth, useSkybox);
+        color += rayColor(ray, sceneElements, voxelSpace, masterLightIndex, randomGenerator, rayDepth, useSkybox);
       }
       color /= static_cast<double>(sampleCount);
       pixelColors.emplace_back(color);

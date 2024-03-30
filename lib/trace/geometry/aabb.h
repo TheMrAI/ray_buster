@@ -4,18 +4,20 @@
 #include "lib/trace/geometry/mesh.h"
 #include "lib/trace/geometry/triangle_data.h"
 
+#include <limits>
+
 namespace trace {
 
 // These are basically the dimensions of the axis aligned bounding box
 // for any given mesh.
 struct Aabb
 {
-  double minX;
-  double maxX;
-  double minY;
-  double maxY;
-  double minZ;
-  double maxZ;
+  double minX = std::numeric_limits<double>::max();
+  double maxX = std::numeric_limits<double>::min();
+  double minY = std::numeric_limits<double>::max();
+  double maxY = std::numeric_limits<double>::min();
+  double minZ = std::numeric_limits<double>::max();
+  double maxZ = std::numeric_limits<double>::min();
 };
 
 auto collide(Aabb const& lhs, Aabb const& rhs) -> bool;

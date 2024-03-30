@@ -31,12 +31,7 @@ auto collide(Aabb const& lhs, Aabb const& rhs) -> bool
 
 auto meshAabb(trace::Mesh const& mesh) -> Aabb
 {
-  auto limits = Aabb{ std::numeric_limits<double>::max(),
-    std::numeric_limits<double>::min(),
-    std::numeric_limits<double>::max(),
-    std::numeric_limits<double>::min(),
-    std::numeric_limits<double>::max(),
-    std::numeric_limits<double>::min() };
+  auto limits = Aabb{};
 
   for (auto const& vertex : mesh.vertices) {
     limits.minX = std::min(limits.minX, vertex[0]);
