@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <format>
 #include <functional>
@@ -39,9 +40,8 @@ auto ceil2(std::size_t a, std::size_t b) -> std::size_t
   return ((a - 1) / b) + 1;
 }
 
-auto closestCollision(trace::Ray const& ray,
-  std::vector<scene::Element> const& sceneElements,
-  render::VoxelSpace const& /*voxelSpace*/) -> std::pair<std::optional<trace::Collision>, std::size_t>
+auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& sceneElements)
+  -> std::pair<std::optional<trace::Collision>, std::size_t>
 {
   auto closestCollision = std::optional<trace::Collision>{};
   auto elementIndex = std::size_t{ 0 };
@@ -65,6 +65,112 @@ auto closestCollision(trace::Ray const& ray,
   return std::make_pair(closestCollision, elementIndex);
 }
 
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+// Partial source for the algorithm: http://www.cse.yorku.ca/~amana/research/grid.pdf
+// Based on the ideas from: https://www.youtube.com/watch?v=NbSee-XM7WA
+auto closestCollisionWithDDA(trace::Ray const& ray,
+  std::vector<scene::Element> const& sceneElements,
+  render::VoxelSpace const& voxelSpace) -> std::pair<std::optional<trace::Collision>, std::size_t>
+{
+  auto dx = ray.Direction().Components()[0];
+  auto dy = ray.Direction().Components()[1];
+  auto dz = ray.Direction().Components()[2];
+  auto Td = voxelSpace.Dimension();
+
+  // Calculate scaling factor for each dimension
+  auto Sx = std::sqrt(1.0 + std::pow(dy / dx, 2.0) + std::pow(dz / dx, 2.0));
+  auto Sy = std::sqrt(1.0 + std::pow(dx / dy, 2.0) + std::pow(dz / dy, 2.0));
+  auto Sz = std::sqrt(1.0 + std::pow(dx / dz, 2.0) + std::pow(dy / dz, 2.0));
+
+  // Find starting position's voxel
+  auto voxelId = vec3ToVoxelId(ray.Source().Components(), Td);
+  // A vector is the distance from the voxels starting corner
+  auto A = ray.Source()
+           - lina::Vec3{ static_cast<double>(voxelId[0]) * Td,
+               static_cast<double>(voxelId[1]) * Td,
+               static_cast<double>(voxelId[2]) * Td };
+
+  // Initialize step direction and initial travel distances on each dimension.
+  auto stepX = int64_t{ 1 };
+  auto stepY = int64_t{ 1 };
+  auto stepZ = int64_t{ 1 };
+  auto Tx = (Td - A[0]) * Sx;
+  auto Ty = (Td - A[1]) * Sy;
+  auto Tz = (Td - A[2]) * Sz;
+  if (dx < 0.0) {
+    stepX = int64_t{ -1 };
+    Tx = A[0] * Sx;
+  }
+  if (dy < 0.0) {
+    stepY = int64_t{ -1 };
+    Ty = A[1] * Sy;
+  }
+  if (dz < 0.0) {
+    stepZ = int64_t{ -1 };
+    Tz = A[2] * Sz;
+  }
+
+  auto stepCount = 0;
+  auto closestTriangleCollision = std::optional<trace::MeshCollision>{};
+  auto objectId = std::size_t{ 0 };
+  // This is a placeholder cheat!
+  while (stepCount < 250) {
+    // maxT represents the maximum distance our ray could travel given the current
+    // voxel and its trajectory
+    const auto maxT = std::min({Tx, Ty, Tz});
+    stepCount++;
+    // auto const& voxelIdAabb = voxelSpace.IdAabb();
+    // while (voxelIdAabb.minVoxelIdX <= voxelId[0] && voxelId[0] <= voxelIdAabb.maxVoxelIdX
+    //        && voxelIdAabb.minVoxelIdY <= voxelId[1] && voxelId[1] <= voxelIdAabb.maxVoxelIdY
+    //        && voxelIdAabb.minVoxelIdZ <= voxelId[2] && voxelId[2] <= voxelIdAabb.maxVoxelIdZ) {
+
+    auto triangleCandidates = voxelSpace.trianglesInVoxelById(voxelId);
+    if (triangleCandidates) {
+      for (auto const& id : *(triangleCandidates.value())) {
+        auto triangleCollision =
+          trace::triangleCollide(ray, sceneElements[id.object].component->GetMesh().triangleData, id.triangle);
+        if (triangleCollision) {
+          // A collision only matters if it is in the currently checked voxel!
+          // auto collisionVoxelId = vec3ToVoxelId(triangleCollision->collision.point.Components(), Td);
+          // Unfortunately, due to floating point issues we may get a voxelId which is not the current one
+          // even though we should hit the triangle right now.
+          // The solution is to keep track of the maxT distance we could see given the current voxel for a collision.
+          // If the distance is smaller then this maxT (+ a small epsilon as always), we can be sure we have hit
+          // the object.
+          if (triangleCollision->distance <= maxT + 0.00001) {
+            if (!closestTriangleCollision || closestTriangleCollision->distance > triangleCollision->distance) {
+              std::swap(closestTriangleCollision, triangleCollision);
+              objectId = id.object;
+            }
+          }
+        }
+      }
+
+      if (closestTriangleCollision) { return std::make_pair(closestTriangleCollision->collision, objectId); }
+    }
+
+    if (Tx < Ty) {
+      if (Tx < Tz) {
+        voxelId[0] += stepX;
+        Tx += Sx;
+        continue;
+      }
+    } else {
+      if (Ty < Tz) {
+        voxelId[1] += stepY;
+        Ty += Sy;
+        continue;
+      }
+    }
+    voxelId[2] += stepZ;
+    Tz += Sz;
+  }
+
+  if (closestTriangleCollision) { return std::make_pair(closestTriangleCollision->collision, objectId); }
+  return std::make_pair(std::optional<trace::Collision>{}, std::size_t{ 0 });
+}
+// NOLINTEND(readability-function-cognitive-complexity)
+
 auto rayColor(trace::Ray const& ray,
   std::vector<scene::Element> const& sceneElements,
   render::VoxelSpace const& voxelSpace,
@@ -75,7 +181,9 @@ auto rayColor(trace::Ray const& ray,
 {
   if (depth == 0) { return lina::Vec3{ 0.0, 0.0, 0.0 }; }
 
-  auto [collision, elementIndex] = closestCollision(ray, sceneElements, voxelSpace);
+  auto [collision, elementIndex] = closestCollisionWithDDA(ray, sceneElements, voxelSpace);
+  // auto [collision, elementIndex] = closestCollision(ray, sceneElements);
+
   if (collision) {
     auto const& material = sceneElements[elementIndex].material;
     auto const emission = material->Emit(collision.value());
