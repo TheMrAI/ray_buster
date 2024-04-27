@@ -10,6 +10,18 @@
 
 namespace trace {
 
+auto mergeAABB(Aabb const& lhs, Aabb const& rhs) -> Aabb
+{
+  return Aabb{
+    std::min(lhs.minX, rhs.minX),
+    std::max(lhs.maxX, rhs.maxX),
+    std::min(lhs.minY, rhs.minY),
+    std::max(lhs.maxY, rhs.maxY),
+    std::min(lhs.minZ, rhs.minZ),
+    std::max(lhs.maxZ, rhs.maxZ),
+  };
+}
+
 auto collide(Aabb const& lhs, Aabb const& rhs) -> bool
 {
   auto overlapX = (lhs.minX <= rhs.minX && rhs.minX <= lhs.maxX) || (lhs.minX <= rhs.maxX && rhs.maxX <= lhs.maxX);

@@ -20,6 +20,8 @@ struct Aabb
   double maxZ = std::numeric_limits<double>::min();
 };
 
+auto mergeAABB(Aabb const& lhs, Aabb const& rhs) -> Aabb;
+
 auto collide(Aabb const& lhs, Aabb const& rhs) -> bool;
 
 auto meshAabb(trace::Mesh const& mesh) -> Aabb;

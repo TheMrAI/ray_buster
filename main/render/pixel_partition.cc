@@ -68,7 +68,7 @@ auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& 
 // NOLINTBEGIN(readability-function-cognitive-complexity)
 // Partial source for the algorithm: http://www.cse.yorku.ca/~amana/research/grid.pdf
 // Based on the ideas from: https://www.youtube.com/watch?v=NbSee-XM7WA
-auto closestCollisionWithDDA(trace::Ray const& ray,
+auto closestCollisionWithDDA(trace::Ray ray,
   std::vector<scene::Element> const& sceneElements,
   render::VoxelSpace const& voxelSpace) -> std::pair<std::optional<trace::Collision>, std::size_t>
 {
@@ -83,8 +83,13 @@ auto closestCollisionWithDDA(trace::Ray const& ray,
   auto Sz = std::sqrt(1.0 + std::pow(dx / dz, 2.0) + std::pow(dy / dz, 2.0));
 
   // Find starting position's voxel
+  auto const& boundingBox = voxelSpace.BoundingBox();
+  auto const collision = boundingBox.Collide(ray);
+  if (!collision) { std::make_pair(std::optional<trace::Collision>{}, std::size_t{ 0 }); }
+  // hit the voxel space from the outside => push the ray into it
+  if (collision->frontFace) { ray = trace::Ray{ collision->point - collision->normal * 0.00001, ray.Direction() }; }
   auto voxelId = vec3ToVoxelId(ray.Source().Components(), Td);
-  // A vector is the distance from the voxels starting corner
+  // 'A' vector is the distance from the voxels starting corner
   auto A = ray.Source()
            - lina::Vec3{ static_cast<double>(voxelId[0]) * Td,
                static_cast<double>(voxelId[1]) * Td,
@@ -110,19 +115,16 @@ auto closestCollisionWithDDA(trace::Ray const& ray,
     Tz = A[2] * Sz;
   }
 
-  auto stepCount = 0;
   auto closestTriangleCollision = std::optional<trace::MeshCollision>{};
   auto objectId = std::size_t{ 0 };
-  // This is a placeholder cheat!
-  while (stepCount < 250) {
+
+  auto const& voxelIdAabb = voxelSpace.IdAabb();
+  while (voxelIdAabb.minVoxelIdX <= voxelId[0] && voxelId[0] <= voxelIdAabb.maxVoxelIdX
+         && voxelIdAabb.minVoxelIdY <= voxelId[1] && voxelId[1] <= voxelIdAabb.maxVoxelIdY
+         && voxelIdAabb.minVoxelIdZ <= voxelId[2] && voxelId[2] <= voxelIdAabb.maxVoxelIdZ) {
     // maxT represents the maximum distance our ray could travel given the current
     // voxel and its trajectory
-    const auto maxT = std::min({Tx, Ty, Tz});
-    stepCount++;
-    // auto const& voxelIdAabb = voxelSpace.IdAabb();
-    // while (voxelIdAabb.minVoxelIdX <= voxelId[0] && voxelId[0] <= voxelIdAabb.maxVoxelIdX
-    //        && voxelIdAabb.minVoxelIdY <= voxelId[1] && voxelId[1] <= voxelIdAabb.maxVoxelIdY
-    //        && voxelIdAabb.minVoxelIdZ <= voxelId[2] && voxelId[2] <= voxelIdAabb.maxVoxelIdZ) {
+    const auto maxT = std::min({ Tx, Ty, Tz });
 
     auto triangleCandidates = voxelSpace.trianglesInVoxelById(voxelId);
     if (triangleCandidates) {

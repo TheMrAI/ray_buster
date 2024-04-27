@@ -21,7 +21,7 @@ auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& 
 
 // 3D DDA source: http://www.cse.yorku.ca/~amana/research/grid.pdf
 // John Amanatides, Andrew Woo "A Fast Voxel Traversal Algorithm for Ray Tracing"
-auto closestCollisionWithDDA(trace::Ray const& ray,
+auto closestCollisionWithDDA(trace::Ray ray,
   std::vector<scene::Element> const& sceneElements,
   render::VoxelSpace const& voxelSpace) -> std::pair<std::optional<trace::Collision>, std::size_t>;
 

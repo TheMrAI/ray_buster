@@ -2,6 +2,7 @@
 
 #include "lib/lina/vec3.h"
 #include "lib/trace/geometry/aabb.h"
+#include "lib/trace/geometry/cuboid.h"
 #include "lib/trace/geometry/mesh.h"
 
 #include <algorithm>
@@ -43,6 +44,7 @@ auto Id::operator==(Id const& rhs) const -> bool { return object == rhs.object &
 VoxelSpace::VoxelSpace(std::vector<trace::Mesh> const& meshes, double voxelDimension)
   : voxelDimension_{ voxelDimension }
 {
+  auto aabb = trace::Aabb{};
   for (auto objectId = std::size_t{ 0 }; objectId < meshes.size(); objectId++) {
     auto const& mesh = meshes[objectId];
     for (auto triangleId = std::size_t{ 0 }; triangleId < mesh.triangleData.size(); triangleId++) {
@@ -53,6 +55,7 @@ VoxelSpace::VoxelSpace(std::vector<trace::Mesh> const& meshes, double voxelDimen
       // once before rendering a frame.
       auto const& triangleData = mesh.triangleData[triangleId];
       auto const& triangleAabb = trace::triangleAabb(triangleData);
+      aabb = trace::mergeAABB(aabb, triangleAabb);
       auto const startVoxelIdX = doubleToVoxelId(triangleAabb.minX, voxelDimension_);
       auto const lastVoxelIdX = doubleToVoxelId(triangleAabb.maxX, voxelDimension_);
       auto const startVoxelIdY = doubleToVoxelId(triangleAabb.minY, voxelDimension_);
@@ -83,6 +86,12 @@ VoxelSpace::VoxelSpace(std::vector<trace::Mesh> const& meshes, double voxelDimen
       }
     }
   }
+  auto center = 0.5 * lina::Vec3{ aabb.minX + aabb.maxX, aabb.minY + aabb.maxY, aabb.minZ + aabb.maxZ };
+  auto width = aabb.maxX - aabb.minX;
+  auto depth = aabb.maxY - aabb.minY;
+  auto height = aabb.maxZ - aabb.minZ;
+
+  boundingBox_ = trace::buildCuboid(center, width, depth, height);
 }
 
 auto VoxelSpace::trianglesInVoxelByPosition(std::span<double const, 3> position) const
@@ -105,6 +114,8 @@ auto VoxelSpace::trianglesInVoxelById(std::array<int64_t, 3> voxelId) const
 auto VoxelSpace::Dimension() const -> double { return voxelDimension_; }
 
 auto VoxelSpace::IdAabb() const -> IdAABB const& { return aabb_; }
+
+auto VoxelSpace::BoundingBox() const -> trace::Cuboid const& { return boundingBox_; }
 
 auto VoxelSpace::VoxelTriangles() const
   -> std::unordered_map<std::array<int64_t, 3>, std::unordered_set<Id, IdHash>, VoxelIdHash> const&

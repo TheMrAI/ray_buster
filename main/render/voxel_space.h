@@ -1,6 +1,7 @@
 #ifndef RAY_BUSTER_MAIN_RENDER_VOXEL_SPACE_H_
 #define RAY_BUSTER_MAIN_RENDER_VOXEL_SPACE_H_
 
+#include "lib/trace/geometry/cuboid.h"
 #include "lib/trace/geometry/mesh.h"
 
 #include <array>
@@ -59,6 +60,7 @@ public:
     -> std::optional<std::unordered_set<Id, IdHash> const*>;
   [[nodiscard]] auto Dimension() const -> double;
   [[nodiscard]] auto IdAabb() const -> IdAABB const&;
+  [[nodiscard]] auto BoundingBox() const -> trace::Cuboid const&;
 
   [[nodiscard]] auto VoxelTriangles() const
     -> std::unordered_map<std::array<int64_t, 3>, std::unordered_set<Id, IdHash>, VoxelIdHash> const&;
@@ -67,6 +69,7 @@ private:
   std::unordered_map<std::array<int64_t, 3>, std::unordered_set<Id, IdHash>, VoxelIdHash> voxelTriangles_;
   double voxelDimension_;
   IdAABB aabb_;
+  trace::Cuboid boundingBox_;
 };
 
 auto doubleToVoxelId(double value, double voxelDimension) -> int64_t;
