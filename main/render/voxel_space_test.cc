@@ -15,7 +15,7 @@ TEST(unitSizedVoxelSpace, halfUnitSquarePlaneAtOrigoPerpendicularToAxisZ)
   // raised by 0.5 on the Z axis so we only get 4 voxels
   meshes.emplace_back(trace::buildPlane(lina::Vec3{ 0.5, 0.5, 0.5 }, 0.5, 0.5).GetMesh());
 
-  auto voxelSpace = render::VoxelSpace{ meshes, 1.0 };
+  auto voxelSpace = render::VoxelSpace{ meshes };
   auto const& voxelTriangles = voxelSpace.VoxelTriangles();
 
   // fits into exactly 1 voxel
@@ -37,7 +37,7 @@ TEST(unitSizedVoxelSpace, unitSquarePlaneShiftedIntoPositiveFromOrigoPerpendicul
   // doesn't go through the center
   meshes.emplace_back(trace::buildPlane(lina::Vec3{ 0.25, 0.25, 0.5 }, 1.0, 1.0).GetMesh());
 
-  auto voxelSpace = render::VoxelSpace{ meshes, 1.0 };
+  auto voxelSpace = render::VoxelSpace{ meshes };
   auto const& voxelTriangles = voxelSpace.VoxelTriangles();
 
   // fits into exactly 4 voxels around the origin

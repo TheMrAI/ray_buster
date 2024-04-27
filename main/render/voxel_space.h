@@ -47,7 +47,7 @@ struct IdAABB
 class VoxelSpace
 {
 public:
-  explicit VoxelSpace(std::vector<trace::Mesh> const& meshes, double voxelDimension = 1.0);
+  explicit VoxelSpace(std::vector<trace::Mesh> const& meshes);
   VoxelSpace(VoxelSpace const&) = default;
   VoxelSpace(VoxelSpace&&) = default;
   auto operator=(VoxelSpace const&) -> VoxelSpace& = default;
@@ -68,7 +68,7 @@ public:
 private:
   std::unordered_map<std::array<int64_t, 3>, std::unordered_set<Id, IdHash>, VoxelIdHash> voxelTriangles_;
   double voxelDimension_;
-  IdAABB aabb_;
+  IdAABB idAabb_;
   trace::Cuboid boundingBox_;
 };
 

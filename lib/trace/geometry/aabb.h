@@ -18,6 +18,8 @@ struct Aabb
   double maxY = std::numeric_limits<double>::min();
   double minZ = std::numeric_limits<double>::max();
   double maxZ = std::numeric_limits<double>::min();
+
+  [[nodiscard]] auto volume() const -> double;
 };
 
 auto mergeAABB(Aabb const& lhs, Aabb const& rhs) -> Aabb;

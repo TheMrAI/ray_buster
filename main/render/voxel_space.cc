@@ -41,9 +41,27 @@ auto IdHash::operator()(Id const& id) const -> std::size_t
 
 auto Id::operator==(Id const& rhs) const -> bool { return object == rhs.object && triangle == rhs.triangle; }
 
-VoxelSpace::VoxelSpace(std::vector<trace::Mesh> const& meshes, double voxelDimension)
-  : voxelDimension_{ voxelDimension }
+VoxelSpace::VoxelSpace(std::vector<trace::Mesh> const& meshes)
 {
+  // To dynamically determine the appropriate voxel size, we go through each triangle and measure their
+  // volume. Take the average volume globally, assume that the triangles are perfectly evenly distributed
+  // along each of the three axes, fitting into a single voxel. Then we take the square root of this
+  // and divide the result by 10. Which ultimately means we divide our hypothetical space into a 1000 voxels.
+  // Of course this is a gross oversimplification, but it works as an estimate, cheap to calculate and
+  // simple to implement.
+  auto triangleCount = std::size_t{ 0 };
+  auto totalVolume = double{ 0.0 };
+  for (auto objectId = std::size_t{ 0 }; objectId < meshes.size(); objectId++) {
+    auto const& mesh = meshes[objectId];
+    for (auto triangleId = std::size_t{ 0 }; triangleId < mesh.triangleData.size(); triangleId++) {
+      auto const& triangleData = mesh.triangleData[triangleId];
+      auto const& triangleAabb = trace::triangleAabb(triangleData);
+      totalVolume += triangleAabb.volume();
+      triangleCount += 1;
+    }
+  }
+  voxelDimension_ = std::max(std::cbrt(totalVolume / static_cast<double>(triangleCount)) / 10.0, 1.0);
+
   auto aabb = trace::Aabb{};
   for (auto objectId = std::size_t{ 0 }; objectId < meshes.size(); objectId++) {
     auto const& mesh = meshes[objectId];
@@ -63,12 +81,12 @@ VoxelSpace::VoxelSpace(std::vector<trace::Mesh> const& meshes, double voxelDimen
       auto const startVoxelIdZ = doubleToVoxelId(triangleAabb.minZ, voxelDimension_);
       auto const lastVoxelIdZ = doubleToVoxelId(triangleAabb.maxZ, voxelDimension_);
 
-      aabb_.minVoxelIdX = std::min(aabb_.minVoxelIdX, startVoxelIdX);
-      aabb_.maxVoxelIdX = std::max(aabb_.maxVoxelIdX, lastVoxelIdX);
-      aabb_.minVoxelIdY = std::min(aabb_.minVoxelIdY, startVoxelIdY);
-      aabb_.maxVoxelIdY = std::max(aabb_.maxVoxelIdY, lastVoxelIdY);
-      aabb_.minVoxelIdZ = std::min(aabb_.minVoxelIdZ, startVoxelIdZ);
-      aabb_.maxVoxelIdZ = std::max(aabb_.maxVoxelIdZ, lastVoxelIdZ);
+      idAabb_.minVoxelIdX = std::min(idAabb_.minVoxelIdX, startVoxelIdX);
+      idAabb_.maxVoxelIdX = std::max(idAabb_.maxVoxelIdX, lastVoxelIdX);
+      idAabb_.minVoxelIdY = std::min(idAabb_.minVoxelIdY, startVoxelIdY);
+      idAabb_.maxVoxelIdY = std::max(idAabb_.maxVoxelIdY, lastVoxelIdY);
+      idAabb_.minVoxelIdZ = std::min(idAabb_.minVoxelIdZ, startVoxelIdZ);
+      idAabb_.maxVoxelIdZ = std::max(idAabb_.maxVoxelIdZ, lastVoxelIdZ);
 
       for (auto voxelZ = startVoxelIdZ; voxelZ <= lastVoxelIdZ; voxelZ++) {
         for (auto voxelX = startVoxelIdX; voxelX <= lastVoxelIdX; voxelX++) {
@@ -86,6 +104,7 @@ VoxelSpace::VoxelSpace(std::vector<trace::Mesh> const& meshes, double voxelDimen
       }
     }
   }
+
   auto center = 0.5 * lina::Vec3{ aabb.minX + aabb.maxX, aabb.minY + aabb.maxY, aabb.minZ + aabb.maxZ };
   auto width = aabb.maxX - aabb.minX;
   auto depth = aabb.maxY - aabb.minY;
@@ -113,7 +132,7 @@ auto VoxelSpace::trianglesInVoxelById(std::array<int64_t, 3> voxelId) const
 
 auto VoxelSpace::Dimension() const -> double { return voxelDimension_; }
 
-auto VoxelSpace::IdAabb() const -> IdAABB const& { return aabb_; }
+auto VoxelSpace::IdAabb() const -> IdAABB const& { return idAabb_; }
 
 auto VoxelSpace::BoundingBox() const -> trace::Cuboid const& { return boundingBox_; }
 

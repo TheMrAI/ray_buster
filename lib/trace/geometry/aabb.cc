@@ -10,6 +10,8 @@
 
 namespace trace {
 
+auto Aabb::volume() const -> double { return (maxX - minX) * (maxY - minY) * (maxZ - minZ); }
+
 auto mergeAABB(Aabb const& lhs, Aabb const& rhs) -> Aabb
 {
   return Aabb{

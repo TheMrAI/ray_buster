@@ -272,7 +272,7 @@ auto linearPartition(scene::Composition sceneComposition, std::ostream& outputSt
   auto [camera, sampleCount, rayDepth, sceneElements, masterLightIndex, useSkybox] = std::move(sceneComposition);
   auto meshes = std::vector<trace::Mesh>{};
   for (auto const& sceneElement : sceneElements) { meshes.emplace_back(sceneElement.component->GetMesh()); }
-  auto voxelSpace = render::VoxelSpace{ meshes, 1.0 };
+  auto voxelSpace = render::VoxelSpace{ meshes };
   auto imageWidth = camera.ImageWidth();
   auto imageHeight = camera.ImageHeight();
 
