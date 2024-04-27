@@ -62,7 +62,6 @@ VoxelSpace::VoxelSpace(std::vector<trace::Mesh> const& meshes)
   }
   voxelDimension_ = std::max(std::cbrt(totalVolume / static_cast<double>(triangleCount)) / 10.0, 1.0);
 
-  auto aabb = trace::Aabb{};
   for (auto objectId = std::size_t{ 0 }; objectId < meshes.size(); objectId++) {
     auto const& mesh = meshes[objectId];
     for (auto triangleId = std::size_t{ 0 }; triangleId < mesh.triangleData.size(); triangleId++) {
@@ -73,7 +72,7 @@ VoxelSpace::VoxelSpace(std::vector<trace::Mesh> const& meshes)
       // once before rendering a frame.
       auto const& triangleData = mesh.triangleData[triangleId];
       auto const& triangleAabb = trace::triangleAabb(triangleData);
-      aabb = trace::mergeAABB(aabb, triangleAabb);
+
       auto const startVoxelIdX = doubleToVoxelId(triangleAabb.minX, voxelDimension_);
       auto const lastVoxelIdX = doubleToVoxelId(triangleAabb.maxX, voxelDimension_);
       auto const startVoxelIdY = doubleToVoxelId(triangleAabb.minY, voxelDimension_);
@@ -105,10 +104,17 @@ VoxelSpace::VoxelSpace(std::vector<trace::Mesh> const& meshes)
     }
   }
 
-  auto center = 0.5 * lina::Vec3{ aabb.minX + aabb.maxX, aabb.minY + aabb.maxY, aabb.minZ + aabb.maxZ };
-  auto width = aabb.maxX - aabb.minX;
-  auto depth = aabb.maxY - aabb.minY;
-  auto height = aabb.maxZ - aabb.minZ;
+  auto minX = static_cast<double>(idAabb_.minVoxelIdX) * voxelDimension_;
+  auto maxX = static_cast<double>(idAabb_.maxVoxelIdX + 1) * voxelDimension_;
+  auto minY = static_cast<double>(idAabb_.minVoxelIdY) * voxelDimension_;
+  auto maxY = static_cast<double>(idAabb_.maxVoxelIdY + 1) * voxelDimension_;
+  auto minZ = static_cast<double>(idAabb_.minVoxelIdZ) * voxelDimension_;
+  auto maxZ = static_cast<double>(idAabb_.maxVoxelIdZ + 1) * voxelDimension_;
+
+  auto center = 0.5 * lina::Vec3{ minX + maxX, minY + maxY, minZ + maxZ };
+  auto width = std::max(maxX - minX, 0.1);
+  auto depth = std::max(maxY - minY, 0.1);
+  auto height = std::max(maxZ - minZ, 0.1);
 
   boundingBox_ = trace::buildCuboid(center, width, depth, height);
 }
