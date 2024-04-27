@@ -81,6 +81,10 @@ auto closestCollisionWithDDA(trace::Ray ray,
   auto Sx = std::sqrt(1.0 + std::pow(dy / dx, 2.0) + std::pow(dz / dx, 2.0));
   auto Sy = std::sqrt(1.0 + std::pow(dx / dy, 2.0) + std::pow(dz / dy, 2.0));
   auto Sz = std::sqrt(1.0 + std::pow(dx / dz, 2.0) + std::pow(dy / dz, 2.0));
+  // Calculate step delta for each dimension
+  auto SDx = Sx * Td;
+  auto SDy = Sy * Td;
+  auto SDz = Sz * Td;
 
   // Find starting position's voxel
   auto const& boundingBox = voxelSpace.BoundingBox();
@@ -154,18 +158,18 @@ auto closestCollisionWithDDA(trace::Ray ray,
     if (Tx < Ty) {
       if (Tx < Tz) {
         voxelId[0] += stepX;
-        Tx += Sx;
+        Tx += SDx;
         continue;
       }
     } else {
       if (Ty < Tz) {
         voxelId[1] += stepY;
-        Ty += Sy;
+        Ty += SDy;
         continue;
       }
     }
     voxelId[2] += stepZ;
-    Tz += Sz;
+    Tz += SDz;
   }
 
   if (closestTriangleCollision) { return std::make_pair(closestTriangleCollision->collision, objectId); }
