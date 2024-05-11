@@ -9,6 +9,7 @@ namespace trace {
 class Cuboid : public Component
 {
 public:
+  Cuboid();// A default constructed cuboid is a unit cuboid.
   Cuboid(Cuboid const&) = default;
   Cuboid(Cuboid&&) = default;
   auto operator=(Cuboid const&) -> Cuboid& = default;
@@ -16,9 +17,6 @@ public:
   ~Cuboid() override = default;
 
   friend auto buildCuboid(lina::Vec3 center, double width, double depth, double height) -> Cuboid;
-
-private:
-  Cuboid();// NOLINT
 };
 
 // Build a cuboid at origin, then scale and move it to the target position. By default the constructed cuboid will be 2

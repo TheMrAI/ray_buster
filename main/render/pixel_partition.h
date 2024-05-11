@@ -4,6 +4,7 @@
 #include "lib/lina/vec3.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/ray.h"
+#include "main/render/voxel_space.h"
 #include "main/scenes/scene.h"
 
 #include <cstddef>
@@ -18,8 +19,15 @@ namespace render {
 auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& sceneElements)
   -> std::pair<std::optional<trace::Collision>, std::size_t>;
 
+// 3D DDA source: http://www.cse.yorku.ca/~amana/research/grid.pdf
+// John Amanatides, Andrew Woo "A Fast Voxel Traversal Algorithm for Ray Tracing"
+auto closestCollisionWithDDA(trace::Ray ray,
+  std::vector<scene::Element> const& sceneElements,
+  render::VoxelSpace const& voxelSpace) -> std::pair<std::optional<trace::Collision>, std::size_t>;
+
 auto rayColor(trace::Ray const& ray,
   std::vector<scene::Element> const& sceneElements,
+  render::VoxelSpace const& voxelSpace,
   int masterLightIndex,
   std::mt19937& randomGenerator,
   std::size_t depth,

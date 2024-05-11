@@ -68,7 +68,7 @@ auto Camera::GetSampleRayAt(std::size_t i, std::size_t j, std::mt19937& randomGe
 
   auto raySource = sampleInUnitDisk(randomGenerator, cameraCenter_, lenseU_, lenseV_);
   auto rayDirection = lina::unit(pixelSample - raySource);
-  return Ray{ raySource, rayDirection };
+  return Ray{ pixelSample, rayDirection };
 }
 
 auto Camera::ImageWidth() const -> std::size_t { return imageWidth_; }

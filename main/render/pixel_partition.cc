@@ -5,14 +5,17 @@
 #include "lib/trace/camera.h"
 #include "lib/trace/collision.h"
 #include "lib/trace/geometry/component.h"
+#include "lib/trace/geometry/mesh.h"
 #include "lib/trace/material.h"
 #include "lib/trace/pdf.h"
 #include "lib/trace/ray.h"
 #include "lib/trace/util.h"
+#include "main/render/voxel_space.h"
 #include "main/scenes/scene.h"
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <format>
 #include <functional>
@@ -62,8 +65,121 @@ auto closestCollision(trace::Ray const& ray, std::vector<scene::Element> const& 
   return std::make_pair(closestCollision, elementIndex);
 }
 
+// NOLINTBEGIN(readability-function-cognitive-complexity)
+// Partial source for the algorithm: http://www.cse.yorku.ca/~amana/research/grid.pdf
+// Based on the ideas from: https://www.youtube.com/watch?v=NbSee-XM7WA
+auto closestCollisionWithDDA(trace::Ray ray,
+  std::vector<scene::Element> const& sceneElements,
+  render::VoxelSpace const& voxelSpace) -> std::pair<std::optional<trace::Collision>, std::size_t>
+{
+  auto dx = ray.Direction().Components()[0];
+  auto dy = ray.Direction().Components()[1];
+  auto dz = ray.Direction().Components()[2];
+  auto Td = voxelSpace.Dimension();
+
+  // Calculate scaling factor for each dimension
+  auto Sx = std::sqrt(1.0 + std::pow(dy / dx, 2.0) + std::pow(dz / dx, 2.0));
+  auto Sy = std::sqrt(1.0 + std::pow(dx / dy, 2.0) + std::pow(dz / dy, 2.0));
+  auto Sz = std::sqrt(1.0 + std::pow(dx / dz, 2.0) + std::pow(dy / dz, 2.0));
+  // Calculate step delta for each dimension
+  auto SDx = Sx * Td;
+  auto SDy = Sy * Td;
+  auto SDz = Sz * Td;
+
+  // Find starting position's voxel
+  auto const& boundingBox = voxelSpace.BoundingBox();
+  auto const collision = boundingBox.Collide(ray);
+  if (!collision) { std::make_pair(std::optional<trace::Collision>{}, std::size_t{ 0 }); }
+  // hit the voxel space from the outside => push the ray into it
+  if (collision->frontFace) { ray = trace::Ray{ collision->point - collision->normal * 0.00001, ray.Direction() }; }
+  auto voxelId = vec3ToVoxelId(ray.Source().Components(), Td);
+  // 'A' vector is the distance from the voxels starting corner
+  auto A = ray.Source()
+           - lina::Vec3{ static_cast<double>(voxelId[0]) * Td,
+               static_cast<double>(voxelId[1]) * Td,
+               static_cast<double>(voxelId[2]) * Td };
+
+  // Initialize step direction and initial travel distances on each dimension.
+  auto stepX = int64_t{ 1 };
+  auto stepY = int64_t{ 1 };
+  auto stepZ = int64_t{ 1 };
+  auto Tx = (Td - A[0]) * Sx;
+  auto Ty = (Td - A[1]) * Sy;
+  auto Tz = (Td - A[2]) * Sz;
+  if (dx < 0.0) {
+    stepX = int64_t{ -1 };
+    Tx = A[0] * Sx;
+  }
+  if (dy < 0.0) {
+    stepY = int64_t{ -1 };
+    Ty = A[1] * Sy;
+  }
+  if (dz < 0.0) {
+    stepZ = int64_t{ -1 };
+    Tz = A[2] * Sz;
+  }
+
+  auto closestTriangleCollision = std::optional<trace::MeshCollision>{};
+  auto objectId = std::size_t{ 0 };
+
+  auto const& voxelIdAabb = voxelSpace.IdAabb();
+  while (voxelIdAabb.minVoxelIdX <= voxelId[0] && voxelId[0] <= voxelIdAabb.maxVoxelIdX
+         && voxelIdAabb.minVoxelIdY <= voxelId[1] && voxelId[1] <= voxelIdAabb.maxVoxelIdY
+         && voxelIdAabb.minVoxelIdZ <= voxelId[2] && voxelId[2] <= voxelIdAabb.maxVoxelIdZ) {
+    // maxT represents the maximum distance our ray could travel given the current
+    // voxel and its trajectory
+    const auto maxT = std::min({ Tx, Ty, Tz });
+
+    auto triangleCandidates = voxelSpace.trianglesInVoxelById(voxelId);
+    if (triangleCandidates) {
+      for (auto const& id : *(triangleCandidates.value())) {
+        auto triangleCollision =
+          trace::triangleCollide(ray, sceneElements[id.object].component->GetMesh().triangleData, id.triangle);
+        if (triangleCollision) {
+          // A collision only matters if it is in the currently checked voxel!
+          // auto collisionVoxelId = vec3ToVoxelId(triangleCollision->collision.point.Components(), Td);
+          // Unfortunately, due to floating point issues we may get a voxelId which is not the current one
+          // even though we should hit the triangle right now.
+          // The solution is to keep track of the maxT distance we could see given the current voxel for a collision.
+          // If the distance is smaller then this maxT (+ a small epsilon as always), we can be sure we have hit
+          // the object.
+          if (triangleCollision->distance <= maxT + 0.00001) {
+            if (!closestTriangleCollision || closestTriangleCollision->distance > triangleCollision->distance) {
+              std::swap(closestTriangleCollision, triangleCollision);
+              objectId = id.object;
+            }
+          }
+        }
+      }
+
+      if (closestTriangleCollision) { return std::make_pair(closestTriangleCollision->collision, objectId); }
+    }
+
+    if (Tx < Ty) {
+      if (Tx < Tz) {
+        voxelId[0] += stepX;
+        Tx += SDx;
+        continue;
+      }
+    } else {
+      if (Ty < Tz) {
+        voxelId[1] += stepY;
+        Ty += SDy;
+        continue;
+      }
+    }
+    voxelId[2] += stepZ;
+    Tz += SDz;
+  }
+
+  if (closestTriangleCollision) { return std::make_pair(closestTriangleCollision->collision, objectId); }
+  return std::make_pair(std::optional<trace::Collision>{}, std::size_t{ 0 });
+}
+// NOLINTEND(readability-function-cognitive-complexity)
+
 auto rayColor(trace::Ray const& ray,
   std::vector<scene::Element> const& sceneElements,
+  render::VoxelSpace const& voxelSpace,
   int masterLightIndex,
   std::mt19937& randomGenerator,
   std::size_t depth,
@@ -71,7 +187,9 @@ auto rayColor(trace::Ray const& ray,
 {
   if (depth == 0) { return lina::Vec3{ 0.0, 0.0, 0.0 }; }
 
-  auto [collision, elementIndex] = closestCollision(ray, sceneElements);
+  auto [collision, elementIndex] = closestCollisionWithDDA(ray, sceneElements, voxelSpace);
+  // auto [collision, elementIndex] = closestCollision(ray, sceneElements);
+
   if (collision) {
     auto const& material = sceneElements[elementIndex].material;
     auto const emission = material->Emit(collision.value());
@@ -81,8 +199,9 @@ auto rayColor(trace::Ray const& ray,
     auto scatterColor = lina::Vec3{};
     if (std::holds_alternative<trace::Ray>(scattering.value().type)) {
       auto scatteredRay = std::get<trace::Ray>(scattering.value().type);
-      scatterColor = scattering.value().attenuation
-                     * rayColor(scatteredRay, sceneElements, masterLightIndex, randomGenerator, depth - 1, useSkybox);
+      scatterColor =
+        scattering.value().attenuation
+        * rayColor(scatteredRay, sceneElements, voxelSpace, masterLightIndex, randomGenerator, depth - 1, useSkybox);
     } else if (std::holds_alternative<trace::PDF>(scattering.value().type)) {
       // combined
       if (masterLightIndex > -1 && masterLightIndex < static_cast<int>(sceneElements.size())) {
@@ -104,7 +223,7 @@ auto rayColor(trace::Ray const& ray,
         auto scatteringPDFValue = materialPDF.Evaluate(scatteredRay.Direction());
 
         auto incomingColor =
-          rayColor(scatteredRay, sceneElements, masterLightIndex, randomGenerator, depth - 1, useSkybox);
+          rayColor(scatteredRay, sceneElements, voxelSpace, masterLightIndex, randomGenerator, depth - 1, useSkybox);
         scatterColor = (scattering.value().attenuation * scatteringPDFValue * incomingColor) / samplingPDFValue;
       } else {
         // normal sampling
@@ -116,7 +235,8 @@ auto rayColor(trace::Ray const& ray,
 
         scatterColor =
           (scattering.value().attenuation * scatteringPDFValue
-            * rayColor(scatteredRay, sceneElements, masterLightIndex, randomGenerator, depth - 1, useSkybox))
+            * rayColor(
+              scatteredRay, sceneElements, voxelSpace, masterLightIndex, randomGenerator, depth - 1, useSkybox))
           / pdfValue;
       }
     } else {
@@ -150,6 +270,9 @@ auto writeColor(lina::Vec3 const& color, std::ostream& outputStream) -> void
 auto linearPartition(scene::Composition sceneComposition, std::ostream& outputStream) -> void
 {
   auto [camera, sampleCount, rayDepth, sceneElements, masterLightIndex, useSkybox] = std::move(sceneComposition);
+  auto meshes = std::vector<trace::Mesh>{};
+  for (auto const& sceneElement : sceneElements) { meshes.emplace_back(sceneElement.component->GetMesh()); }
+  auto voxelSpace = render::VoxelSpace{ meshes };
   auto imageWidth = camera.ImageWidth();
   auto imageHeight = camera.ImageHeight();
 
@@ -169,6 +292,7 @@ auto linearPartition(scene::Composition sceneComposition, std::ostream& outputSt
       sampleCount,
       rayDepth,
       sceneElements = std::cref(sceneElements),
+      voxelSpace = std::cref(voxelSpace),
       masterLightIndex,
       useSkybox](std::size_t startIndex, std::size_t endIndex, bool reportProgress = false) -> std::vector<lina::Vec3> {
     auto maxElementCount = ceil2(endIndex, numberOfThreads);
@@ -195,7 +319,7 @@ auto linearPartition(scene::Composition sceneComposition, std::ostream& outputSt
       auto color = lina::Vec3{ 0.0, 0.0, 0.0 };
       for (auto sample = std::size_t{ 0 }; sample < sampleCount; ++sample) {
         auto const ray = camera.get().GetSampleRayAt(i, j, randomGenerator, sampleCount > 1);
-        color += rayColor(ray, sceneElements, masterLightIndex, randomGenerator, rayDepth, useSkybox);
+        color += rayColor(ray, sceneElements, voxelSpace, masterLightIndex, randomGenerator, rayDepth, useSkybox);
       }
       color /= static_cast<double>(sampleCount);
       pixelColors.emplace_back(color);
